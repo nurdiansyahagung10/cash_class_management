@@ -1,0 +1,595 @@
+/* KSP Mulatama UI Kit.
+   Every token and class is prefixed `ksp-`, so nothing here can shadow the
+   utilities the existing Blade views already use (bg-canvas, text-muted, ...). */
+
+@theme {
+    /* Dasar & teks */
+    --color-ksp-surface: #f3eee6;
+    --color-ksp-surface-raised: #fbf8f3;
+    --color-ksp-surface-input: #ffffff;
+    --color-ksp-line: #e6dfd3;
+    --color-ksp-line-soft: #ece6dc;
+    --color-ksp-ink: #1c1b19;
+    --color-ksp-ink-muted: #6f6a62;
+    --color-ksp-ink-faint: #a39d92;
+    --color-ksp-on-dark: #ffffff;
+
+    /* Sidebar */
+    --color-ksp-rail: #1d1d1b;
+    --color-ksp-rail-raised: #2a2925;
+    --color-ksp-rail-hover: #2e2c28;
+    --color-ksp-rail-ink: #e9e3d8;
+    --color-ksp-rail-muted: #8f887d;
+    --color-ksp-rail-sub: #bdb6aa;
+    --color-ksp-rail-active: #4a3f33;
+    --color-ksp-rail-active-ink: #f3d9a4;
+
+    /* Aksen */
+    --color-ksp-mustard: #e3b43f;
+    --color-ksp-mustard-ink: #4a3f33;
+    --color-ksp-green: #2e5a4a;
+    --color-ksp-green-deep: #24493c;
+    --color-ksp-green-sub: #bfd3c8;
+    --color-ksp-green-soft: #dce8e1;
+    --color-ksp-rust: #c4472e;
+
+    /* Status */
+    --color-ksp-success-bg: #cdebd3;
+    --color-ksp-success-ink: #1f5b3a;
+    --color-ksp-warning-bg: #f6e7bf;
+    --color-ksp-warning-ink: #6b5212;
+    --color-ksp-danger-bg: #f6d9d2;
+    --color-ksp-danger-ink: #9e3521;
+
+    /* Tipografi: 11 gaya, Inter */
+    --text-ksp-page-title: 72px;
+    --text-ksp-page-title--line-height: 1;
+    --text-ksp-page-title--font-weight: 700;
+    --text-ksp-hero-title: 64px;
+    --text-ksp-hero-title--line-height: 1.02;
+    --text-ksp-hero-title--font-weight: 700;
+    --text-ksp-stat-value: 32px;
+    --text-ksp-stat-value--line-height: 1.15;
+    --text-ksp-stat-value--font-weight: 600;
+    --text-ksp-section-title: 20px;
+    --text-ksp-section-title--line-height: 1.3;
+    --text-ksp-section-title--font-weight: 500;
+    --text-ksp-eyebrow: 16px;
+    --text-ksp-eyebrow--line-height: 1.4;
+    --text-ksp-eyebrow--font-weight: 400;
+    --text-ksp-body: 15px;
+    --text-ksp-body--line-height: 1.45;
+    --text-ksp-body--font-weight: 400;
+    --text-ksp-body-strong: 15px;
+    --text-ksp-body-strong--line-height: 1.45;
+    --text-ksp-body-strong--font-weight: 600;
+    --text-ksp-small: 14px;
+    --text-ksp-small--line-height: 1.4;
+    --text-ksp-small--font-weight: 400;
+    --text-ksp-caption: 13px;
+    --text-ksp-caption--line-height: 1.4;
+    --text-ksp-caption--font-weight: 400;
+    --text-ksp-chip: 12px;
+    --text-ksp-chip--line-height: 1.3;
+    --text-ksp-chip--font-weight: 600;
+    --text-ksp-group-label: 11px;
+    --text-ksp-group-label--line-height: 1.3;
+    --text-ksp-group-label--font-weight: 600;
+
+    /* Jarak: 9 langkah */
+    --spacing-ksp-2xs: 2px;
+    --spacing-ksp-xs: 4px;
+    --spacing-ksp-sm: 6px;
+    --spacing-ksp-md: 8px;
+    --spacing-ksp-lg: 12px;
+    --spacing-ksp-xl: 16px;
+    --spacing-ksp-2xl: 20px;
+    --spacing-ksp-3xl: 26px;
+    --spacing-ksp-4xl: 30px;
+
+    /* Sudut: 6 radius */
+    --radius-ksp-sm: 12px;
+    --radius-ksp-md: 20px;
+    --radius-ksp-lg: 26px;
+    --radius-ksp-xl: 32px;
+    --radius-ksp-2xl: 36px;
+    --radius-ksp-pill: 999px;
+
+    /* Bayangan */
+    --shadow-ksp-float: 0 18px 44px -12px rgb(28 27 25 / 0.28);
+    --shadow-ksp-soft: 0 2px 8px -2px rgb(28 27 25 / 0.12);
+
+    /* Gerak: satu kurva, transform & opacity saja */
+    --ease-ksp: cubic-bezier(0.23, 1, 0.32, 1);
+    --animate-ksp-enter: ksp-rise 360ms var(--ease-ksp) both;
+    --animate-ksp-row: ksp-rise 320ms var(--ease-ksp) both;
+}
+
+@keyframes ksp-rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ---- Fokus: cincin 2px green, jarak 2px, di semua kontrol ---- */
+@utility ksp-focus {
+    &:focus-visible {
+        outline: 2px solid var(--color-ksp-green);
+        outline-offset: 2px;
+    }
+}
+
+/* ---- Tombol ---- */
+@utility ksp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-ksp-md);
+    min-height: 44px;
+    padding-inline: var(--spacing-ksp-2xl);
+    border-radius: var(--radius-ksp-pill);
+    font-size: var(--text-ksp-body);
+    line-height: 1.45;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 160ms var(--ease-ksp), transform 160ms var(--ease-ksp), color 160ms var(--ease-ksp);
+
+    &:active:not(:disabled) { transform: scale(0.97); }
+    &:focus-visible { outline: 2px solid var(--color-ksp-green); outline-offset: 2px; }
+    &:disabled { cursor: not-allowed; }
+}
+
+@utility ksp-btn-primary {
+    background-color: var(--color-ksp-ink);
+    color: var(--color-ksp-on-dark);
+    border: 1px solid transparent;
+
+    &:hover:not(:disabled) { background-color: var(--color-ksp-mustard-ink); }
+    &:disabled { background-color: var(--color-ksp-rail-muted); color: var(--color-ksp-on-dark); }
+}
+
+@utility ksp-btn-secondary {
+    background-color: var(--color-ksp-surface-input);
+    color: var(--color-ksp-ink);
+    border: 1px solid var(--color-ksp-line);
+
+    &:hover:not(:disabled) { background-color: var(--color-ksp-line-soft); }
+    &:disabled { color: var(--color-ksp-ink-faint); }
+}
+
+@utility ksp-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border-radius: var(--radius-ksp-pill);
+    background-color: var(--color-ksp-surface-input);
+    border: 1px solid var(--color-ksp-line);
+    color: var(--color-ksp-ink);
+    cursor: pointer;
+    transition: background-color 150ms var(--ease-ksp), transform 160ms var(--ease-ksp);
+
+    &:hover:not(:disabled) { background-color: var(--color-ksp-line-soft); }
+    &:active:not(:disabled) { transform: scale(0.97); }
+    &:focus-visible { outline: 2px solid var(--color-ksp-green); outline-offset: 2px; }
+}
+
+@utility ksp-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border-radius: var(--radius-ksp-pill);
+    background-color: var(--color-ksp-green);
+    color: var(--color-ksp-on-dark);
+    font-size: var(--text-ksp-chip);
+    font-weight: 600;
+}
+
+/* ---- Chip ---- */
+@utility ksp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-ksp-xs);
+    padding: var(--spacing-ksp-xs) var(--spacing-ksp-lg);
+    border-radius: var(--radius-ksp-pill);
+    font-size: var(--text-ksp-chip);
+    line-height: 1.3;
+    font-weight: 600;
+    white-space: nowrap;
+    background-color: var(--color-ksp-line-soft);
+    color: var(--color-ksp-ink-muted);
+}
+
+@utility ksp-chip-success { background-color: var(--color-ksp-success-bg); color: var(--color-ksp-success-ink); }
+@utility ksp-chip-warning { background-color: var(--color-ksp-warning-bg); color: var(--color-ksp-warning-ink); }
+@utility ksp-chip-danger  { background-color: var(--color-ksp-danger-bg);  color: var(--color-ksp-danger-ink); }
+@utility ksp-chip-info    { background-color: var(--color-ksp-green-soft); color: var(--color-ksp-green-deep); }
+@utility ksp-chip-code    { background-color: var(--color-ksp-surface-input); color: var(--color-ksp-ink); border: 1px solid var(--color-ksp-line); }
+
+/* ---- Kartu statistik: urutan warna tetap ---- */
+@utility ksp-stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-ksp-xs);
+    padding: var(--spacing-ksp-3xl);
+    border-radius: var(--radius-ksp-lg);
+    background-color: var(--color-ksp-surface-raised);
+    border: 1px solid var(--color-ksp-line);
+    color: var(--color-ksp-ink);
+}
+
+@utility ksp-stat-mustard { background-color: var(--color-ksp-mustard); border-color: transparent; color: var(--color-ksp-ink); }
+@utility ksp-stat-green   { background-color: var(--color-ksp-green-deep); border-color: transparent; color: var(--color-ksp-on-dark); }
+@utility ksp-stat-ink     { background-color: var(--color-ksp-ink); border-color: transparent; color: var(--color-ksp-on-dark); }
+
+@utility ksp-stat-value {
+    font-size: var(--text-ksp-stat-value);
+    line-height: 1.15;
+    font-weight: 600;
+}
+
+@utility ksp-stat-label {
+    font-size: var(--text-ksp-body);
+    line-height: 1.45;
+    opacity: 0.78;
+}
+
+/* ---- Navigasi: page tabs, segmented ---- */
+@utility ksp-tabs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-ksp-sm);
+    padding: var(--spacing-ksp-sm);
+    border-radius: var(--radius-ksp-pill);
+    background-color: var(--color-ksp-surface-input);
+    border: 1px solid var(--color-ksp-line);
+}
+
+@utility ksp-tab {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--spacing-ksp-2xl);
+    border-radius: var(--radius-ksp-pill);
+    font-size: var(--text-ksp-body);
+    font-weight: 500;
+    color: var(--color-ksp-ink-muted);
+    cursor: pointer;
+    transition: background-color 150ms var(--ease-ksp), color 150ms var(--ease-ksp);
+
+    &:hover { background-color: var(--color-ksp-line-soft); color: var(--color-ksp-ink); }
+    &:focus-visible { outline: 2px solid var(--color-ksp-green); outline-offset: 2px; }
+    &[aria-current="page"], &[aria-selected="true"] {
+        background-color: var(--color-ksp-ink);
+        color: var(--color-ksp-on-dark);
+        font-weight: 600;
+    }
+}
+
+@utility ksp-segmented {
+    display: inline-flex;
+    gap: var(--spacing-ksp-2xs);
+    padding: var(--spacing-ksp-xs);
+    border-radius: var(--radius-ksp-pill);
+    background-color: var(--color-ksp-line-soft);
+}
+
+@utility ksp-segment {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding-inline: var(--spacing-ksp-xl);
+    border-radius: var(--radius-ksp-pill);
+    font-size: var(--text-ksp-small);
+    font-weight: 500;
+    color: var(--color-ksp-ink-muted);
+    cursor: pointer;
+    transition: background-color 150ms var(--ease-ksp), color 150ms var(--ease-ksp);
+
+    &:focus-visible { outline: 2px solid var(--color-ksp-green); outline-offset: 2px; }
+    &[aria-selected="true"] {
+        background-color: var(--color-ksp-surface-input);
+        color: var(--color-ksp-ink);
+        font-weight: 600;
+    }
+}
+
+/* ---- Input: filter, select, cari ---- */
+@utility ksp-field {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-ksp-md);
+    min-height: 44px;
+    padding-inline: var(--spacing-ksp-2xl);
+    border-radius: var(--radius-ksp-pill);
+    background-color: var(--color-ksp-surface-input);
+    border: 1px solid var(--color-ksp-line);
+    font-size: var(--text-ksp-body);
+    color: var(--color-ksp-ink);
+
+    &:focus-within { outline: 2px solid var(--color-ksp-green); outline-offset: 2px; }
+}
+
+@utility ksp-input {
+    min-width: 0;
+    flex: 1;
+    border: 0;
+    background: transparent;
+    font-size: var(--text-ksp-body);
+    color: var(--color-ksp-ink);
+
+    &::placeholder { color: var(--color-ksp-ink-muted); }
+    &:focus { outline: none; }
+}
+
+/* ---- Panel daftar: judul, kontrol, tabel, footer ---- */
+@utility ksp-panel {
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-ksp-xl);
+    background-color: var(--color-ksp-surface-raised);
+    border: 1px solid var(--color-ksp-line);
+    overflow: hidden;
+}
+
+@utility ksp-panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-ksp-xl);
+    padding: var(--spacing-ksp-3xl);
+}
+
+@utility ksp-panel-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-ksp-xl);
+    padding: var(--spacing-ksp-3xl);
+    border-top: 1px solid var(--color-ksp-line);
+    font-size: var(--text-ksp-small);
+    color: var(--color-ksp-ink-muted);
+}
+
+/* Tabel panjang: bungkus dengan .ksp-scroll supaya tidak meluber di layar kecil. */
+@utility ksp-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@utility ksp-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+
+    & th {
+        padding: var(--spacing-ksp-lg) var(--spacing-ksp-3xl);
+        font-size: var(--text-ksp-small);
+        font-weight: 400;
+        color: var(--color-ksp-ink-muted);
+        white-space: nowrap;
+    }
+
+    & td {
+        padding: var(--spacing-ksp-xl) var(--spacing-ksp-3xl);
+        font-size: var(--text-ksp-body);
+        border-top: 1px solid var(--color-ksp-line-soft);
+        vertical-align: middle;
+    }
+
+    & tbody tr {
+        transition: background-color 150ms var(--ease-ksp);
+    }
+
+    & tbody tr:hover {
+        background-color: var(--color-ksp-line-soft);
+    }
+}
+
+@utility ksp-num {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* ---- Pagination ---- */
+@utility ksp-page-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    border-radius: var(--radius-ksp-pill);
+    font-size: var(--text-ksp-small);
+    font-weight: 600;
+    color: var(--color-ksp-ink);
+    cursor: pointer;
+    transition: background-color 150ms var(--ease-ksp);
+
+    &:hover { background-color: var(--color-ksp-line-soft); }
+    &:focus-visible { outline: 2px solid var(--color-ksp-green); outline-offset: 2px; }
+    &[aria-current="page"] { background-color: var(--color-ksp-ink); color: var(--color-ksp-on-dark); }
+}
+
+/* ---- Sidebar: floating, 272px ---- */
+@utility ksp-rail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-ksp-2xs);
+    width: 272px;
+    padding: var(--spacing-ksp-xl);
+    border-radius: var(--radius-ksp-xl);
+    background-color: var(--color-ksp-rail);
+    box-shadow: var(--shadow-ksp-float);
+    color: var(--color-ksp-rail-ink);
+}
+
+@utility ksp-rail-group {
+    padding: var(--spacing-ksp-xl) var(--spacing-ksp-lg) var(--spacing-ksp-sm);
+    font-size: var(--text-ksp-group-label);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ksp-rail-muted);
+}
+
+@utility ksp-rail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-ksp-lg);
+    min-height: 44px;
+    padding-inline: var(--spacing-ksp-lg);
+    border-radius: var(--radius-ksp-pill);
+    font-size: var(--text-ksp-body);
+    color: var(--color-ksp-rail-ink);
+    cursor: pointer;
+    transition: background-color 150ms var(--ease-ksp), color 150ms var(--ease-ksp);
+
+    &:hover { background-color: var(--color-ksp-rail-hover); color: var(--color-ksp-on-dark); }
+    &:focus-visible { outline: 2px solid var(--color-ksp-green); outline-offset: 2px; }
+    &[aria-current="page"], &[aria-expanded="true"] {
+        background-color: var(--color-ksp-rail-active);
+        color: var(--color-ksp-rail-active-ink);
+        font-weight: 600;
+    }
+}
+
+@utility ksp-rail-sub {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-ksp-2xs);
+    margin-left: var(--spacing-ksp-2xl);
+    padding-left: var(--spacing-ksp-lg);
+    border-left: 1px solid var(--color-ksp-rail-hover);
+}
+
+@utility ksp-rail-subitem {
+    display: flex;
+    align-items: center;
+    min-height: 38px;
+    padding-inline: var(--spacing-ksp-lg);
+    border-radius: var(--radius-ksp-pill);
+    font-size: var(--text-ksp-body);
+    color: var(--color-ksp-rail-sub);
+    cursor: pointer;
+    transition: background-color 150ms var(--ease-ksp), color 150ms var(--ease-ksp);
+
+    &:hover { background-color: var(--color-ksp-rail-hover); color: var(--color-ksp-on-dark); }
+    &:focus-visible { outline: 2px solid var(--color-ksp-green); outline-offset: 2px; }
+    &[aria-current="page"] {
+        background-color: var(--color-ksp-rail-active);
+        color: var(--color-ksp-rail-active-ink);
+        font-weight: 600;
+    }
+}
+
+@utility ksp-chevron {
+    flex: none;
+    transition: transform 200ms var(--ease-ksp);
+
+    [aria-expanded="true"] > & { transform: rotate(90deg); }
+}
+
+/* ---- Kosong & error ---- */
+@utility ksp-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-ksp-lg);
+    padding: var(--spacing-ksp-4xl) var(--spacing-ksp-3xl);
+    border-radius: var(--radius-ksp-xl);
+    background-color: var(--color-ksp-surface-raised);
+    border: 1px solid var(--color-ksp-line);
+    text-align: center;
+}
+
+@utility ksp-well {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    flex: none;
+    border-radius: var(--radius-ksp-pill);
+    background-color: var(--color-ksp-line-soft);
+    color: var(--color-ksp-ink-muted);
+    box-shadow: var(--shadow-ksp-soft);
+}
+
+@utility ksp-well-danger {
+    background-color: var(--color-ksp-danger-bg);
+    color: var(--color-ksp-danger-ink);
+}
+
+@utility ksp-error {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-ksp-lg);
+    padding: var(--spacing-ksp-3xl);
+    border-radius: var(--radius-ksp-xl);
+    background-color: var(--color-ksp-surface-raised);
+    border: 1px solid var(--color-ksp-line);
+}
+
+@utility ksp-code {
+    padding: var(--spacing-ksp-xl);
+    border-radius: var(--radius-ksp-sm);
+    background-color: var(--color-ksp-ink);
+    color: var(--color-ksp-rail-active-ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-ksp-caption);
+    overflow-x: auto;
+}
+
+/* ---- Gerak ---- */
+@utility ksp-enter {
+    animation: var(--animate-ksp-enter);
+}
+
+/* Masuk halaman: jeda 45ms per bagian. Baris tabel: mulai 300ms, jeda 40ms. */
+@utility ksp-stagger {
+    & > * { animation: var(--animate-ksp-enter); }
+    & > *:nth-child(1) { animation-delay: 0ms; }
+    & > *:nth-child(2) { animation-delay: 45ms; }
+    & > *:nth-child(3) { animation-delay: 90ms; }
+    & > *:nth-child(4) { animation-delay: 135ms; }
+    & > *:nth-child(5) { animation-delay: 180ms; }
+    & > *:nth-child(6) { animation-delay: 225ms; }
+    & > *:nth-child(n + 7) { animation-delay: 270ms; }
+}
+
+@utility ksp-stagger-rows {
+    & > tr { animation: var(--animate-ksp-row); }
+    & > tr:nth-child(1) { animation-delay: 300ms; }
+    & > tr:nth-child(2) { animation-delay: 340ms; }
+    & > tr:nth-child(3) { animation-delay: 380ms; }
+    & > tr:nth-child(4) { animation-delay: 420ms; }
+    & > tr:nth-child(5) { animation-delay: 460ms; }
+    & > tr:nth-child(n + 6) { animation-delay: 500ms; }
+}
+
+/* Reduced motion: fade 200ms saja, tanpa gerak. */
+@media (prefers-reduced-motion: reduce) {
+    @keyframes ksp-rise {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    .ksp-enter,
+    .ksp-stagger > *,
+    .ksp-stagger-rows > tr {
+        animation-duration: 200ms !important;
+        animation-delay: 0ms !important;
+    }
+
+    .ksp-btn:active:not(:disabled),
+    .ksp-btn-icon:active:not(:disabled) { transform: none; }
+}

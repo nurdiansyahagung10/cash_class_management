@@ -29,6 +29,22 @@
         </div>
     </section>
 
+    @if (session('import_errors'))
+        <div class="flex flex-col gap-2 rounded-2xl border border-amber/30 bg-[#fffbeb] p-5 text-xs text-[#7a4a00] shadow-xs">
+            <div class="flex items-center gap-2 font-bold text-sm text-[#7a4a00]">
+                <svg class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+                <span>Catatan baris yang dilewati / gagal saat impor:</span>
+            </div>
+            <ul class="list-disc list-inside space-y-1 pl-1">
+                @foreach (session('import_errors') as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="flex flex-wrap items-start gap-6">
         <section aria-labelledby="judul-pending"
             class="flex min-w-0 flex-[999_1_30rem] flex-col rounded-2xl border border-line bg-white shadow-xs">
@@ -80,34 +96,77 @@
             </div>
         </section>
 
-        <section aria-labelledby="judul-tambah"
-            class="flex min-w-72 flex-[1_1_18rem] flex-col gap-5 rounded-2xl border border-line bg-white p-6 shadow-xs">
-            <div class="flex flex-col gap-1">
-                <h2 id="judul-tambah" class="text-lg font-bold text-black">Tambah calon anggota</h2>
-                <span class="text-xs text-muted">Masuk antrean verifikasi admin.</span>
-            </div>
+        <div class="flex min-w-72 flex-[1_1_20rem] flex-col gap-6">
+            <section aria-labelledby="judul-tambah"
+                class="flex flex-col gap-5 rounded-2xl border border-line bg-white p-6 shadow-xs">
+                <div class="flex flex-col gap-1">
+                    <h2 id="judul-tambah" class="text-lg font-bold text-black">Tambah calon anggota</h2>
+                    <span class="text-xs text-muted">Masuk antrean verifikasi admin.</span>
+                </div>
 
-            <form method="POST" action="{{ route('members.store') }}" class="flex flex-col gap-4">
-                @csrf
-                @foreach ([['name', 'Nama lengkap', 'text', 'Nama sesuai absen'], ['student_no', 'No. absen / NIM', 'text', 'Harus unik'], ['password', 'Password awal (min. 8 karakter)', 'text', 'Diberikan ke anggota']] as [$field, $label, $type, $placeholder])
+                <form method="POST" action="{{ route('members.store') }}" class="flex flex-col gap-4">
+                    @csrf
+                    @foreach ([['name', 'Nama lengkap', 'text', 'Nama sesuai absen'], ['student_no', 'No. absen / NIM', 'text', 'Harus unik'], ['password', 'Password awal (min. 8 karakter)', 'text', 'Diberikan ke anggota']] as [$field, $label, $type, $placeholder])
+                        <label class="flex flex-col gap-1.5 text-xs font-semibold text-black">
+                            <span>{{ $label }}</span>
+                            <input type="{{ $type }}" name="{{ $field }}" value="{{ $field === 'password' ? '' : old($field) }}"
+                                placeholder="{{ $placeholder }}" required autocomplete="off"
+                                class="min-h-11 rounded-xl border border-black/15 bg-canvas/30 px-3.5 text-sm font-normal text-black placeholder:text-muted/60 transition-all focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20">
+                            @error($field)
+                                <span role="alert" class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>
+                            @enderror
+                        </label>
+                    @endforeach
+                    <button type="submit"
+                        class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Kirim
+                        ke antrean</button>
+                </form>
+
+                <p class="text-xs leading-relaxed text-muted">Siapa pun yang menambahkan calon tidak bisa memverifikasinya
+                    sendiri.</p>
+            </section>
+
+            <section aria-labelledby="judul-import"
+                class="flex flex-col gap-5 rounded-2xl border border-line bg-white p-6 shadow-xs">
+                <div class="flex flex-col gap-1">
+                    <h2 id="judul-import" class="text-lg font-bold text-black">Impor dari Excel / Sheet</h2>
+                    <span class="text-xs text-muted">Unggah daftar calon anggota sekaligus.</span>
+                </div>
+
+                <div class="flex items-center justify-between rounded-xl bg-canvas/60 border border-line p-3">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-semibold text-black">Format Kolom</span>
+                        <span class="text-[11px] text-muted">Nama, NIM, Password Awal</span>
+                    </div>
+                    <a href="{{ route('members.template') }}"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white px-2.5 py-1.5 text-xs font-semibold text-brand shadow-2xs hover:bg-canvas transition-colors">
+                        <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                        Unduh Template
+                    </a>
+                </div>
+
+                <form method="POST" action="{{ route('members.import') }}" enctype="multipart/form-data" class="flex flex-col gap-4">
+                    @csrf
                     <label class="flex flex-col gap-1.5 text-xs font-semibold text-black">
-                        <span>{{ $label }}</span>
-                        <input type="{{ $type }}" name="{{ $field }}" value="{{ $field === 'password' ? '' : old($field) }}"
-                            placeholder="{{ $placeholder }}" required autocomplete="off"
-                            class="min-h-11 rounded-xl border border-black/15 bg-canvas/30 px-3.5 text-sm font-normal text-black placeholder:text-muted/60 transition-all focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20">
-                        @error($field)
+                        <span>Pilih file (.xlsx, .xls, .csv)</span>
+                        <input type="file" name="file" accept=".xlsx,.xlsm,.xls,.csv" required
+                            class="block w-full text-xs text-muted file:mr-3 file:min-h-10 file:rounded-xl file:border file:border-line file:bg-canvas file:px-3 file:py-2 file:text-xs file:font-semibold file:text-black hover:file:bg-black/5 file:cursor-pointer cursor-pointer focus:outline-none">
+                        @error('file')
                             <span role="alert" class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>
                         @enderror
                     </label>
-                @endforeach
-                <button type="submit"
-                    class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Kirim
-                    ke antrean</button>
-            </form>
 
-            <p class="text-xs leading-relaxed text-muted">Siapa pun yang menambahkan calon tidak bisa memverifikasinya
-                sendiri.</p>
-        </section>
+                    <button type="submit"
+                        class="inline-flex min-h-11 items-center justify-center rounded-xl bg-navy px-4 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy">
+                        Unggah & Impor
+                    </button>
+                </form>
+
+                <p class="text-xs leading-relaxed text-muted">Baris dengan NIM yang sudah terdaftar akan otomatis dilewati dan dilaporkan.</p>
+            </section>
+        </div>
     </div>
 
     <section aria-labelledby="judul-semua-anggota"

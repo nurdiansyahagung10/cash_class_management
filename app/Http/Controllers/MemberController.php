@@ -6,6 +6,7 @@ use App\Enums\LedgerEntryType;
 use App\Models\PendingMember;
 use App\Models\User;
 use App\Services\Ledger;
+use App\Services\MemberImportService;
 use App\Services\MemberVerification;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
@@ -13,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MemberController extends Controller
 {
@@ -148,5 +150,50 @@ class MemberController extends Controller
         return back()
             ->with('status', "Password sementara akun {$user->name}: {$temporaryPassword} (pengguna wajib mengganti password saat login berikutnya).")
             ->with('temporary_password', $temporaryPassword);
+    }
+
+    public function import(Request $request, MemberImportService $importService): RedirectResponse
+    {
+        abort_unless($request->user()->canManageMembers(), 403);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xlsm,xls,csv,txt', 'max:5120'],
+        ], [
+            'file.required' => 'Pilih file spreadsheet (.xlsx atau .csv) terlebih dahulu.',
+            'file.mimes' => 'Format file harus berupa Excel (.xlsx) atau .csv.',
+            'file.max' => 'Ukuran file maksimal 5 MB.',
+        ]);
+
+        $result = $importService->import($request->file('file'), $request->user());
+
+        $status = "{$result['success']} calon anggota berhasil diimpor ke antrean verifikasi.";
+        if (! empty($result['skipped'])) {
+            $status .= ' ('.count($result['skipped']).' baris dilewati/gagal).';
+        }
+
+        $redirect = back()->with('status', $status);
+        if (! empty($result['skipped'])) {
+            $redirect->with('import_errors', $result['skipped']);
+        }
+
+        return $redirect;
+    }
+
+    public function template(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()->canManageMembers(), 403);
+
+        $filename = 'template-import-anggota.csv';
+
+        return response()->streamDownload(function () {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['Nama', 'NIM', 'Password Awal']);
+            fputcsv($handle, ['Budi Santoso', '01', 'password123']);
+            fputcsv($handle, ['Siti Rahma', '02', 'password123']);
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 }

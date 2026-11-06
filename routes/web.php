@@ -50,6 +50,8 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/members', [MemberController::class, 'index'])->name('members.index');
         Route::post('/members', [MemberController::class, 'store'])->name('members.store');
+        Route::post('/members/import', [MemberController::class, 'import'])->name('members.import');
+        Route::get('/members/template', [MemberController::class, 'template'])->name('members.template');
         Route::post('/members/{pending}/approve', [MemberController::class, 'approve'])->name('members.approve');
         Route::delete('/members/{pending}', [MemberController::class, 'reject'])->name('members.reject');
         Route::post('/members/{user}/toggle-staff', [MemberController::class, 'toggleStaff'])->name('members.toggle-staff');

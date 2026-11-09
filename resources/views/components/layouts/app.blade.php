@@ -37,8 +37,8 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|source-serif-4:400,600" rel="stylesheet">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
+    @vite(['resources/css/app.css'])
+
 </head>
 
 <body class="bg-canvas font-sans text-black antialiased selection:bg-brand-soft selection:text-brand">
@@ -218,6 +218,7 @@
 </body>
 
 </html>
+@vite(['resources/js/app.js'])
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const sidebar = document.querySelector('nav[aria-label="Navigasi utama"]');

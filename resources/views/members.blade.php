@@ -79,7 +79,7 @@
                             {{ intdiv($hoursLeft, 24) > 0 ? intdiv($hoursLeft, 24) . ' hari ' : '' }}{{ $hoursLeft % 24 }}
                             jam
                         </span>
-                        @if ($candidate)
+                        @if ($canDecide)
                             <div class="flex items-center gap-2">
                                 <form method="POST" action="{{ route('members.reject', $candidate) }}">
                                     @csrf

@@ -231,14 +231,14 @@
                                 <form method="POST" action="{{ route('members.toggle-staff', $member) }}">
                                     @csrf
                                     <button type="submit"
-                                        class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                        class="inline-flex cursor-pointer min-h-11 items-center justify-center rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                         {{ $member->role->name == 'Staff' ? 'Nonaktifkan Staff' : 'Aktifkan Staff' }}
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('members.toggle-status', $member) }}">
                                     @csrf
                                     <button type="submit"
-                                        class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                        class="inline-flex cursor-pointer min-h-11 items-center justify-center rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                         {{ $member->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                     </button>
                                 </form>

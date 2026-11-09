@@ -36,7 +36,9 @@
     <title>{{ $title }} · Kas Kelas 1A</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|source-serif-4:400,600" rel="stylesheet">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
 </head>
 
 <body class="bg-canvas font-sans text-black antialiased selection:bg-brand-soft selection:text-brand">
@@ -167,7 +169,8 @@
                     </div>
                     <div class="flex items-center justify-between border-t border-black/5 pt-2.5 text-xs">
                         <a href="{{ route('password.edit') }}"
-                            class="font-medium text-muted transition-colors hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Ganti password</a>
+                            class="font-medium text-muted transition-colors hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Ganti
+                            password</a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit"

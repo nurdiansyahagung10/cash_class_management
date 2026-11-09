@@ -35,13 +35,5 @@ class DatabaseSeeder extends Seeder
             'password' => 'password',
             'email_verified_at' => now(),
         ])->save();
-
-        User::factory()->create([
-            'name' => 'Demo Member',
-            'student_no' => '2024001',
-            'email' => null,
-            'password' => 'password',
-            'must_change_password' => false,
-        ]);
     }
 }

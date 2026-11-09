@@ -226,7 +226,7 @@
                                 class="rounded-full bg-black/5 px-2.5 py-0.5 text-xs font-semibold text-muted">Nonaktif</span>
                         @endif
 
-                        @if ($me->isAdmin() && $member->id !== $me->id)
+                        @if ($me->isAdmin() && !$member->isAdmin() && $member->id !== $me->id)
                             <div class="flex items-center gap-2">
                                 <form method="POST" action="{{ route('members.toggle-staff', $member) }}">
                                     @csrf

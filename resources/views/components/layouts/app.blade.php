@@ -218,7 +218,7 @@
 </body>
 
 </html>
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
     document.addEventListener('DOMContentLoaded', () => {
         const sidebar = document.querySelector('nav[aria-label="Navigasi utama"]');
         const backdrop = document.querySelector('[data-sidebar-backdrop]');

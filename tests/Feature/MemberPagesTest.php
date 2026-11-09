@@ -109,3 +109,35 @@ test('staff can search members by name or student number', function () {
         ->assertSee('Siti Aisyah')
         ->assertDontSee('Budi Pratama');
 });
+
+test('guests see the public ledger without personal data', function () {
+    $staff = User::factory()->create(['name' => 'Siti Bendahara']);
+    app(Ledger::class)->append(LedgerEntryType::PaymentConfirmed, [
+        'amount' => 10000,
+        'name' => 'Budi Rahasia',
+        'student_no' => '2024999',
+        'category' => 'Uang Kas',
+    ], $staff);
+
+    $this->get('/ledger')
+        ->assertOk()
+        ->assertSee('PAYMENT_CONFIRMED')
+        ->assertSee('1 entri valid')
+        ->assertSee('Uang Kas')
+        ->assertSee('Pengurus kelas')
+        ->assertDontSee('Budi Rahasia')
+        ->assertDontSee('2024999')
+        ->assertDontSee('Siti Bendahara')
+        ->assertDontSee(route('ledger.export'));
+});
+
+test('guests cannot find ledger entries by searching a name', function () {
+    app(Ledger::class)->append(LedgerEntryType::PaymentConfirmed, ['amount' => 10000, 'name' => 'Budi Rahasia']);
+
+    $this->get('/ledger?q=Budi')->assertOk()->assertSee('Belum ada entri.');
+});
+
+test('guests cannot export or verify the ledger', function () {
+    $this->get(route('ledger.export'))->assertRedirect(route('login'));
+    $this->post(route('ledger.verify'))->assertRedirect(route('login'));
+});

@@ -31,5 +31,12 @@ class DatabaseSeeder extends Seeder
             'must_change_password' => true,
         ]);
 
+        User::factory()->create([
+            'name' => 'Demo Member',
+            'student_no' => '2024001',
+            'email' => null,
+            'password' => 'password',
+            'must_change_password' => false,
+        ]);
     }
 }

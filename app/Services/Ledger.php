@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\LedgerEntryType;
+use App\Models\LedgerAnchor;
 use App\Models\LedgerEntry;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -157,6 +158,46 @@ class Ledger
         }
 
         return null;
+    }
+
+    /**
+     * Record the chain head as of the end of the day, so a later rebuild of the whole chain stays detectable.
+     * Idempotent per date; returns null while the ledger has no entries for that day yet.
+     */
+    public function anchor(?Carbon $date = null): ?LedgerAnchor
+    {
+        $day = ($date ?? now())->toDateString();
+        $existing = LedgerAnchor::query()->whereDate('anchored_on', $day)->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $head = LedgerEntry::query()->where('created_at', '<=', "{$day} 23:59:59")->orderByDesc('seq')->first();
+
+        if ($head === null) {
+            return null;
+        }
+
+        return LedgerAnchor::create([
+            'anchored_on' => $day,
+            'seq' => $head->seq,
+            'hash' => $head->hash,
+            'entry_count' => LedgerEntry::query()->where('seq', '<=', $head->seq)->count(),
+        ]);
+    }
+
+    /**
+     * Earliest anchor whose entry is gone or now carries a different hash, i.e. the chain was rewritten after it.
+     */
+    public function firstMismatchedAnchor(): ?LedgerAnchor
+    {
+        return LedgerAnchor::query()
+            ->whereNotExists(fn ($query) => $query->from('ledger_entries')
+                ->whereColumn('ledger_entries.seq', 'ledger_anchors.seq')
+                ->whereColumn('ledger_entries.hash', 'ledger_anchors.hash'))
+            ->orderBy('anchored_on')
+            ->first();
     }
 
     private function hashOf(LedgerEntry $entry): string

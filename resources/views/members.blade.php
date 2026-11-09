@@ -3,9 +3,15 @@
 @endphp
 <x-layouts.app title="Verifikasi anggota">
     <header class="flex flex-col gap-2">
-        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-black">Verifikasi anggota</h1>
-        <p class="max-w-2xl font-serif text-base sm:text-lg leading-relaxed text-muted">Staff menambahkan, admin
-            menyetujui. Calon yang tidak diverifikasi dalam 3 hari dihapus otomatis dan tidak pernah masuk ledger.</p>
+        <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2 text-xs font-semibold text-muted">
+                <span class="hover:text-black transition-colors">Kas Kelas 1A</span>
+                <span class="text-black/20">/</span>
+                <span class="text-black">Anggota</span>
+                <span class="text-black/20">·</span>
+                <span class="font-normal">{{ now()->translatedFormat('l, d F Y') }}</span>
+            </div>
+        </div>
     </header>
 
     <section aria-label="Ringkasan" class="grid gap-4 sm:grid-cols-3">
@@ -30,10 +36,12 @@
     </section>
 
     @if (session('import_errors'))
-        <div class="flex flex-col gap-2 rounded-2xl border border-amber/30 bg-[#fffbeb] p-5 text-xs text-[#7a4a00] shadow-xs">
+        <div
+            class="flex flex-col gap-2 rounded-2xl border border-amber/30 bg-[#fffbeb] p-5 text-xs text-[#7a4a00] shadow-xs">
             <div class="flex items-center gap-2 font-bold text-sm text-[#7a4a00]">
                 <svg class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
                 </svg>
                 <span>Catatan baris yang dilewati / gagal saat impor:</span>
             </div>
@@ -109,7 +117,8 @@
                     @foreach ([['name', 'Nama lengkap', 'text', 'Nama sesuai absen'], ['student_no', 'No. absen / NIM', 'text', 'Harus unik'], ['password', 'Password awal (min. 8 karakter)', 'text', 'Diberikan ke anggota']] as [$field, $label, $type, $placeholder])
                         <label class="flex flex-col gap-1.5 text-xs font-semibold text-black">
                             <span>{{ $label }}</span>
-                            <input type="{{ $type }}" name="{{ $field }}" value="{{ $field === 'password' ? '' : old($field) }}"
+                            <input type="{{ $type }}" name="{{ $field }}"
+                                value="{{ $field === 'password' ? '' : old($field) }}"
                                 placeholder="{{ $placeholder }}" required autocomplete="off"
                                 class="min-h-11 rounded-xl border border-black/15 bg-canvas/30 px-3.5 text-sm font-normal text-black placeholder:text-muted/60 transition-all focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20">
                             @error($field)
@@ -122,7 +131,8 @@
                         ke antrean</button>
                 </form>
 
-                <p class="text-xs leading-relaxed text-muted">Siapa pun yang menambahkan calon tidak bisa memverifikasinya
+                <p class="text-xs leading-relaxed text-muted">Siapa pun yang menambahkan calon tidak bisa
+                    memverifikasinya
                     sendiri.</p>
             </section>
 
@@ -141,13 +151,15 @@
                     <a href="{{ route('members.template') }}"
                         class="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white px-2.5 py-1.5 text-xs font-semibold text-brand shadow-2xs hover:bg-canvas transition-colors">
                         <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                         </svg>
                         Unduh Template
                     </a>
                 </div>
 
-                <form method="POST" action="{{ route('members.import') }}" enctype="multipart/form-data" class="flex flex-col gap-4">
+                <form method="POST" action="{{ route('members.import') }}" enctype="multipart/form-data"
+                    class="flex flex-col gap-4">
                     @csrf
                     <label class="flex flex-col gap-1.5 text-xs font-semibold text-black">
                         <span>Pilih file (.xlsx, .xls, .csv)</span>
@@ -164,7 +176,8 @@
                     </button>
                 </form>
 
-                <p class="text-xs leading-relaxed text-muted">Baris dengan NIM yang sudah terdaftar akan otomatis dilewati dan dilaporkan.</p>
+                <p class="text-xs leading-relaxed text-muted">Baris dengan NIM yang sudah terdaftar akan otomatis
+                    dilewati dan dilaporkan.</p>
             </section>
         </div>
     </div>
@@ -176,7 +189,8 @@
                 ({{ $users->count() }})</h2>
 
             <form method="GET" action="{{ route('members.index') }}" class="flex items-center gap-2">
-                <input type="search" name="q" value="{{ $search ?? '' }}" placeholder="Cari nama atau No. absen..."
+                <input type="search" name="q" value="{{ $search ?? '' }}"
+                    placeholder="Cari nama atau No. absen..."
                     class="min-h-11 rounded-xl border border-black/15 bg-canvas/30 px-3.5 text-xs placeholder:text-muted/60 transition-all focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20">
                 <button type="submit"
                     class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Cari</button>
@@ -191,8 +205,8 @@
             @forelse ($users as $member)
                 <div
                     class="flex flex-wrap items-center justify-between gap-4 px-6 py-4 hover:bg-black/[0.015] transition-colors">
-                    <div class="flex items-center gap-3.5">
-                        <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft font-mono text-xs font-bold text-brand border border-brand/20"
+                    <div class="flex items-center gap-4">
+                        <div class="inline-flex min-w-16 shrink-0 items-center justify-center rounded-xl bg-brand-soft px-2.5 py-1.5 font-mono text-xs font-bold text-brand border border-brand/20 tabular-nums"
                             aria-hidden="true">
                             {{ $member->student_no ?? '—' }}
                         </div>
@@ -208,12 +222,11 @@
                             <span
                                 class="rounded-full bg-[#dcfce7] px-2.5 py-0.5 text-xs font-semibold text-[#14532d] border border-[#bbf7d0]">Aktif</span>
                         @else
-                            <span class="rounded-full bg-black/5 px-2.5 py-0.5 text-xs font-semibold text-muted">Nonaktif</span>
+                            <span
+                                class="rounded-full bg-black/5 px-2.5 py-0.5 text-xs font-semibold text-muted">Nonaktif</span>
                         @endif
 
                         @if ($me->isAdmin() && $member->id !== $me->id)
-
-
                             <div class="flex items-center gap-2">
                                 <form method="POST" action="{{ route('members.toggle-staff', $member) }}">
                                     @csrf

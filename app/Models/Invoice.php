@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * `status` is a cache of the ledger (unpaid/paid); PAYMENT_CONFIRMED in the ledger is the truth.
+ * `status` is a cache of the ledger (unpaid/partial/paid); PAYMENT_CONFIRMED in the ledger is the truth.
  */
 #[Fillable(['user_id', 'billing_period_id', 'amount', 'status'])]
 class Invoice extends Model
@@ -21,6 +21,63 @@ class Invoice extends Model
     public function isPaid(): bool
     {
         return $this->status === 'paid';
+    }
+
+    public function isPartial(): bool
+    {
+        return $this->status === 'partial';
+    }
+
+    public function paidAmount(): int
+    {
+        if ($this->isPaid()) {
+            return (int) $this->amount;
+        }
+
+        if ($this->relationLoaded('payments')) {
+            return min((int) $this->amount, (int) $this->payments->where('status', 'paid')->sum('amount'));
+        }
+
+        return min((int) $this->amount, (int) $this->payments()->where('status', 'paid')->sum('amount'));
+    }
+
+    public function remainingAmount(): int
+    {
+        return max(0, (int) $this->amount - $this->paidAmount());
+    }
+
+    public function isOverdue(): bool
+    {
+        return ! $this->isPaid()
+            && $this->period !== null
+            && $this->period->due_date->endOfDay()->isPast();
+    }
+
+    public function overdueDays(): int
+    {
+        if (! $this->isOverdue()) {
+            return 0;
+        }
+
+        return max(1, (int) $this->period->due_date->startOfDay()->diffInDays(now()->startOfDay()));
+    }
+
+    public function canInstallment(): bool
+    {
+        return ! $this->isPaid() && ! $this->isOverdue();
+    }
+
+    public function syncStatusFromPayments(): void
+    {
+        $paid = (int) $this->payments()->where('status', 'paid')->sum('amount');
+
+        $status = match (true) {
+            $paid >= (int) $this->amount => 'paid',
+            $paid > 0 => 'partial',
+            default => 'unpaid',
+        };
+
+        $this->update(['status' => $status]);
     }
 
     /**

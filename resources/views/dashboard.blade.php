@@ -105,48 +105,7 @@
     </section>
 
     {{-- Kalender kas bulanan --}}
-    <section aria-labelledby="kalender-kas-heading" class="flex flex-col gap-4 rounded-2xl border border-line bg-white p-5 shadow-xs sm:p-6">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex flex-col gap-0.5">
-                <h2 id="kalender-kas-heading" class="text-base font-bold text-black">Kalender kas · {{ $cashCalendar['month']->translatedFormat('F Y') }}</h2>
-                <p class="text-xs text-muted">
-                    Masuk <span class="font-semibold text-[#14532d] tabular-nums">+Rp{{ number_format($cashCalendar['totalIn'], 0, ',', '.') }}</span>
-                    · Keluar <span class="font-semibold text-[#8f1d0e] tabular-nums">-Rp{{ number_format($cashCalendar['totalOut'], 0, ',', '.') }}</span>
-                </p>
-            </div>
-            <nav aria-label="Navigasi bulan" class="flex items-center gap-1.5">
-                <a href="{{ route('dashboard', ['bulan' => $cashCalendar['month']->copy()->subMonth()->format('Y-m')]) }}" aria-label="Bulan sebelumnya" class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-line text-sm font-semibold transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">&larr;</a>
-                <a href="{{ route('dashboard') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-3.5 text-xs font-semibold transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Hari ini</a>
-                <a href="{{ route('dashboard', ['bulan' => $cashCalendar['month']->copy()->addMonth()->format('Y-m')]) }}" aria-label="Bulan berikutnya" class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-line text-sm font-semibold transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">&rarr;</a>
-            </nav>
-        </div>
-
-        <div class="grid grid-cols-7 gap-px overflow-hidden rounded-xl border border-line bg-black/[0.08]" role="grid">
-            @foreach (['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'] as $dayName)
-                <div role="columnheader" class="bg-canvas py-2.5 text-center text-[11px] font-semibold text-muted">{{ $dayName }}</div>
-            @endforeach
-
-            @foreach ($cashCalendar['weeks'] as $week)
-                @foreach ($week as $cell)
-                    @if ($cell === null)
-                        <div class="min-h-14 bg-canvas/60 sm:min-h-20"></div>
-                    @else
-                        <div role="gridcell" @if ($cell['isToday']) aria-current="date" @endif
-                             title="{{ \Illuminate\Support\Carbon::parse($cell['date'])->translatedFormat('d F Y') }}: masuk Rp{{ number_format($cell['in'], 0, ',', '.') }}, keluar Rp{{ number_format($cell['out'], 0, ',', '.') }}"
-                             class="flex min-h-14 flex-col gap-0.5 bg-white p-1.5 transition-colors sm:min-h-20 sm:p-2 {{ $cell['in'] || $cell['out'] ? 'bg-brand-soft/30' : '' }} {{ $cell['isToday'] ? 'ring-1 ring-inset ring-brand' : '' }}">
-                            <span class="flex size-5 items-center justify-center rounded-full text-[11px] font-semibold sm:size-6 sm:text-xs {{ $cell['isToday'] ? 'bg-brand text-white shadow-xs' : 'text-black' }}">{{ $cell['day'] }}</span>
-                            @if ($cell['in'])
-                                <span class="truncate text-[10px] font-semibold text-[#14532d] sm:text-[11px] tabular-nums">+{{ number_format($cell['in'] / 1000, 0, ',', '.') }}k</span>
-                            @endif
-                            @if ($cell['out'])
-                                <span class="truncate text-[10px] font-semibold text-[#8f1d0e] sm:text-[11px] tabular-nums">-{{ number_format($cell['out'] / 1000, 0, ',', '.') }}k</span>
-                            @endif
-                        </div>
-                    @endif
-                @endforeach
-            @endforeach
-        </div>
-    </section>
+    <x-cash-calendar :calendar="$cashCalendar" />
 
     {{-- Role Specific Content --}}
     @if ($user->isAdmin())
@@ -193,7 +152,10 @@
         </nav>
     @elseif ($user->canManageMembers())
         <nav aria-label="Aksi pengelola" class="flex flex-wrap gap-3">
-            <a href="{{ route('members.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-4 text-xs sm:text-sm font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+            <a href="{{ route('reports.payments') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-4 text-xs sm:text-sm font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                Laporan & Bantu Bayar Siswa
+            </a>
+            <a href="{{ route('members.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-white px-4 text-xs sm:text-sm font-semibold text-black shadow-xs transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                 Lihat antrean anggota ({{ $pendingMembers }})
             </a>
             <a href="{{ route('periods.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-white px-4 text-xs sm:text-sm font-semibold text-black shadow-xs transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
@@ -203,6 +165,55 @@
                 Kategori tagihan
             </a>
         </nav>
+
+        {{-- Tagihan Kas Pribadi Staff (Bendahara) --}}
+        @if ($unpaidInvoices->isNotEmpty())
+            <section aria-labelledby="tagihan-kas-staff" class="flex flex-col rounded-2xl border border-line bg-white shadow-xs">
+                <div class="border-b border-line px-5 py-4">
+                    <h2 id="tagihan-kas-staff" class="text-base font-bold text-black">Tagihan kas pribadimu</h2>
+                    <p class="text-xs text-muted">Sebagai bendahara/staff kelas, Anda juga memiliki kewajiban iuran kas kelas.</p>
+                </div>
+                <div class="divide-y divide-black/5">
+                    @foreach ($unpaidInvoices as $invoice)
+                        <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-4 hover:bg-black/[0.02] transition-colors">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <p class="font-semibold text-sm text-black">{{ $invoice->period->title }}</p>
+                                    @if ($invoice->period->category)
+                                        <span class="rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-semibold text-brand border border-brand/20">
+                                            {{ $invoice->period->category->name }}
+                                        </span>
+                                    @endif
+                                    @if ($invoice->isPartial())
+                                        <span class="rounded-full bg-[#fff1d6] px-2 py-0.5 text-[10px] font-semibold text-[#7a4a00] border border-[#fed7aa]">
+                                            Menyicil
+                                        </span>
+                                    @endif
+                                    @if ($invoice->isOverdue())
+                                        <span class="rounded-full bg-[#fde4e0] px-2 py-0.5 text-[10px] font-semibold text-[#8f1d0e] border border-[#fecaca]">
+                                            Lewat Tenggat
+                                        </span>
+                                    @endif
+                                </div>
+                                <p class="text-xs text-muted">
+                                    Jatuh tempo {{ $invoice->period->due_date->format('d M Y') }}
+                                    @if ($invoice->isPartial())
+                                        · Terbayar Rp{{ number_format($invoice->paidAmount(), 0, ',', '.') }} dari Rp{{ number_format($invoice->amount, 0, ',', '.') }}
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm font-bold text-black tabular-nums">Rp{{ number_format($invoice->remainingAmount(), 0, ',', '.') }}</span>
+                                <a href="{{ route('payments.create', $invoice) }}"
+                                   class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-4 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                    {{ $invoice->isPartial() ? 'Lanjut Bayar' : 'Bayar Kas' }}
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+        @endif
     @else
         <div class="grid gap-6 xl:grid-cols-2">
             <section aria-labelledby="tagihan-belum-lunas" class="flex flex-col rounded-2xl border border-line bg-white shadow-xs">
@@ -214,21 +225,36 @@
                     @forelse ($unpaidInvoices as $invoice)
                         <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-4 hover:bg-black/[0.02] transition-colors">
                             <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-2">
+                                <div class="flex flex-wrap items-center gap-2">
                                     <p class="font-semibold text-sm text-black">{{ $invoice->period->title }}</p>
                                     @if ($invoice->period->category)
                                         <span class="rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-semibold text-brand border border-brand/20">
                                             {{ $invoice->period->category->name }}
                                         </span>
                                     @endif
+                                    @if ($invoice->isPartial())
+                                        <span class="rounded-full bg-[#fff1d6] px-2 py-0.5 text-[10px] font-semibold text-[#7a4a00] border border-[#fed7aa]">
+                                            Menyicil
+                                        </span>
+                                    @endif
+                                    @if ($invoice->isOverdue())
+                                        <span class="rounded-full bg-[#fde4e0] px-2 py-0.5 text-[10px] font-semibold text-[#8f1d0e] border border-[#fecaca]">
+                                            Lewat Tenggat
+                                        </span>
+                                    @endif
                                 </div>
-                                <p class="text-xs text-muted">Jatuh tempo {{ $invoice->period->due_date->format('d M Y') }}</p>
+                                <p class="text-xs text-muted">
+                                    Jatuh tempo {{ $invoice->period->due_date->format('d M Y') }}
+                                    @if ($invoice->isPartial())
+                                        · Terbayar Rp{{ number_format($invoice->paidAmount(), 0, ',', '.') }} dari Rp{{ number_format($invoice->amount, 0, ',', '.') }}
+                                    @endif
+                                </p>
                             </div>
                             <div class="flex items-center gap-3">
-                                <span class="text-sm font-bold text-black tabular-nums">Rp{{ number_format($invoice->amount, 0, ',', '.') }}</span>
+                                <span class="text-sm font-bold text-black tabular-nums">Rp{{ number_format($invoice->remainingAmount(), 0, ',', '.') }}</span>
                                 <a href="{{ route('payments.create', $invoice) }}"
                                    class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-4 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                                    Bayar
+                                    {{ $invoice->isPartial() ? 'Lanjut Bayar' : 'Bayar' }}
                                 </a>
                             </div>
                         </div>

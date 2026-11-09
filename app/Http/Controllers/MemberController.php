@@ -171,7 +171,7 @@ class MemberController extends Controller
             $status .= ' ('.count($result['skipped']).' baris dilewati/gagal).';
         }
 
-        $redirect = back()->with('status', $status);
+        $redirect = redirect()->route('members.index')->with('status', $status);
         if (! empty($result['skipped'])) {
             $redirect->with('import_errors', $result['skipped']);
         }

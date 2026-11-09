@@ -7,8 +7,8 @@ use Illuminate\Support\ViewErrorBag;
 
 uses(RefreshDatabase::class);
 
-test('guests are sent to the login page', function () {
-    $this->get('/')->assertRedirect(route('login'));
+test('guests see the public dashboard instead of the login page', function () {
+    $this->get('/')->assertOk()->assertSee('Masuk');
 });
 
 test('a member logs in with student number and password', function () {

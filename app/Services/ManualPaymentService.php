@@ -25,18 +25,37 @@ class ManualPaymentService
                 'reviewed_at' => now(),
                 'paid_at' => now(),
             ]);
-            $payment->invoice()->update(['status' => 'paid']);
-            $categoryName = $payment->category?->name ?? $payment->invoice?->period?->category?->name ?? 'Kas Kelas';
+
+            $invoice = $payment->invoice()->with(['user', 'period.category'])->firstOrFail();
+            $invoice->syncStatusFromPayments();
+
+            $categoryName = $payment->category?->name ?? $invoice->period?->category?->name ?? 'Kas Kelas';
+            $isLate = $invoice->period !== null && $invoice->period->due_date->endOfDay()->isPast();
+
+            $payload = [
+                'amount' => $payment->amount,
+                'order_id' => $payment->order_id,
+                'invoice_id' => $payment->invoice_id,
+                'user_id' => $invoice->user_id,
+                'name' => $invoice->user->name,
+                'student_no' => $invoice->user->student_no,
+                'category' => $categoryName,
+                'period' => $invoice->period?->title,
+                'period_title' => $invoice->period?->title,
+                'invoice_status' => $invoice->status,
+                'paid_total' => $invoice->paidAmount(),
+                'remaining_amount' => $invoice->remainingAmount(),
+                'is_late' => $isLate,
+            ];
+
+            if (! empty($payment->gateway_response['paid_by_staff_name'])) {
+                $payload['paid_by_staff_id'] = $payment->gateway_response['paid_by_staff_id'] ?? null;
+                $payload['paid_by_staff_name'] = $payment->gateway_response['paid_by_staff_name'];
+            }
 
             $this->ledger->append(
                 LedgerEntryType::PaymentConfirmed,
-                [
-                    'amount' => $payment->amount,
-                    'order_id' => $payment->order_id,
-                    'invoice_id' => $payment->invoice_id,
-                    'category' => $categoryName,
-                    'period' => $payment->invoice?->period?->title,
-                ],
+                $payload,
                 $reviewer,
                 'payments',
                 $payment->id,

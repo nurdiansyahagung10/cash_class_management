@@ -7,6 +7,7 @@ use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -22,6 +23,27 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->role === UserRole::Staff;
+    }
+
+    public function isPayable(): bool
+    {
+        return (bool) ($this->is_active ?? true) && ! $this->isAdmin();
+    }
+
+    /**
+     * Scope members who are obliged to pay class cash (excludes admin).
+     *
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
+    public function scopePayableMembers($query)
+    {
+        return $query->where('is_active', true)->where('role', '!=', UserRole::Admin);
     }
 
     public function canManageMembers(): bool

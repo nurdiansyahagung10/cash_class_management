@@ -1,9 +1,11 @@
 <?php
 
-test('the application redirects guests to the login page', function () {
-    $response = $this->get('/');
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-    $response->assertRedirect(route('login'));
+uses(RefreshDatabase::class);
+
+test('the application shows guests the public dashboard', function () {
+    $this->get('/')->assertOk()->assertSee('Kas Kelas 1A');
 });
 
 test('the login page renders', function () {

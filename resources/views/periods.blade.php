@@ -1,8 +1,14 @@
 <x-layouts.app title="Periode tagihan">
     <header class="flex flex-col gap-2">
-        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-black">Periode tagihan</h1>
-        <p class="max-w-2xl font-serif text-base sm:text-lg leading-relaxed text-muted">Satu periode membuat satu
-            tagihan untuk setiap anggota aktif dan satu entri INVOICE_CREATED di ledger.</p>
+        <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2 text-xs font-semibold text-muted">
+                <span class="hover:text-black transition-colors">Kas Kelas 1A</span>
+                <span class="text-black/20">/</span>
+                <span class="text-black">Tagihan</span>
+                <span class="text-black/20">·</span>
+                <span class="font-normal">{{ now()->translatedFormat('l, d F Y') }}</span>
+            </div>
+        </div>
     </header>
 
     <div class="flex flex-wrap items-start gap-6">
@@ -58,7 +64,8 @@
                         <div class="flex min-w-0 flex-1 basis-48 flex-col gap-1">
                             <div class="flex flex-wrap items-center gap-2">
                                 <a href="{{ route('periods.show', $period) }}"
-                                    class="text-[15px] font-bold text-brand hover:underline">{{ $period->title }} &rarr;</a>
+                                    class="text-[15px] font-bold text-brand hover:underline">{{ $period->title }}
+                                    &rarr;</a>
                                 <span
                                     class="rounded-full bg-brand-soft px-2.5 py-0.5 text-[11px] font-semibold text-brand border border-brand/20">
                                     {{ $period->category->name ?? 'Uang Kas' }}
@@ -81,7 +88,8 @@
                                         Dinamis</span>
                                 @endif
                             </div>
-                            <span class="text-xs text-muted">Jatuh tempo {{ $period->due_date->format('d M Y') }}</span>
+                            <span class="text-xs text-muted">Jatuh tempo
+                                {{ $period->due_date->format('d M Y') }}</span>
                         </div>
                         <span
                             class="text-sm font-bold text-black tabular-nums">Rp{{ number_format($period->amount, 0, ',', '.') }}</span>
@@ -132,8 +140,9 @@
                                 </option>
                             @endforeach
                         </select>
-                        @error('category_id')<span role="alert"
-                        class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>@enderror
+                        @error('category_id')
+                            <span role="alert" class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>
+                        @enderror
                     </label>
 
                     <label class="flex flex-col gap-1 text-xs text-muted">
@@ -141,8 +150,9 @@
                         <input type="text" name="new_category" value="{{ old('new_category') }}"
                             placeholder="Ketik nama kategori baru jika belum ada"
                             class="min-h-10 rounded-xl border border-black/15 bg-white px-3 text-xs text-black placeholder:text-muted/60 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20">
-                        @error('new_category')<span role="alert"
-                        class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>@enderror
+                        @error('new_category')
+                            <span role="alert" class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>
+                        @enderror
                     </label>
                 </div>
 
@@ -179,15 +189,19 @@
                                         [{{ $tag }}] {{ $item->title }}
                                     </option>
                                 @endforeach
-                                <option value="" @selected(old('existing_qris') === '')>+ Upload / Masukkan QRIS Baru</option>
+                                <option value="" @selected(old('existing_qris') === '')>+ Upload / Masukkan QRIS Baru
+                                </option>
                             </select>
-                            <span class="text-[11px] font-medium text-[#14532d]">Dapat langsung memakai QRIS dari tagihan
+                            <span class="text-[11px] font-medium text-[#14532d]">Dapat langsung memakai QRIS dari
+                                tagihan
                                 sebelumnya atau pilih opsi baru di bawah.</span>
                         @else
-                            <span class="text-xs text-muted">Belum ada QRIS tersimpan. Masukkan QRIS baru di bawah.</span>
+                            <span class="text-xs text-muted">Belum ada QRIS tersimpan. Masukkan QRIS baru di
+                                bawah.</span>
                         @endif
-                        @error('existing_qris')<span role="alert"
-                        class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>@enderror
+                        @error('existing_qris')
+                            <span role="alert" class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>
+                        @enderror
                     </label>
 
                     <div id="new_qris_container" class="flex flex-col gap-3 border-t border-line/60 pt-3">
@@ -204,7 +218,8 @@
                                     Upload File
                                 </button>
                                 <button type="button" role="tab" id="tab_payload" aria-selected="false"
-                                    aria-controls="panel_payload" tabindex="-1" onclick="switchQrisMethod('payload')"
+                                    aria-controls="panel_payload" tabindex="-1"
+                                    onclick="switchQrisMethod('payload')"
                                     class="qris-tab flex min-h-9 items-center justify-center rounded-lg px-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-brand text-muted hover:text-black">
                                     String DANA
                                 </button>
@@ -227,8 +242,10 @@
                             </label>
                             <span class="text-[11px] text-muted">File gambar dari DANA Bisnis atau bank. Otomatis
                                 dipindai jika didukung browser.</span>
-                            @error('qris_image')<span role="alert"
-                            class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>@enderror
+                            @error('qris_image')
+                                <span role="alert"
+                                    class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>
+                            @enderror
                         </div>
 
                         {{-- Panel 2: String EMVCo / DANA Bisnis --}}
@@ -247,8 +264,10 @@
                             </label>
                             <span class="text-[11px] text-muted">Paste string QRIS dari DANA Bisnis (diawali 000201)
                                 untuk nominal terkunci otomatis.</span>
-                            @error('qris_payload')<span role="alert"
-                            class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>@enderror
+                            @error('qris_payload')
+                                <span role="alert"
+                                    class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>
+                            @enderror
                         </div>
 
                         {{-- Panel 3: Link URL --}}
@@ -256,14 +275,16 @@
                             class="qris-panel hidden flex flex-col gap-1">
                             <label class="flex flex-col gap-1 text-xs font-semibold text-black">
                                 <span>Tautan URL Gambar QRIS</span>
-                                <input type="text" id="qris_url_input" name="qris_url" value="{{ old('qris_url') }}"
-                                    placeholder="https://.../qris.png"
+                                <input type="text" id="qris_url_input" name="qris_url"
+                                    value="{{ old('qris_url') }}" placeholder="https://.../qris.png"
                                     class="min-h-11 rounded-xl border border-black/15 bg-white px-3 text-xs font-normal focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20">
                             </label>
                             <span class="text-[11px] text-muted">URL gambar QRIS online yang dapat diakses
                                 publik.</span>
-                            @error('qris_url')<span role="alert"
-                            class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>@enderror
+                            @error('qris_url')
+                                <span role="alert"
+                                    class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -318,11 +339,13 @@
                         });
                     });
 
-                    document.getElementById('qris_image_input')?.addEventListener('change', async function (e) {
+                    document.getElementById('qris_image_input')?.addEventListener('change', async function(e) {
                         const file = e.target.files[0];
                         if (!file || !('BarcodeDetector' in window)) return;
                         try {
-                            const detector = new BarcodeDetector({ formats: ['qr_code'] });
+                            const detector = new BarcodeDetector({
+                                formats: ['qr_code']
+                            });
                             const bitmap = await createImageBitmap(file);
                             const barcodes = await detector.detect(bitmap);
                             if (barcodes.length > 0 && barcodes[0].rawValue.startsWith('000201')) {

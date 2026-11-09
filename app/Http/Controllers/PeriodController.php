@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\LedgerEntryType;
+use App\Enums\UserRole;
 use App\Models\BillingPeriod;
 use App\Models\Category;
 use App\Models\User;
 use App\Services\Ledger;
+use App\Services\PaymentReminder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -52,27 +54,40 @@ class PeriodController extends Controller
             'search' => $search,
             'statusFilter' => $status,
             'categories' => Category::orderBy('name')->get(),
-            'activeMembers' => User::where('is_active', true)->count(),
+            'activeMembers' => User::payableMembers()->count(),
             'latestQrisUrl' => $existingQrisList->first()?->qris_url,
             'existingQrisList' => $existingQrisList,
         ]);
     }
 
-    public function show(BillingPeriod $period, Request $request): View
+    public function show(BillingPeriod $period, Request $request, PaymentReminder $reminder): View
     {
         abort_unless($request->user()->canManageMembers(), 403);
 
-        $filter = $request->query('status');
+        $filter = (string) $request->query('status', '');
 
-        $invoices = $period->invoices()
-            ->with(['user', 'payments' => fn ($q) => $q->latest('id')])
-            ->when(in_array($filter, ['paid', 'unpaid'], true), fn ($q) => $q->where('status', $filter))
+        $allInvoices = $period->invoices()
+            ->whereHas('user', fn ($q) => $q->where('role', '!=', UserRole::Admin))
+            ->with(['user', 'period', 'payments' => fn ($q) => $q->latest('id')])
             ->get()
-            ->sortBy(fn ($inv) => (int) ($inv->user->student_no ?? 999));
+            ->sortBy(fn ($inv) => (int) ($inv->user->student_no ?? 999))
+            ->values();
 
-        $totalCount = $period->invoices()->count();
-        $paidCount = $period->invoices()->where('status', 'paid')->count();
+        $unpaidInvoices = $allInvoices->filter(fn ($inv) => ! $inv->isPaid())->values();
+
+        $invoices = match ($filter) {
+            'paid' => $allInvoices->filter(fn ($inv) => $inv->isPaid())->values(),
+            'partial' => $allInvoices->filter(fn ($inv) => $inv->isPartial())->values(),
+            'unpaid' => $unpaidInvoices,
+            'overdue' => $allInvoices->filter(fn ($inv) => $inv->isOverdue())->values(),
+            default => $allInvoices,
+        };
+
+        $totalCount = $allInvoices->count();
+        $paidCount = $allInvoices->where('status', 'paid')->count();
+        $partialCount = $allInvoices->where('status', 'partial')->count();
         $unpaidCount = $totalCount - $paidCount;
+        $collectedAmount = (int) $allInvoices->sum(fn ($inv) => $inv->paidAmount());
 
         return view('periods.show', [
             'period' => $period->load('category'),
@@ -80,9 +95,12 @@ class PeriodController extends Controller
             'filter' => $filter,
             'totalCount' => $totalCount,
             'paidCount' => $paidCount,
+            'partialCount' => $partialCount,
             'unpaidCount' => $unpaidCount,
             'totalAmount' => $totalCount * $period->amount,
-            'collectedAmount' => $paidCount * $period->amount,
+            'collectedAmount' => $collectedAmount,
+            'unpaidInvoices' => $unpaidInvoices,
+            'reminder' => $reminder,
         ]);
     }
 
@@ -137,7 +155,7 @@ class PeriodController extends Controller
         $period = DB::transaction(function () use ($validated, $request, $ledger) {
             $period = BillingPeriod::create([...$validated, 'created_by' => $request->user()->id]);
 
-            $members = User::where('is_active', true)->pluck('id');
+            $members = User::payableMembers()->pluck('id');
             $period->invoices()->createMany(
                 $members->map(fn (int $id) => ['user_id' => $id, 'amount' => $period->amount])->all()
             );

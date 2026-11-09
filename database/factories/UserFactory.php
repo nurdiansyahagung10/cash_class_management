@@ -33,6 +33,7 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'student_no' => fake()->unique()->numerify('########'),
             'role' => UserRole::User,
+            'is_active' => true,
         ];
     }
 

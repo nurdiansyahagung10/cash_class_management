@@ -43,6 +43,24 @@ test('staff dashboard shows payment review and member verification queue statist
         ->assertSee('1');
 });
 
+test('staff dashboard shows own unpaid invoice and quick payment button', function () {
+    $staff = User::factory()->staff()->create(['name' => 'Bendahara 1']);
+    $period = BillingPeriod::factory()->create(['title' => 'Kas Minggu 1']);
+    $staffInvoice = Invoice::factory()->create([
+        'user_id' => $staff->id,
+        'billing_period_id' => $period->id,
+        'amount' => 15000,
+        'status' => 'unpaid',
+    ]);
+
+    $this->actingAs($staff)->get('/')
+        ->assertOk()
+        ->assertSee('Tagihan kas pribadimu')
+        ->assertSee('Kas Minggu 1')
+        ->assertSee('Bayar Kas')
+        ->assertSee(route('payments.create', $staffInvoice));
+});
+
 test('admin dashboard shows class collection and management statistics', function () {
     $admin = User::factory()->admin()->create();
     $period = BillingPeriod::factory()->create();
@@ -124,4 +142,19 @@ test('dashboard displays reversed status for reversed payments in history', func
     $this->actingAs($user)->get('/')
         ->assertOk()
         ->assertSee('Dibatalkan');
+});
+
+test('guests see the public cash summary without member data', function () {
+    $user = User::factory()->create(['name' => 'Budi Rahasia']);
+    $period = BillingPeriod::factory()->create(['title' => 'Kas Desember']);
+    Invoice::factory()->create(['user_id' => $user->id, 'billing_period_id' => $period->id, 'amount' => 15000]);
+    app(Ledger::class)->append(LedgerEntryType::PaymentConfirmed, ['amount' => 20000], $user);
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('Rp20.000')
+        ->assertSee('Utuh')
+        ->assertSee(route('login'))
+        ->assertDontSee('Budi Rahasia')
+        ->assertDontSee('Kas Desember');
 });

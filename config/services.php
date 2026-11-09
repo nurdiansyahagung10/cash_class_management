@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'notion' => [
+        'token' => env('NOTION_TOKEN'),
+        'ledger_database_id' => env('NOTION_LEDGER_DATABASE_ID'),
+        'version' => env('NOTION_VERSION', '2022-06-28'),
+    ],
+
 ];

@@ -19,11 +19,13 @@ class LedgerController extends Controller
     public function __invoke(Request $request, Ledger $ledger): View
     {
         $search = trim((string) $request->query('q'));
+        $isGuest = $request->user() === null;
 
         $entries = LedgerEntry::query()
             ->with('actor')
             ->when($search !== '', fn ($query) => $query->where(
-                fn ($q) => $q->where('payload', 'like', "%{$search}%")
+                // Guests may not search payloads: matching a name would reveal who paid.
+                fn ($q) => $q->when(! $isGuest, fn ($q) => $q->orWhere('payload', 'like', "%{$search}%"))
                     ->orWhere('type', 'like', "%{$search}%")
                     ->orWhere('hash', 'like', "{$search}%")
             ))
@@ -39,6 +41,7 @@ class LedgerController extends Controller
         return view('ledger', [
             'entries' => $entries,
             'search' => $search,
+            'isGuest' => $isGuest,
             'total' => LedgerEntry::count(),
             'brokenSeq' => $ledger->firstBrokenSeq(),
             'reversedSeqs' => $reversedSeqs,
@@ -90,7 +93,7 @@ class LedgerController extends Controller
                     $payment = Payment::with('invoice')->find($entry->ref_id);
                     if ($payment) {
                         $payment->update(['status' => 'reversed']);
-                        $payment->invoice?->update(['status' => 'unpaid']);
+                        $payment->invoice?->syncStatusFromPayments();
                     }
                 }
             } elseif ($entry->type === LedgerEntryType::ExpenseApproved) {

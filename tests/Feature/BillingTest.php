@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('admin creates a period, invoicing every active member and writing to the ledger', function () {
+test('admin creates a period, invoicing every active member except admin and writing to the ledger', function () {
     $admin = User::factory()->admin()->create();
     User::factory()->count(2)->create();
     User::factory()->create(['is_active' => false]);
@@ -25,8 +25,9 @@ test('admin creates a period, invoicing every active member and writing to the l
     $period = BillingPeriod::sole();
     $entry = LedgerEntry::sole();
 
-    expect($period->invoices()->count())->toBe(3)
-        ->and(Invoice::where('status', 'unpaid')->count())->toBe(3)
+    expect($period->invoices()->count())->toBe(2)
+        ->and(Invoice::where('status', 'unpaid')->count())->toBe(2)
+        ->and($period->invoices()->where('user_id', $admin->id)->exists())->toBeFalse()
         ->and($entry->type)->toBe(LedgerEntryType::InvoiceCreated)
         ->and($entry->ref_id)->toBe($period->id)
         ->and(app(Ledger::class)->firstBrokenSeq())->toBeNull();

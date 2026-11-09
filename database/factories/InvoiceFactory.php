@@ -31,4 +31,9 @@ class InvoiceFactory extends Factory
     {
         return $this->state(fn (array $attributes) => ['status' => 'paid']);
     }
+
+    public function partial(): static
+    {
+        return $this->state(fn (array $attributes) => ['status' => 'partial']);
+    }
 }

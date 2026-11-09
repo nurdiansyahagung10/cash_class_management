@@ -18,11 +18,13 @@ class ExpenseController extends Controller
     public function index(Request $request, Ledger $ledger): View
     {
         $search = trim((string) $request->query('q'));
+        $isGuest = $request->user() === null;
 
         $expenses = Expense::with('creator')
             ->when($search !== '', fn ($query) => $query->where(
+                // Guests may not search notes: a match would reveal text they are not shown.
                 fn ($q) => $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('notes', 'like', "%{$search}%")
+                    ->when(! $isGuest, fn ($q) => $q->orWhere('notes', 'like', "%{$search}%"))
             ))
             ->latest('spent_at')
             ->latest('id')
@@ -34,6 +36,7 @@ class ExpenseController extends Controller
             'totalExpense' => Expense::sum('amount'),
             'balance' => $ledger->balance(),
             'search' => $search,
+            'isGuest' => $isGuest,
         ]);
     }
 

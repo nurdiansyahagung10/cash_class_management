@@ -206,7 +206,7 @@
                 <div
                     class="flex flex-wrap items-center justify-between gap-4 px-6 py-4 hover:bg-black/[0.015] transition-colors">
                     <div class="flex items-center gap-4">
-                        <div class="inline-flex min-w-16 shrink-0 items-center justify-center rounded-xl bg-brand-soft px-2.5 py-1.5 font-mono text-xs font-bold text-brand border border-brand/20 tabular-nums"
+                        <div class="inline-flex min-w-16 shrink-0 items-center justify-center rounded-lg  px-2.5 py-1 font-mono text-xs font-bold text-muted tabular-nums"
                             aria-hidden="true">
                             {{ $member->student_no ?? '—' }}
                         </div>

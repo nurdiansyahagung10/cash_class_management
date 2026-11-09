@@ -323,25 +323,29 @@
         </section>
 
         <section aria-labelledby="heading-pengesahan" class="rounded-2xl border border-line bg-white p-6 shadow-xs">
-            <h3 id="heading-pengesahan" class="text-base font-bold text-black mb-6">Lembar Pengesahan Laporan Kas Kelas</h3>
+            <h3 id="heading-pengesahan" class="text-base font-bold text-black mb-6">Lembar Pengesahan Laporan Kas
+                Kelas</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center text-xs">
                 <div class="flex flex-col items-center">
                     <span class="text-muted">Mengetahui,</span>
                     <span class="font-semibold text-black mt-1">{{ $waliKelas ?? 'Wali Kelas 1A' }}</span>
                     <div class="h-16"></div>
-                    <span class="border-t border-black/20 pt-1 font-medium text-black min-w-36">( ........................................ )</span>
+                    <span class="border-t border-black/20 pt-1 font-medium text-black min-w-36">(
+                        ........................................ )</span>
                 </div>
                 <div class="flex flex-col items-center">
                     <span class="text-muted">Menyetujui,</span>
                     <span class="font-semibold text-black mt-1">{{ $ketuaKelas ?? 'Ketua Kelas 1A' }}</span>
                     <div class="h-16"></div>
-                    <span class="border-t border-black/20 pt-1 font-medium text-black min-w-36">( ........................................ )</span>
+                    <span class="border-t border-black/20 pt-1 font-medium text-black min-w-36">(
+                        ........................................ )</span>
                 </div>
                 <div class="flex flex-col items-center">
                     <span class="text-muted">Penyusun,</span>
                     <span class="font-semibold text-black mt-1">{{ $bendaharaKelas ?? 'Bendahara Kelas 1A' }}</span>
                     <div class="h-16"></div>
-                    <span class="border-t border-black/20 pt-1 font-medium text-black min-w-36">( ........................................ )</span>
+                    <span class="border-t border-black/20 pt-1 font-medium text-black min-w-36">(
+                        ........................................ )</span>
                 </div>
             </div>
         </section>

@@ -12,24 +12,29 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $admin = User::factory()->admin()->create([
-            'name' => 'Admin Kelas',
-            'student_no' => 'admin',
+        $admina = User::factory()->admin()->create([
+            'name' => 'Admin 1',
+            'student_no' => 'admin1',
             'email' => null,
             'must_change_password' => true,
         ]);
 
-        $admin->forceFill([
+        $admina->forceFill([
             'password' => 'password',
             'email_verified_at' => now(),
         ])->save();
 
-        User::factory()->staff()->create([
-            'name' => 'Staff Kelas',
-            'student_no' => 'staff',
+        $adminb = User::factory()->admin()->create([
+            'name' => 'Admin 2',
+            'student_no' => 'admin2',
             'email' => null,
             'must_change_password' => true,
         ]);
+
+        $adminb->forceFill([
+            'password' => 'password',
+            'email_verified_at' => now(),
+        ])->save();
 
         User::factory()->create([
             'name' => 'Demo Member',

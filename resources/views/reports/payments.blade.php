@@ -1,14 +1,12 @@
 <x-layouts.app title="Laporan pembayaran uang kas">
     {{-- Header & Kop Laporan Resmi Kas Kelas Sekolah --}}
-    <header class="flex flex-col gap-5 border-b border-line pb-6">
-        <div class="flex flex-col gap-2">
-            <div class="flex items-center gap-2 text-xs font-semibold text-muted">
-                <span class="hover:text-black transition-colors">Kas Kelas 1A</span>
-                <span class="text-black/20">/</span>
-                <span class="text-black">Laporan pembayaran</span>
-                <span class="text-black/20">·</span>
-                <span class="font-normal">{{ now()->translatedFormat('l, d F Y') }}</span>
-            </div>
+    <header class="flex flex-col gap-4 border-b border-line pb-6">
+        <div class="flex items-center gap-2 text-xs font-semibold text-muted">
+            <span class="hover:text-black transition-colors">KK 1A</span>
+            <span class="text-black/20">/</span>
+            <span class="text-black">Pembayaran</span>
+            <span class="text-black/20">·</span>
+            <span class="font-normal">{{ now()->translatedFormat('l, d F Y') }}</span>
         </div>
 
         {{-- Bar Tombol Aksi & Ekspor Dokumen --}}
@@ -20,7 +18,7 @@
                     $tabQuery = request()->except('tab');
                 @endphp
                 <a href="{{ route('reports.payments', array_merge($tabQuery, ['tab' => 'detail'])) }}"
-                    class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all {{ $activeTab === 'detail' ? 'bg-white text-brand shadow-xs border border-line font-bold' : 'text-muted hover:text-black hover:bg-white/60' }}">
+                    class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all md:w-auto w-full {{ $activeTab === 'detail' ? 'bg-white text-brand shadow-xs border border-line font-bold' : 'text-muted hover:text-black hover:bg-white/60' }}">
                     <svg class="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -28,7 +26,7 @@
                     Rincian Tagihan & Cicilan
                 </a>
                 <a href="{{ route('reports.payments', array_merge($tabQuery, ['tab' => 'matrix'])) }}"
-                    class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all {{ $activeTab === 'matrix' ? 'bg-white text-brand shadow-xs border border-line font-bold' : 'text-muted hover:text-black hover:bg-white/60' }}">
+                    class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold md:w-auto w-full transition-all {{ $activeTab === 'matrix' ? 'bg-white text-brand shadow-xs border border-line font-bold' : 'text-muted hover:text-black hover:bg-white/60' }}">
                     <svg class="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -36,7 +34,7 @@
                     Matriks Iuran Siswa (Buku Pembantu)
                 </a>
                 <a href="{{ route('reports.payments', array_merge($tabQuery, ['tab' => 'bku'])) }}"
-                    class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all {{ $activeTab === 'bku' ? 'bg-white text-brand shadow-xs border border-line font-bold' : 'text-muted hover:text-black hover:bg-white/60' }}">
+                    class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold lg:w-auto w-full transition-all {{ $activeTab === 'bku' ? 'bg-white text-brand shadow-xs border border-line font-bold' : 'text-muted hover:text-black hover:bg-white/60' }}">
                     <svg class="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -83,63 +81,136 @@
         </div>
     </header>
 
+
     {{-- Ringkasan Statistik Finansial Kas Kelas --}}
-    <section aria-label="Ringkasan laporan pembayaran" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <article class="flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-xs">
-            <span class="text-[11px] font-semibold uppercase tracking-wider ">Saldo Kas di Tangan</span>
-            <p class="my-1 text-2xl sm:text-3xl font-bold tracking-tight  tabular-nums">
-                Rp{{ number_format($realCashBalance, 0, ',', '.') }}
-            </p>
-            <span class="text-xs text-muted">
-                Kas masuk bersih setelah pengeluaran
-            </span>
-        </article>
+    <section aria-label="Ringkasan laporan pembayaran" class="relative min-w-0">
 
-        <article class="flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-xs">
-            <span class="text-[11px] font-semibold uppercase tracking-wider ">Total Iuran Masuk</span>
-            <p class="my-1 text-2xl sm:text-3xl font-bold tracking-tight  tabular-nums">
-                Rp{{ number_format($totalCollected, 0, ',', '.') }}
-            </p>
-            <span class="text-xs text-muted">
-                <strong class="text-black tabular-nums">{{ $collectionRate }}%</strong> dari target
-                Rp{{ number_format($totalExpected, 0, ',', '.') }}
-            </span>
-        </article>
+        @php
+            $stats = [
+                [
+                    'Saldo Kas di Tangan',
+                    'Rp' . number_format($realCashBalance, 0, ',', '.'),
+                    'Kas masuk bersih setelah pengeluaran',
+                ],
+                [
+                    'Total Iuran Masuk',
+                    'Rp' . number_format($totalCollected, 0, ',', '.'),
+                    $collectionRate . '% dari target Rp' . number_format($totalExpected, 0, ',', '.'),
+                ],
+                [
+                    'Pengeluaran Kas',
+                    'Rp' . number_format($totalExpense, 0, ',', '.'),
+                    'Belanja keperluan kelas terverifikasi',
+                ],
+                [
+                    'Sisa Piutang / Tunggakan',
+                    'Rp' . number_format($totalRemaining, 0, ',', '.'),
+                    $unpaidCount . ' belum bayar · ' . $partialCount . ' menyicil',
+                ],
+                [
+                    'Lewat Jatuh Tempo',
+                    $overdueCount . ' tagihan',
+                    'Tertunggak Rp' . number_format($overdueRemaining, 0, ',', '.') . ' (Cicilan dikunci)',
+                ],
+            ];
+        @endphp
 
-        <article class="flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-xs">
-            <span class="text-[11px] font-semibold uppercase tracking-wider ">Pengeluaran Kas</span>
-            <p class="my-1 text-2xl sm:text-3xl font-bold tracking-tight  tabular-nums">
-                Rp{{ number_format($totalExpense, 0, ',', '.') }}
-            </p>
-            <span class="text-xs text-muted">
-                Belanja keperluan kelas terverifikasi
-            </span>
-        </article>
+        {{-- Carousel Header --}}
+        <div class="mb-4 flex items-center justify-between gap-4">
+            <div>
+                <h2 class="text-sm font-semibold tracking-tight text-black">
+                    Ringkasan Finansial
+                </h2>
+                <p class="mt-1 text-xs text-muted">
+                    Ikhtisar kondisi keuangan kas kelas
+                </p>
+            </div>
 
-        <article class="flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-xs">
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-muted">Sisa Piutang / Tunggakan</span>
-            <p class="my-1 text-2xl sm:text-3xl font-bold tracking-tight text-black tabular-nums">
-                Rp{{ number_format($totalRemaining, 0, ',', '.') }}
-            </p>
-            <span class="text-xs text-muted">
-                {{ $unpaidCount }} belum bayar · {{ $partialCount }} menyicil
-            </span>
-        </article>
+            <div class="flex items-center gap-2">
+                <button type="button"
+                    class="financial-prev flex h-8 w-8 items-center justify-center rounded-full border border-line bg-white text-black transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30"
+                    aria-label="Statistik sebelumnya">
+                    <span aria-hidden="true">&larr;</span>
+                </button>
 
-        <article
-            class="flex flex-col justify-between rounded-2xl border {{ $overdueCount > 0 ? 'border-[#fecaca] bg-[#fff5f5]' : 'border-line bg-white' }} p-5 shadow-xs sm:col-span-2 xl:col-span-1">
-            <span
-                class="text-[11px] font-semibold uppercase tracking-wider {{ $overdueCount > 0 ? 'text-[#8f1d0e]' : 'text-muted' }}">Lewat
-                Jatuh Tempo</span>
-            <p
-                class="my-1 text-2xl sm:text-3xl font-bold tracking-tight {{ $overdueCount > 0 ? 'text-[#8f1d0e]' : 'text-black' }} tabular-nums">
-                {{ $overdueCount }} tagihan
-            </p>
-            <span class="text-xs {{ $overdueCount > 0 ? 'text-[#8f1d0e]' : 'text-muted' }}">
-                Tertunggak Rp{{ number_format($overdueRemaining, 0, ',', '.') }} (Cicilan dikunci)
-            </span>
-        </article>
+                <button type="button"
+                    class="financial-next flex h-8 w-8 items-center justify-center rounded-full border border-line bg-white text-black transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30"
+                    aria-label="Statistik berikutnya">
+                    <span aria-hidden="true">&rarr;</span>
+                </button>
+            </div>
+        </div>
+
+        {{-- Swiper --}}
+        <div class="swiper financial-swiper min-w-0">
+            <div class="swiper-wrapper">
+
+                @foreach ($stats as $index => [$label, $value, $detail])
+                    <div class="swiper-slide !h-auto">
+                        <article
+                            class="flex h-full min-h-32 flex-col justify-between rounded-2xl border p-5 shadow-xs transition-all hover:shadow-sm
+                        {{ $index === 4 && $overdueCount > 0
+                            ? 'border-[#fecaca] bg-[#fff5f5]'
+                            : 'border-line bg-white hover:border-black/20' }}">
+
+                            <h3
+                                class="text-[11px] font-semibold uppercase tracking-wider
+                            {{ $index === 4 && $overdueCount > 0 ? 'text-[#8f1d0e]' : 'text-muted' }}">
+                                {{ $label }}
+                            </h3>
+
+                            <p
+                                class="my-2 break-words text-2xl font-bold tracking-tight tabular-nums sm:text-3xl
+                            {{ $index === 4 && $overdueCount > 0 ? 'text-[#8f1d0e]' : 'text-black' }}">
+                                {{ $value }}
+                            </p>
+
+                            <p
+                                class="text-[11px]
+                            {{ $index === 4 && $overdueCount > 0 ? 'text-[#8f1d0e]' : 'text-muted' }}">
+                                {{ $detail }}
+                            </p>
+
+                        </article>
+                    </div>
+                @endforeach
+
+            </div>
+        </div>
+
     </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const element = document.querySelector('.financial-swiper');
+
+            if (!element || typeof Swiper === 'undefined') return;
+
+            new Swiper(element, {
+                slidesPerView: 1.15,
+                spaceBetween: 16,
+                speed: 500,
+                grabCursor: true,
+
+                navigation: {
+                    prevEl: '.financial-prev',
+                    nextEl: '.financial-next',
+                },
+
+                breakpoints: {
+                    640: {
+                        slidesPerView: 2,
+                    },
+                    1024: {
+                        slidesPerView: 3,
+                    },
+                    1280: {
+                        slidesPerView: 4,
+                    },
+                },
+            });
+        });
+    </script>
 
     {{-- KONTEN UTAMA BERDASARKAN TAB --}}
 
@@ -321,34 +392,6 @@
                 </table>
             </div>
         </section>
-
-        <section aria-labelledby="heading-pengesahan" class="rounded-2xl border border-line bg-white p-6 shadow-xs">
-            <h3 id="heading-pengesahan" class="text-base font-bold text-black mb-6">Lembar Pengesahan Laporan Kas
-                Kelas</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center text-xs">
-                <div class="flex flex-col items-center">
-                    <span class="text-muted">Mengetahui,</span>
-                    <span class="font-semibold text-black mt-1">{{ $waliKelas ?? 'Wali Kelas 1A' }}</span>
-                    <div class="h-16"></div>
-                    <span class="border-t border-black/20 pt-1 font-medium text-black min-w-36">(
-                        ........................................ )</span>
-                </div>
-                <div class="flex flex-col items-center">
-                    <span class="text-muted">Menyetujui,</span>
-                    <span class="font-semibold text-black mt-1">{{ $ketuaKelas ?? 'Ketua Kelas 1A' }}</span>
-                    <div class="h-16"></div>
-                    <span class="border-t border-black/20 pt-1 font-medium text-black min-w-36">(
-                        ........................................ )</span>
-                </div>
-                <div class="flex flex-col items-center">
-                    <span class="text-muted">Penyusun,</span>
-                    <span class="font-semibold text-black mt-1">{{ $bendaharaKelas ?? 'Bendahara Kelas 1A' }}</span>
-                    <div class="h-16"></div>
-                    <span class="border-t border-black/20 pt-1 font-medium text-black min-w-36">(
-                        ........................................ )</span>
-                </div>
-            </div>
-        </section>
     @elseif ($activeTab === 'bku')
         {{-- ========================================================================= --}}
         {{-- TAB 2: BUKU KAS UMUM (BKU KELAS - STANDAR AKUNTANSI SEKOLAH INDONESIA)    --}}
@@ -477,23 +520,25 @@
                             <div class="flex min-w-0 flex-1 basis-56 flex-col gap-1">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <span class="text-sm font-bold text-black">{{ $p->title }}</span>
-                                    <span
-                                        class="rounded-full bg-brand-soft px-2.5 py-0.5 text-[11px] font-semibold text-brand border border-brand/20">
-                                        {{ $p->category->name ?? 'Uang Kas' }}
-                                    </span>
-                                    @if ($item['paid_count'] === $item['total_count'] && $item['total_count'] > 0)
+                                    <div class="flex-nowrap gap-2 flex">
                                         <span
-                                            class="rounded-full bg-[#dcfce7] px-2.5 py-0.5 text-[11px] font-semibold text-[#14532d] border border-[#bbf7d0]">Lunas
-                                            Semua</span>
-                                    @elseif ($item['is_overdue'])
-                                        <span
-                                            class="rounded-full bg-[#fde4e0] px-2.5 py-0.5 text-[11px] font-semibold text-[#8f1d0e] border border-[#fecaca]">Lewat
-                                            Tenggat</span>
-                                    @else
-                                        <span
-                                            class="rounded-full bg-[#fff1d6] px-2.5 py-0.5 text-[11px] font-semibold text-[#7a4a00] border border-[#fed7aa]">Masih
-                                            Bisa Dicicil</span>
-                                    @endif
+                                            class="rounded-full bg-brand-soft px-2.5 py-0.5 text-[11px] font-semibold text-brand border border-brand/20">
+                                            {{ $p->category->name ?? 'Uang Kas' }}
+                                        </span>
+                                        @if ($item['paid_count'] === $item['total_count'] && $item['total_count'] > 0)
+                                            <span
+                                                class="rounded-full bg-[#dcfce7] px-2 py-0.5 text-[11px] font-semibold text-[#14532d] border border-[#bbf7d0]">Lunas
+                                                Semua</span>
+                                        @elseif ($item['is_overdue'])
+                                            <span
+                                                class="rounded-full bg-[#fde4e0] px-2 py-0.5 text-[11px] font-semibold text-[#8f1d0e] border border-[#fecaca]">Lewat
+                                                Tenggat</span>
+                                        @else
+                                            <span
+                                                class="rounded-full bg-[#fff1d6] px-2 py-0.5 text-[11px] font-semibold text-[#7a4a00] border border-[#fed7aa]">Masih
+                                                Bisa Dicicil</span>
+                                        @endif
+                                    </div>
                                 </div>
                                 <span class="text-xs text-muted">
                                     Tenggat: {{ $p->due_date->format('d M Y') }} · {{ $item['paid_count'] }} lunas,
@@ -501,8 +546,8 @@
                                 </span>
                             </div>
 
-                            <div class="flex items-center gap-4 text-right">
-                                <div class="flex flex-col">
+                            <div class="flex  items-center gap-4 text-center md:w-auto w-full md:text-right">
+                                <div class="flex flex-col md:w-auto w-full">
                                     <span class="text-xs font-bold text-[#14532d] tabular-nums">
                                         Rp{{ number_format($item['collected'], 0, ',', '.') }} /
                                         Rp{{ number_format($item['target'], 0, ',', '.') }}
@@ -522,81 +567,125 @@
         {{-- Filter & Daftar Detail Pembayaran Anggota --}}
         <section aria-labelledby="detail-laporan-heading"
             class="flex flex-col rounded-2xl border border-line bg-white shadow-xs">
-            <div class="flex flex-col gap-4 border-b border-line px-6 py-5">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <h2 id="detail-laporan-heading" class="text-lg font-bold text-black">Detail Pembayaran &
-                            Cicilan Anggota ({{ $invoices->count() }})</h2>
-                        <p class="text-xs text-muted">Pantau nominal terbayar, sisa cicilan, dan kondisi jatuh tempo
-                            per anggota.</p>
+
+            <div class="flex flex-col gap-4 border-b border-line px-4 py-5 sm:px-6">
+
+                {{-- Heading --}}
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="min-w-0">
+                        <h2 id="detail-laporan-heading" class="text-base font-bold text-black sm:text-lg">
+                            Detail Pembayaran & Cicilan Anggota
+                        </h2>
+                        <p class="mt-1 max-w-xl text-xs leading-relaxed text-muted">
+                            Pantau nominal terbayar, sisa cicilan, dan kondisi jatuh tempo per anggota.
+                        </p>
                     </div>
-
-                    <form method="GET" action="{{ route('reports.payments') }}"
-                        class="flex flex-wrap items-center gap-2 print:hidden">
-                        <input type="hidden" name="tab" value="detail">
-                        @if ($statusFilter)
-                            <input type="hidden" name="status" value="{{ $statusFilter }}">
-                        @endif
-                        <select name="period_id" aria-label="Filter periode"
-                            class="min-h-10 rounded-xl border border-black/15 bg-white px-3 text-xs font-medium text-black focus:border-brand focus:outline-none">
-                            <option value="">Semua Periode</option>
-                            @foreach ($periods as $p)
-                                <option value="{{ $p->id }}" @selected($selectedPeriodId === $p->id)>{{ $p->title }}
-                                </option>
-                            @endforeach
-                        </select>
-
-                        <select name="category_id" aria-label="Filter kategori"
-                            class="min-h-10 rounded-xl border border-black/15 bg-white px-3 text-xs font-medium text-black focus:border-brand focus:outline-none">
-                            <option value="">Semua Kategori</option>
-                            @foreach ($categories as $cat)
-                                <option value="{{ $cat->id }}" @selected($selectedCategoryId === $cat->id)>{{ $cat->name }}
-                                </option>
-                            @endforeach
-                        </select>
-
-                        <input type="search" name="q" value="{{ $search }}"
-                            placeholder="Cari nama / NIM..."
-                            class="min-h-10 w-44 rounded-xl border border-black/15 bg-canvas/30 px-3 text-xs text-black placeholder:text-muted/60 focus:border-brand focus:bg-white focus:outline-none">
-
-                        <button type="submit"
-                            class="inline-flex min-h-10 items-center justify-center rounded-xl bg-brand px-3.5 text-xs font-semibold text-white shadow-xs hover:bg-brand-dark">
-                            Filter
-                        </button>
-                    </form>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-1.5 text-xs print:hidden">
-                    @php
-                        $baseQuery = array_filter([
+                {{-- Filter --}}
+                <form method="GET" action="{{ route('reports.payments') }}"
+                    class="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:flex-wrap xl:items-center print:hidden">
+
+                    <input type="hidden" name="tab" value="detail">
+
+                    @if ($statusFilter)
+                        <input type="hidden" name="status" value="{{ $statusFilter }}">
+                    @endif
+
+                    <select name="period_id" aria-label="Filter periode"
+                        class="min-h-10 w-full min-w-0 rounded-xl border border-black/15 bg-white px-3 text-xs font-medium text-black focus:border-brand focus:outline-none xl:w-auto xl:min-w-40">
+                        <option value="">Semua Periode</option>
+                        @foreach ($periods as $p)
+                            <option value="{{ $p->id }}" @selected($selectedPeriodId === $p->id)>
+                                {{ $p->title }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <select name="category_id" aria-label="Filter kategori"
+                        class="min-h-10 w-full min-w-0 rounded-xl border border-black/15 bg-white px-3 text-xs font-medium text-black focus:border-brand focus:outline-none xl:w-auto xl:min-w-40">
+                        <option value="">Semua Kategori</option>
+                        @foreach ($categories as $cat)
+                            <option value="{{ $cat->id }}" @selected($selectedCategoryId === $cat->id)>
+                                {{ $cat->name }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <div class="flex min-w-0 gap-2 sm:col-span-2 xl:ml-auto xl:w-auto">
+                        <input type="search" name="q" value="{{ $search }}"
+                            placeholder="Cari nama / NIM..."
+                            class="min-h-10 min-w-0 flex-1 rounded-xl border border-black/15 bg-canvas/30 px-3 text-xs text-black placeholder:text-muted/60 focus:border-brand focus:bg-white focus:outline-none xl:w-48 xl:flex-none">
+
+                        <button type="submit"
+                            class="inline-flex min-h-10 shrink-0 items-center justify-center rounded-xl bg-brand px-4 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-dark">
+                            Filter
+                        </button>
+                    </div>
+                </form>
+
+                {{-- Status Filter --}}
+                @php
+                    $baseQuery = array_filter(
+                        [
                             'tab' => 'detail',
                             'period_id' => $selectedPeriodId,
                             'category_id' => $selectedCategoryId,
                             'q' => $search,
-                        ]);
-                    @endphp
-                    <a href="{{ route('reports.payments', $baseQuery) }}"
-                        class="rounded-xl px-3 py-1.5 font-semibold transition-colors {{ $statusFilter === '' ? 'bg-black text-white' : 'text-muted hover:bg-canvas' }}">
-                        Semua ({{ $totalCount }})
-                    </a>
-                    <a href="{{ route('reports.payments', array_merge($baseQuery, ['status' => 'paid'])) }}"
-                        class="rounded-xl px-3 py-1.5 font-semibold transition-colors {{ $statusFilter === 'paid' ? 'bg-black text-white' : 'text-muted hover:bg-canvas' }}">
-                        Lunas ({{ $paidCount }})
-                    </a>
-                    <a href="{{ route('reports.payments', array_merge($baseQuery, ['status' => 'partial'])) }}"
-                        class="rounded-xl px-3 py-1.5 font-semibold transition-colors {{ $statusFilter === 'partial' ? 'bg-black text-white' : 'text-muted hover:bg-canvas' }}">
-                        Menyicil ({{ $partialCount }})
-                    </a>
-                    <a href="{{ route('reports.payments', array_merge($baseQuery, ['status' => 'unpaid'])) }}"
-                        class="rounded-xl px-3 py-1.5 font-semibold transition-colors {{ $statusFilter === 'unpaid' ? 'bg-black text-white' : 'text-muted hover:bg-canvas' }}">
-                        Belum Bayar ({{ $unpaidCount }})
-                    </a>
-                    <a href="{{ route('reports.payments', array_merge($baseQuery, ['status' => 'overdue'])) }}"
-                        class="rounded-xl px-3 py-1.5 font-semibold transition-colors {{ $statusFilter === 'overdue' ? 'bg-black text-white' : 'text-muted hover:bg-canvas' }}">
-                        Lewat Tenggat ({{ $overdueCount }})
-                    </a>
+                        ],
+                        fn($value) => $value !== null && $value !== '',
+                    );
+                @endphp
+
+                <div class="-mx-4 overflow-x-auto px-4 sm:-mx-6 sm:px-6 print:hidden">
+                    <div class="flex w-max items-center gap-1.5 text-xs">
+                        <a href="{{ route('reports.payments', $baseQuery) }}" @class([
+                            'whitespace-nowrap rounded-xl px-3 py-2 font-semibold transition-colors',
+                            'bg-black text-white' => $statusFilter === '',
+                            'text-muted hover:bg-canvas' => $statusFilter !== '',
+                        ])>
+                            Semua ({{ $totalCount }})
+                        </a>
+
+                        <a href="{{ route('reports.payments', array_merge($baseQuery, ['status' => 'paid'])) }}"
+                            @class([
+                                'whitespace-nowrap rounded-xl px-3 py-2 font-semibold transition-colors',
+                                'bg-black text-white' => $statusFilter === 'paid',
+                                'text-muted hover:bg-canvas' => $statusFilter !== 'paid',
+                            ])>
+                            Lunas ({{ $paidCount }})
+                        </a>
+
+                        <a href="{{ route('reports.payments', array_merge($baseQuery, ['status' => 'partial'])) }}"
+                            @class([
+                                'whitespace-nowrap rounded-xl px-3 py-2 font-semibold transition-colors',
+                                'bg-black text-white' => $statusFilter === 'partial',
+                                'text-muted hover:bg-canvas' => $statusFilter !== 'partial',
+                            ])>
+                            Menyicil ({{ $partialCount }})
+                        </a>
+
+                        <a href="{{ route('reports.payments', array_merge($baseQuery, ['status' => 'unpaid'])) }}"
+                            @class([
+                                'whitespace-nowrap rounded-xl px-3 py-2 font-semibold transition-colors',
+                                'bg-black text-white' => $statusFilter === 'unpaid',
+                                'text-muted hover:bg-canvas' => $statusFilter !== 'unpaid',
+                            ])>
+                            Belum Bayar ({{ $unpaidCount }})
+                        </a>
+
+                        <a href="{{ route('reports.payments', array_merge($baseQuery, ['status' => 'overdue'])) }}"
+                            @class([
+                                'whitespace-nowrap rounded-xl px-3 py-2 font-semibold transition-colors',
+                                'bg-black text-white' => $statusFilter === 'overdue',
+                                'text-muted hover:bg-canvas' => $statusFilter !== 'overdue',
+                            ])>
+                            Lewat Tenggat ({{ $overdueCount }})
+                        </a>
+                    </div>
                 </div>
             </div>
+
 
             <div class="divide-y divide-black/5">
                 @forelse ($invoices as $invoice)
@@ -630,15 +719,15 @@
                             </div>
                         </div>
 
-                        <div class="flex flex-col items-end gap-1 min-w-44">
-                            <div class="flex items-center gap-2 text-xs tabular-nums">
+                        <div class="flex flex-col items-end md:w-auto w-full gap-1 min-w-44">
+                            <div class="flex items-center  gap-2 text-xs tabular-nums">
                                 <span
                                     class="font-bold text-[#14532d]">Rp{{ number_format($paidAmt, 0, ',', '.') }}</span>
-                                <span class="text-muted">/</span>
+                                <span class="text-muted ">/</span>
                                 <span
                                     class="font-semibold text-black">Rp{{ number_format($invoice->amount, 0, ',', '.') }}</span>
                             </div>
-                            <div class="h-1.5 w-36 overflow-hidden rounded-full bg-black/10">
+                            <div class="h-1.5 w-36 md:w-auto w-full overflow-hidden rounded-full bg-black/10">
                                 <div class="h-full rounded-full {{ $invoice->isPaid() ? 'bg-[#14532d]' : ($isOverdue ? 'bg-[#8f1d0e]' : 'bg-brand') }}"
                                     style="width: {{ $pct }}%"></div>
                             </div>
@@ -650,42 +739,14 @@
                             @endif
                         </div>
 
-                        <div class="flex flex-wrap items-center gap-2">
-                            @if ($invoice->isPaid())
-                                <span
-                                    class="rounded-full bg-[#dcfce7] px-2.5 py-0.5 text-xs font-semibold text-[#14532d] border border-[#bbf7d0]">Lunas</span>
-                            @elseif ($invoice->isPartial())
-                                <span
-                                    class="rounded-full bg-[#fff1d6] px-2.5 py-0.5 text-xs font-semibold text-[#7a4a00] border border-[#fed7aa]">
-                                    Menyicil ({{ $pct }}%)
-                                </span>
-                            @else
-                                <span
-                                    class="rounded-full bg-[#fde4e0] px-2.5 py-0.5 text-xs font-semibold text-[#8f1d0e] border border-[#fecaca]">Belum
-                                    Bayar</span>
-                            @endif
-
-                            @if ($isOverdue)
-                                <span
-                                    class="rounded-full bg-[#8f1d0e] px-2.5 py-0.5 text-[11px] font-semibold text-white">
-                                    Terlambat {{ $invoice->overdueDays() }} hari · Wajib Lunas Penuh
-                                </span>
-                            @endif
-
-                            @if (!$invoice->isPaid() && auth()->user()?->isStaff())
-                                <a href="{{ route('payments.create', $invoice) }}"
-                                    class="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-brand px-3 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand print:hidden">
-                                    Bantu Bayar
-                                </a>
-                            @endif
-                        </div>
                     </div>
-                @empty
-                    <p class="px-6 py-12 text-center text-xs text-muted">Tidak ada data laporan pembayaran yang sesuai
-                        filter.</p>
-                @endforelse
             </div>
-        </section>
+        @empty
+            <p class="px-6 py-12 text-center text-xs text-muted">Tidak ada data laporan pembayaran yang sesuai
+                filter.</p>
+    @endforelse
+    </div>
+    </section>
     @endif
 
 

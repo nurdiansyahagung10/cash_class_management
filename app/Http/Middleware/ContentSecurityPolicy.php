@@ -20,19 +20,19 @@ class ContentSecurityPolicy
 
         $response = $next($request);
 
-        $csp = implode(' ', [
-            "default-src 'self' http: https: data: blob;",
-            "script-src 'self' 'nonce-{$nonce}' https:;",
-            "style-src 'self' 'unsafe-inline' https:;",
-            "img-src 'self' data: blob: https:;",
-            "font-src 'self' data: https:;",
-            "connect-src 'self' https: wss:;",
-            "object-src 'none';",
-            "base-uri 'self';",
-            "frame-ancestors 'self';",
-        ]);
+        // $csp = implode(' ', [
+        //     "default-src 'self' http: https: data: blob;",
+        //     "script-src 'self' 'nonce-{$nonce}' https:;",
+        //     "style-src 'self' 'unsafe-inline' https:;",
+        //     "img-src 'self' data: blob: https:;",
+        //     "font-src 'self' data: https:;",
+        //     "connect-src 'self' https: wss:;",
+        //     "object-src 'none';",
+        //     "base-uri 'self';",
+        //     "frame-ancestors 'self';",
+        // ]);
 
-        $response->headers->set('Content-Security-Policy', $csp);
+        // $response->headers->set('Content-Security-Policy', $csp);
 
         return $response;
     }

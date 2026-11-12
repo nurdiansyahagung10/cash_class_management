@@ -2,9 +2,9 @@
     <header class="flex flex-col gap-2">
         <div class="flex flex-col gap-2">
             <div class="flex items-center gap-2 text-xs font-semibold text-muted">
-                <span class="hover:text-black transition-colors">Kas Kelas 1A</span>
+                <span class="hover:text-black transition-colors">KK 1A</span>
                 <span class="text-black/20">/</span>
-                <span class="text-black">Pengeluaran kas</span>
+                <span class="text-black">Pengeluaran</span>
                 <span class="text-black/20">·</span>
                 <span class="font-normal">{{ now()->translatedFormat('l, d F Y') }}</span>
             </div>
@@ -71,11 +71,12 @@
                                     </a>
                                 @endif
                             </div>
-                            @if ($expense->notes && ! $isGuest)
+                            @if ($expense->notes && !$isGuest)
                                 <p class="text-xs text-muted leading-relaxed">{{ $expense->notes }}</p>
                             @endif
                             <span class="text-xs text-muted">Dicatat oleh <span
-                                    class="font-medium text-black">{{ $isGuest ? 'Pengurus kelas' : $expense->creator->name }}</span> ·
+                                    class="font-medium text-black">{{ $isGuest ? 'Pengurus kelas' : $expense->creator->name }}</span>
+                                ·
                                 {{ $expense->spent_at->format('d M Y') }}</span>
                         </div>
                         <span

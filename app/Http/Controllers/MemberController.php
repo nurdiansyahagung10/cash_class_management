@@ -38,7 +38,7 @@ class MemberController extends Controller
         $allUsers = User::all();
 
         return view('members', [
-            'pending' => PendingMember::with('creator')->where('expires_at', '>', now())->orderBy('expires_at')->get(),
+            'pending' => PendingMember::with('creator')->where('expires_at', '>', now())->orderBy('expires_at')->paginate(10)->withQueryString(),
             'users' => $users,
             'search' => $search,
             'activeMembers' => $allUsers->where('is_active', true)->count(),

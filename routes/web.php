@@ -65,5 +65,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/members/{user}/toggle-staff', [MemberController::class, 'toggleStaff'])->name('members.toggle-staff');
         Route::post('/members/{user}/toggle-status', [MemberController::class, 'toggleStatus'])->name('members.toggle-status');
         Route::post('/members/{user}/reset-password', [MemberController::class, 'resetPassword'])->name('members.reset-password');
+        Route::post('/members/bulk-action', [MemberController::class, 'bulkAction'])->name('members.bulk-action');
     });
 });

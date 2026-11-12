@@ -12,7 +12,7 @@
     <header class="flex flex-col  items-center! gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div class="flex flex-col gap-2">
             <div class="flex items-center gap-2 text-xs font-semibold text-muted">
-                <span class="hover:text-black transition-colors">Kas Kelas 1A</span>
+                <span class="hover:text-black transition-colors">KK 1A</span>
                 <span class="text-black/20">/</span>
                 <span class="text-black">Ledger</span>
                 <span class="text-black/20">·</span>
@@ -21,14 +21,14 @@
         </div>
         <div class="flex items-center gap-2.5 print:hidden">
             @unless ($isGuest)
-            <a href="{{ route('ledger.export') }}"
-                class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line bg-white px-4 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                <svg class="size-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Unduh CSV
-            </a>
+                <a href="{{ route('ledger.export') }}"
+                    class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line bg-white px-4 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                    <svg class="size-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Unduh CSV
+                </a>
             @endunless
             <button type="button" onclick="window.print()"
                 class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line bg-white px-4 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
@@ -57,12 +57,12 @@
             <div class="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-4 text-xs">
                 <span class="text-white/70">Dihitung ulang setiap halaman dibuka</span>
                 @unless ($isGuest)
-                <form method="POST" action="{{ route('ledger.verify') }}" class="print:hidden">
-                    @csrf
-                    <button type="submit"
-                        class="inline-flex items-center rounded-xl bg-white/15 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Audit
-                        sekarang</button>
-                </form>
+                    <form method="POST" action="{{ route('ledger.verify') }}" class="print:hidden">
+                        @csrf
+                        <button type="submit"
+                            class="inline-flex items-center rounded-xl bg-white/15 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Audit
+                            sekarang</button>
+                    </form>
                 @endunless
             </div>
         </div>
@@ -113,8 +113,11 @@
                                 </span>
                             </div>
                         @endif
-                        <span class="break-all font-mono text-xs text-black/90">{{ $isGuest ? $entry->publicPayload() : $entry->payload }}</span>
-                        <span class="text-[11px] text-muted">{{ $isGuest ? ($entry->actor_id ? 'Pengurus kelas' : 'Sistem') : ($entry->actor?->name ?? 'Sistem') }} ·
+                        <span
+                            class="break-all font-mono text-xs text-black/90">{{ $isGuest ? $entry->publicPayload() : $entry->payload }}</span>
+                        <span
+                            class="text-[11px] text-muted">{{ $isGuest ? ($entry->actor_id ? 'Pengurus kelas' : 'Sistem') : $entry->actor?->name ?? 'Sistem' }}
+                            ·
                             {{ $entry->created_at->format('d M Y, H.i') }}</span>
                     </div>
                     <div class="flex items-center gap-2 font-mono text-xs">

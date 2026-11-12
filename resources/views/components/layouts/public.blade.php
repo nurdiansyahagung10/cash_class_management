@@ -1,6 +1,16 @@
 @props(['title'])
+@php
+    $user = auth()->user();
+    $links = [
+        ['route' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'home', 'show' => true],
+        ['route' => 'expenses.index', 'label' => 'Pengeluaran kas', 'icon' => 'expense', 'show' => true],
+        ['route' => 'ledger', 'label' => 'Ledger publik', 'icon' => 'ledger', 'show' => true],
+    ];
+@endphp
+
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,32 +19,91 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|source-serif-4:400,600" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-canvas font-sans text-black antialiased selection:bg-brand-soft selection:text-brand">
-<div class="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-4 py-8 sm:py-12">
-    <nav aria-label="Navigasi publik" class="flex flex-wrap items-center justify-between gap-3">
-        <a href="{{ route('dashboard') }}" class="flex items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-            <span class="flex size-10 items-center justify-center rounded-xl bg-navy text-sm font-bold text-white shadow-xs" aria-hidden="true">K</span>
-            <span class="flex flex-col leading-tight">
-                <span class="text-base font-bold tracking-tight text-black">Kas Kelas 1A</span>
-                <span class="text-xs font-medium text-muted">D3 Bahasa Inggris</span>
-            </span>
-        </a>
-        <div class="flex flex-wrap items-center gap-1.5">
-            @foreach (['dashboard' => 'Dashboard', 'expenses.index' => 'Pengeluaran', 'ledger' => 'Ledger'] as $routeName => $label)
-                <a href="{{ route($routeName) }}" @if (request()->routeIs($routeName)) aria-current="page" @endif
-                   class="inline-flex min-h-11 items-center rounded-xl px-3.5 text-sm font-semibold transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand {{ request()->routeIs($routeName) ? 'text-black' : 'text-muted' }}">
-                    {{ $label }}
-                </a>
-            @endforeach
-            <a href="{{ route('login') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                Masuk
-            </a>
-        </div>
-    </nav>
 
-    <main class="flex flex-col gap-6">
-        {{ $slot }}
-    </main>
-</div>
+<body class="bg-canvas font-sans text-black antialiased selection:bg-brand-soft selection:text-brand">
+    @include('components.layouts.navbar')
+
+    <div
+        class="flex min-w-0 flex-1 flex-col gap-8 px-4 py-6 sm:px-8 sm:py-8 lg:px-14 lg:py-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+
+        <main class="flex flex-col gap-6">
+            {{ $slot }}
+        </main>
+    </div>
+    @include('components.layouts.backdrop')
 </body>
+
 </html>
+<script nonce="{{ Vite::cspNonce() }}">
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.querySelector('nav[aria-label="Navigasi utama"]');
+        if (!sidebar) return;
+
+        const backdrop = document.querySelector('[data-sidebar-backdrop]');
+        const toggles = document.querySelectorAll('[data-sidebar-toggle]');
+        const mobileMq = window.matchMedia('(max-width: 1023px)');
+        const CLOSED = '-left-64!';
+        let lastToggle = null; // tombol terakhir yang dipakai, buat balikin fokus
+
+        const isOpen = () => !sidebar.classList.contains(CLOSED);
+
+        function setOpen(open, {
+            focus = false
+        } = {}) {
+            const modal = open && mobileMq.matches;
+
+            // Keluarin fokus dulu sebelum sidebar jadi inert, biar nggak "hilang" ke <body>
+            if (!open && sidebar.contains(document.activeElement)) {
+                (lastToggle ?? toggles[0])?.focus({
+                    preventScroll: true
+                });
+            }
+
+            sidebar.classList.toggle(CLOSED, !open);
+            sidebar.inert = !open;
+            toggles.forEach(btn => btn.setAttribute('aria-expanded', String(open)));
+
+            backdrop?.classList.toggle('opacity-0', !modal);
+            backdrop?.classList.toggle('pointer-events-none', !modal);
+            document.documentElement.classList.toggle('overflow-hidden', modal);
+
+            // Dibuka di mobile: fokus masuk ke sidebar (keyboard / screen reader)
+            if (modal && focus) {
+                sidebar.querySelector('a[href], button:not([disabled])')?.focus({
+                    preventScroll: true
+                });
+            }
+        }
+
+        function withoutTransition(fn) {
+            sidebar.style.transition = 'none';
+            fn();
+            void sidebar.offsetWidth; // paksa reflow
+            sidebar.style.transition = '';
+        }
+
+        toggles.forEach(btn => btn.addEventListener('click', () => {
+            lastToggle = btn;
+            setOpen(!isOpen(), {
+                focus: true
+            });
+        }));
+
+        backdrop?.addEventListener('click', () => setOpen(false));
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && mobileMq.matches && isOpen()) setOpen(false);
+        });
+
+        // Klik link di sidebar (mobile): tutup, jadi pas "back" nggak balik ke state kebuka + scroll terkunci
+        sidebar.addEventListener('click', (e) => {
+            if (mobileMq.matches && e.target.closest('a[href]')) setOpen(false);
+        });
+
+        // Lewat breakpoint: masuk mobile = tutup, masuk desktop = buka
+        mobileMq.addEventListener('change', () => withoutTransition(() => setOpen(!mobileMq.matches)));
+
+        // State awal tanpa animasi
+        withoutTransition(() => setOpen(mobileMq.matches ? false : isOpen()));
+    });
+</script>

@@ -44,7 +44,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/reports/payments/export', [PaymentReportController::class, 'export'])->name('reports.payments.export');
             Route::get('/reports/payments/export-bku', [PaymentReportController::class, 'exportBku'])->name('reports.payments.export-bku');
             Route::get('/reports/payments/export-matrix', [PaymentReportController::class, 'exportMatrix'])->name('reports.payments.export-matrix');
-
             Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
             Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
         });

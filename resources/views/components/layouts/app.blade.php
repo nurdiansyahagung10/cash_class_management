@@ -15,7 +15,7 @@
             'route' => 'members.index',
             'label' => 'Kelola anggota',
             'icon' => 'members',
-            'show' => $user->canManageMembers(),
+            'show' => $user->isAdmin(),
         ],
         [
             'route' => 'periods.index',
@@ -29,7 +29,12 @@
             'icon' => 'category',
             'show' => $user->canManageMembers(),
         ],
-        ['route' => 'payments.review', 'label' => 'Review pembayaran', 'icon' => 'review', 'show' => $user->isAdmin()],
+        [
+            'route' => 'payments.review',
+            'label' => 'Review pembayaran',
+            'icon' => 'review',
+            'show' => $user->canManageMembers(),
+        ],
     ];
 @endphp
 <!DOCTYPE html>

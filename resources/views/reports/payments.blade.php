@@ -494,12 +494,6 @@
             </div>
         </section>
     @else
-        {{-- ========================================================================= --}}
-        {{-- TAB 3: DETAIL TAGIHAN & CICILAN (DEFAULT VIEW)                            --}}
-        {{-- ========================================================================= --}}
-
-        {{-- Info Aturan Cicilan & Pengkondisian Tenggat --}}
-        {{-- Rekap per Periode --}}
         @if ($periodSummaries->isNotEmpty())
             <section aria-labelledby="rekap-periode-heading"
                 class="flex flex-col rounded-2xl border border-line bg-white shadow-xs">
@@ -564,10 +558,12 @@
             </section>
         @endif
 
+
         {{-- Filter & Daftar Detail Pembayaran Anggota --}}
         <section aria-labelledby="detail-laporan-heading"
-            class="flex flex-col rounded-2xl border border-line bg-white shadow-xs">
+            class="flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-xs">
 
+            {{-- Header & Filter --}}
             <div class="flex flex-col gap-4 border-b border-line px-4 py-5 sm:px-6">
 
                 {{-- Heading --}}
@@ -576,10 +572,15 @@
                         <h2 id="detail-laporan-heading" class="text-base font-bold text-black sm:text-lg">
                             Detail Pembayaran & Cicilan Anggota
                         </h2>
+
                         <p class="mt-1 max-w-xl text-xs leading-relaxed text-muted">
                             Pantau nominal terbayar, sisa cicilan, dan kondisi jatuh tempo per anggota.
                         </p>
                     </div>
+
+                    <span class="w-fit shrink-0 rounded-full bg-black/5 px-3 py-1 text-xs font-semibold text-black">
+                        {{ $invoices->total() }} pembayaran
+                    </span>
                 </div>
 
                 {{-- Filter --}}
@@ -595,8 +596,9 @@
                     <select name="period_id" aria-label="Filter periode"
                         class="min-h-10 w-full min-w-0 rounded-xl border border-black/15 bg-white px-3 text-xs font-medium text-black focus:border-brand focus:outline-none xl:w-auto xl:min-w-40">
                         <option value="">Semua Periode</option>
+
                         @foreach ($periods as $p)
-                            <option value="{{ $p->id }}" @selected($selectedPeriodId === $p->id)>
+                            <option value="{{ $p->id }}" @selected((string) $selectedPeriodId === (string) $p->id)>
                                 {{ $p->title }}
                             </option>
                         @endforeach
@@ -605,8 +607,9 @@
                     <select name="category_id" aria-label="Filter kategori"
                         class="min-h-10 w-full min-w-0 rounded-xl border border-black/15 bg-white px-3 text-xs font-medium text-black focus:border-brand focus:outline-none xl:w-auto xl:min-w-40">
                         <option value="">Semua Kategori</option>
+
                         @foreach ($categories as $cat)
-                            <option value="{{ $cat->id }}" @selected($selectedCategoryId === $cat->id)>
+                            <option value="{{ $cat->id }}" @selected((string) $selectedCategoryId === (string) $cat->id)>
                                 {{ $cat->name }}
                             </option>
                         @endforeach
@@ -639,6 +642,7 @@
 
                 <div class="-mx-4 overflow-x-auto px-4 sm:-mx-6 sm:px-6 print:hidden">
                     <div class="flex w-max items-center gap-1.5 text-xs">
+
                         <a href="{{ route('reports.payments', $baseQuery) }}" @class([
                             'whitespace-nowrap rounded-xl px-3 py-2 font-semibold transition-colors',
                             'bg-black text-white' => $statusFilter === '',
@@ -682,36 +686,58 @@
                             ])>
                             Lewat Tenggat ({{ $overdueCount }})
                         </a>
+
                     </div>
                 </div>
             </div>
 
-
+            {{-- Daftar Invoice --}}
             <div class="divide-y divide-black/5">
+
                 @forelse ($invoices as $invoice)
                     @php
                         $paidAmt = $invoice->paidAmount();
                         $remAmt = $invoice->remainingAmount();
+
                         $pct = $invoice->amount > 0 ? (int) round(($paidAmt * 100) / $invoice->amount) : 0;
+
+                        $pct = min(100, max(0, $pct));
+
                         $paidInstallmentsCount = $invoice->payments->where('status', 'paid')->count();
+
                         $isOverdue = $invoice->isOverdue();
+                        $isPaid = $invoice->isPaid();
                     @endphp
+
                     <div
-                        class="flex flex-wrap items-center justify-between gap-4 px-6 py-4 hover:bg-black/[0.015] transition-colors">
-                        <div class="flex min-w-0 flex-1 basis-60 items-start gap-4">
+                        class="flex flex-col gap-4 px-4 py-4 transition-colors hover:bg-black/[0.015] sm:px-6 md:flex-row md:items-center md:justify-between">
+
+                        {{-- Identitas Anggota --}}
+                        <div class="flex min-w-0 flex-1 items-start gap-4">
+
                             <span
-                                class="inline-flex min-w-16 shrink-0 items-center justify-center rounded-lg  px-2.5 py-1 font-mono text-xs font-bold text-muted tabular-nums">{{ $invoice->user->student_no ?? '—' }}</span>
-                            <div class="flex flex-col gap-1">
+                                class="inline-flex min-w-16 shrink-0 items-center justify-center rounded-lg bg-canvas px-2.5 py-1 font-mono text-xs font-bold tabular-nums text-muted">
+                                {{ $invoice->user->student_no ?? '—' }}
+                            </span>
+
+                            <div class="flex min-w-0 flex-col gap-1">
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <span class="text-sm font-bold text-black">{{ $invoice->user->name }}</span>
-                                    ·
-                                    <span class="rounded-full text-muted  py-0.5 text-[10px] font-semibold ">
+                                    <span class="break-words text-sm font-bold text-black">
+                                        {{ $invoice->user->name ?? 'Anggota tidak ditemukan' }}
+                                    </span>
+
+                                    <span class="text-muted">·</span>
+
+                                    <span class="rounded-full py-0.5 text-[10px] font-semibold text-muted">
                                         {{ $invoice->period->category->name ?? 'Uang Kas' }}
                                     </span>
                                 </div>
-                                <span class="text-xs text-muted">
-                                    {{ $invoice->period->title }} · Tenggat
-                                    {{ $invoice->period->due_date->format('d M Y') }}
+
+                                <span class="text-xs leading-relaxed text-muted">
+                                    {{ $invoice->period->title ?? 'Periode tidak tersedia' }}
+                                    · Tenggat
+                                    {{ $invoice->period?->due_date?->format('d M Y') ?? '—' }}
+
                                     @if ($paidInstallmentsCount > 0)
                                         · {{ $paidInstallmentsCount }}x pembayaran masuk
                                     @endif
@@ -719,34 +745,112 @@
                             </div>
                         </div>
 
-                        <div class="flex flex-col items-end md:w-auto w-full gap-1 min-w-44">
-                            <div class="flex items-center  gap-2 text-xs tabular-nums">
-                                <span
-                                    class="font-bold text-[#14532d]">Rp{{ number_format($paidAmt, 0, ',', '.') }}</span>
-                                <span class="text-muted ">/</span>
-                                <span
-                                    class="font-semibold text-black">Rp{{ number_format($invoice->amount, 0, ',', '.') }}</span>
+                        {{-- Progress Pembayaran --}}
+                        <div class="flex w-full flex-col gap-1 md:w-52 md:shrink-0">
+
+                            <div class="flex items-center justify-between gap-2 text-xs tabular-nums">
+                                <span class="font-bold text-[#14532d]">
+                                    Rp{{ number_format($paidAmt, 0, ',', '.') }}
+                                </span>
+
+                                <span class="text-muted">/</span>
+
+                                <span class="font-semibold text-black">
+                                    Rp{{ number_format($invoice->amount, 0, ',', '.') }}
+                                </span>
                             </div>
-                            <div class="h-1.5 w-36 md:w-auto w-full overflow-hidden rounded-full bg-black/10">
-                                <div class="h-full rounded-full {{ $invoice->isPaid() ? 'bg-[#14532d]' : ($isOverdue ? 'bg-[#8f1d0e]' : 'bg-brand') }}"
-                                    style="width: {{ $pct }}%"></div>
+
+                            <div class="h-1.5 w-full overflow-hidden rounded-full bg-black/10">
+                                <div class="h-full rounded-full transition-all
+                            {{ $isPaid ? 'bg-[#14532d]' : ($isOverdue ? 'bg-[#8f1d0e]' : 'bg-brand') }}"
+                                    style="width: {{ $pct }}%">
+                                </div>
                             </div>
+
                             @if ($remAmt > 0)
                                 <span
-                                    class="text-[11px] font-medium {{ $isOverdue ? 'text-[#8f1d0e]' : 'text-muted' }} tabular-nums">
+                                    class="text-right text-[11px] font-medium tabular-nums
+                            {{ $isOverdue ? 'text-[#8f1d0e]' : 'text-muted' }}">
                                     Sisa: Rp{{ number_format($remAmt, 0, ',', '.') }}
                                 </span>
                             @endif
+
+                        </div>
+                    </div>
+
+                @empty
+                    <div class="px-6 py-14 text-center">
+                        <div class="mx-auto mb-3 flex size-11 items-center justify-center rounded-full bg-black/5">
+                            <svg class="size-5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.7">
+                                <path d="M9 12l2 2 4-4M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
+                            </svg>
                         </div>
 
+                        <p class="text-sm font-semibold text-black">
+                            Tidak ada data pembayaran
+                        </p>
+
+                        <p class="mt-1 text-xs text-muted">
+                            Tidak ada data laporan pembayaran yang sesuai filter.
+                        </p>
                     </div>
+                @endforelse
+
             </div>
-        @empty
-            <p class="px-6 py-12 text-center text-xs text-muted">Tidak ada data laporan pembayaran yang sesuai
-                filter.</p>
-    @endforelse
-    </div>
-    </section>
+
+            {{-- Pagination --}}
+            <div class="flex flex-wrap items-center justify-between gap-4 border-t border-line px-4 py-4 sm:px-6">
+
+                <div class="text-xs text-muted">
+                    Menampilkan
+                    <span class="font-semibold text-black">
+                        {{ $invoices->firstItem() ?? 0 }}–{{ $invoices->lastItem() ?? 0 }}
+                    </span>
+                    dari
+                    <span class="font-semibold text-black">
+                        {{ $invoices->total() }}
+                    </span>
+                    pembayaran
+                </div>
+
+                <div class="flex items-center gap-3">
+
+                    <span class="text-xs font-semibold tabular-nums text-black">
+                        {{ $invoices->currentPage() }} / {{ max(1, $invoices->lastPage()) }}
+                    </span>
+
+                    <a href="{{ $invoices->previousPageUrl() ?? '#' }}" @class([
+                        'flex size-9 items-center justify-center rounded-lg border border-line transition',
+                        'pointer-events-none opacity-30' => !$invoices->previousPageUrl(),
+                        'hover:bg-black/5' => $invoices->previousPageUrl(),
+                    ])
+                        aria-label="Halaman sebelumnya">
+
+                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="m15 18-6-6 6-6" />
+                        </svg>
+                    </a>
+
+                    <a href="{{ $invoices->nextPageUrl() ?? '#' }}" @class([
+                        'flex size-9 items-center justify-center rounded-lg border border-line transition',
+                        'pointer-events-none opacity-30' => !$invoices->nextPageUrl(),
+                        'hover:bg-black/5' => $invoices->nextPageUrl(),
+                    ])
+                        aria-label="Halaman berikutnya">
+
+                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="m9 18 6-6-6-6" />
+                        </svg>
+                    </a>
+
+                </div>
+            </div>
+
+        </section>
+
     @endif
 
 

@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\Ledger;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -21,8 +22,32 @@ class PaymentReportController extends Controller
 {
     public function index(Request $request, Ledger $ledger): View
     {
-        $allInvoices = $this->filteredInvoices($request, applyStatusFilter: false);
-        $invoices = $this->applyStatusFilter($allInvoices, (string) $request->query('status', ''));
+        $allInvoices = $this->filteredInvoices(
+            $request,
+            applyStatusFilter: false
+        );
+
+        $filteredInvoices = $this->applyStatusFilter(
+            $allInvoices,
+            (string) $request->query('status', '')
+        );
+
+        $perPage = 10;
+        $pageName = 'invoice_page';
+        $currentPage = LengthAwarePaginator::resolveCurrentPage($pageName);
+
+        $invoices = new LengthAwarePaginator(
+            $filteredInvoices->forPage($currentPage, $perPage)->values(),
+            $filteredInvoices->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(),
+                'pageName' => $pageName,
+            ]
+        );
+
+        $invoices->withQueryString();
 
         $totalExpected = (int) $allInvoices->sum('amount');
         $totalCollected = (int) $allInvoices->sum(fn (Invoice $inv) => $inv->paidAmount());

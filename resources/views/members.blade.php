@@ -341,77 +341,189 @@
         </div>
     </div>
 
-    <section aria-labelledby="judul-semua-anggota"
-        class="flex flex-col rounded-2xl border border-line bg-white shadow-xs">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-4.5">
-            <h2 id="judul-semua-anggota" class="text-lg font-bold text-black">Daftar anggota kelas
-                ({{ $users->count() }})</h2>
 
-            <form method="GET" action="{{ route('members.index') }}" class="flex items-center gap-2">
+    {{-- Daftar Semua Anggota --}}
+    <section aria-labelledby="judul-semua-anggota"
+        class="flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-xs">
+
+        {{-- Header & Search --}}
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-5 sm:px-6">
+
+            <div>
+                <h2 id="judul-semua-anggota" class="text-lg font-bold text-black">
+                    Daftar anggota kelas ({{ $users->total() }})
+                </h2>
+
+                <p class="mt-1 text-xs text-muted">
+                    Kelola status dan hak akses anggota kelas.
+                </p>
+            </div>
+
+            <form method="GET" action="{{ route('members.index') }}"
+                class="flex w-full items-center gap-2 sm:w-auto">
+
                 <input type="search" name="q" value="{{ $search ?? '' }}"
                     placeholder="Cari nama atau No. absen..."
-                    class="min-h-11 rounded-xl border border-black/15 bg-canvas/30 px-3.5 text-xs placeholder:text-muted/60 transition-all focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20">
+                    class="min-h-10 min-w-0 flex-1 rounded-xl border border-black/15 bg-canvas/30 px-3.5 text-xs placeholder:text-muted/60 transition-all focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20 sm:w-56 sm:flex-none">
+
                 <button type="submit"
-                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Cari</button>
+                    class="inline-flex min-h-10 shrink-0 items-center justify-center rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                    Cari
+                </button>
+
                 @if (!empty($search))
                     <a href="{{ route('members.index') }}"
-                        class="min-h-11 inline-flex items-center rounded-xl px-3 text-xs font-semibold text-muted hover:text-black transition-colors">Reset</a>
+                        class="inline-flex min-h-10 shrink-0 items-center rounded-xl px-3 text-xs font-semibold text-muted transition-colors hover:text-black">
+                        Reset
+                    </a>
                 @endif
             </form>
         </div>
 
+        {{-- Data Anggota --}}
         <div class="divide-y divide-black/5">
+
             @forelse ($users as $member)
                 <div
-                    class="flex flex-wrap items-center justify-between gap-4 px-6 py-4 hover:bg-black/[0.015] transition-colors">
-                    <div class="flex items-center gap-4">
-                        <div class="inline-flex min-w-16 shrink-0 items-center justify-center rounded-lg  px-2.5 py-1 font-mono text-xs font-bold text-muted tabular-nums"
+                    class="flex flex-wrap items-center justify-between gap-4 px-4 py-4 transition-colors hover:bg-black/[0.015] sm:px-6">
+
+                    {{-- Informasi Anggota --}}
+                    <div class="flex min-w-0 items-center gap-4">
+
+                        <div class="inline-flex min-w-16 shrink-0 items-center justify-center rounded-lg bg-canvas px-2.5 py-1 font-mono text-xs font-bold tabular-nums text-muted"
                             aria-hidden="true">
                             {{ $member->student_no ?? '—' }}
                         </div>
-                        <div class="flex flex-col">
-                            <span
-                                class="text-sm font-semibold text-black {{ !$member->is_active ? 'line-through text-muted' : '' }}">{{ $member->name }}</span>
-                            <span class="text-xs text-muted capitalize">{{ $member->role->value }}</span>
+
+                        <div class="flex min-w-0 flex-col">
+                            <span @class([
+                                'break-words text-sm font-semibold',
+                                'text-black' => $member->is_active,
+                                'line-through text-muted' => !$member->is_active,
+                            ])>
+                                {{ $member->name }}
+                            </span>
+
+                            <span class="text-xs capitalize text-muted">
+                                {{ $member->role->value ?? 'user' }}
+                            </span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3">
+                    {{-- Status & Actions --}}
+                    <div class="flex flex-wrap items-center gap-3">
+
                         @if ($member->is_active)
                             <span
-                                class="rounded-full bg-[#dcfce7] px-2.5 py-0.5 text-xs font-semibold text-[#14532d] border border-[#bbf7d0]">Aktif</span>
+                                class="rounded-full border border-[#bbf7d0] bg-[#dcfce7] px-2.5 py-0.5 text-xs font-semibold text-[#14532d]">
+                                Aktif
+                            </span>
                         @else
-                            <span
-                                class="rounded-full bg-black/5 px-2.5 py-0.5 text-xs font-semibold text-muted">Nonaktif</span>
+                            <span class="rounded-full bg-black/5 px-2.5 py-0.5 text-xs font-semibold text-muted">
+                                Nonaktif
+                            </span>
                         @endif
 
                         @if ($me->isAdmin() && !$member->isAdmin() && $member->id !== $me->id)
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
+
+                                {{-- Toggle Staff --}}
                                 <form method="POST" action="{{ route('members.toggle-staff', $member) }}">
                                     @csrf
+
                                     <button type="submit"
-                                        class="inline-flex cursor-pointer min-h-11 items-center justify-center rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                        class="inline-flex min-h-10 items-center justify-center rounded-xl border border-line bg-white px-3 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                         {{ $member->role->name == 'Staff' ? 'Nonaktifkan Staff' : 'Aktifkan Staff' }}
                                     </button>
                                 </form>
+
+                                {{-- Toggle Status --}}
                                 <form method="POST" action="{{ route('members.toggle-status', $member) }}">
                                     @csrf
+
                                     <button type="submit"
-                                        class="inline-flex cursor-pointer min-h-11 items-center justify-center rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                        class="inline-flex min-h-10 items-center justify-center rounded-xl border border-line bg-white px-3 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                         {{ $member->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                     </button>
                                 </form>
+
                             </div>
                         @endif
                     </div>
                 </div>
+
             @empty
-                <p class="px-6 py-12 text-center text-xs text-muted">
-                    {{ !empty($search) ? 'Tidak ditemukan anggota yang sesuai pencarian.' : 'Belum ada anggota terdaftar.' }}
-                </p>
+                <div class="px-6 py-14 text-center">
+                    <div class="mx-auto mb-3 flex size-11 items-center justify-center rounded-full bg-black/5">
+                        <svg class="size-5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.7">
+                            <path d="M9 12l2 2 4-4M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
+                        </svg>
+                    </div>
+
+                    <p class="text-sm font-semibold text-black">
+                        {{ !empty($search) ? 'Anggota tidak ditemukan' : 'Belum ada anggota terdaftar' }}
+                    </p>
+
+                    <p class="mt-1 text-xs text-muted">
+                        {{ !empty($search)
+                            ? 'Coba gunakan kata kunci pencarian yang berbeda.'
+                            : 'Anggota yang terdaftar akan muncul di sini.' }}
+                    </p>
+                </div>
             @endforelse
+
+        </div>
+
+        {{-- Pagination --}}
+        <div class="flex flex-wrap items-center justify-between gap-4 border-t border-line px-4 py-4 sm:px-6">
+
+            <div class="text-xs text-muted">
+                Menampilkan
+                <span class="font-semibold text-black">
+                    {{ $users->firstItem() ?? 0 }}–{{ $users->lastItem() ?? 0 }}
+                </span>
+                dari
+                <span class="font-semibold text-black">
+                    {{ $users->total() }}
+                </span>
+                anggota
+            </div>
+
+            <div class="flex items-center gap-3">
+
+                <span class="text-xs font-semibold tabular-nums text-black">
+                    {{ $users->currentPage() }} / {{ max(1, $users->lastPage()) }}
+                </span>
+
+                <a href="{{ $users->previousPageUrl() ?? '#' }}" @class([
+                    'flex size-9 items-center justify-center rounded-lg border border-line transition',
+                    'pointer-events-none opacity-30' => !$users->previousPageUrl(),
+                    'hover:bg-black/5' => $users->previousPageUrl(),
+                ])
+                    aria-label="Halaman sebelumnya">
+
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                </a>
+
+                <a href="{{ $users->nextPageUrl() ?? '#' }}" @class([
+                    'flex size-9 items-center justify-center rounded-lg border border-line transition',
+                    'pointer-events-none opacity-30' => !$users->nextPageUrl(),
+                    'hover:bg-black/5' => $users->nextPageUrl(),
+                ])
+                    aria-label="Halaman berikutnya">
+
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m9 18 6-6-6-6" />
+                    </svg>
+                </a>
+
+            </div>
         </div>
     </section>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -448,6 +560,7 @@
 
                     selectedInputs.appendChild(input);
                 });
+
             }
 
             checkboxes.forEach(checkbox => {

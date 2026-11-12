@@ -26,23 +26,28 @@ class MemberController extends Controller
 
         $search = trim((string) $request->query('q'));
 
-        $users = User::query()
-            ->when($search !== '', fn ($query) => $query->where(
+        $users = User::query()->when($search !== '', fn ($query) => $query->where(
                 fn ($q) => $q->where('name', 'like', "%{$search}%")
                     ->orWhere('student_no', 'like', "%{$search}%")
             ))
             ->orderBy('is_active', 'desc')
             ->orderByRaw('CAST(student_no AS UNSIGNED) ASC, student_no ASC')
-            ->get();
+            ->paginate(10, ['*'], 'members_page')
+            ->withQueryString();
+
+        // Statistik seluruh anggota, bukan hanya halaman aktif.
+        $activeMembers = User::where('is_active', true)->count();
+        $inactiveMembers = User::where('is_active', false)->count();
 
         $allUsers = User::all();
 
         return view('members', [
-            'pending' => PendingMember::with('creator')->where('expires_at', '>', now())->orderBy('expires_at')->paginate(10)->withQueryString(),
+            'pending' => PendingMember::with('creator')->where('expires_at', '>', now())->orderBy('expires_at')->paginate(7)->withQueryString(),
             'users' => $users,
+            'allUsers' => $allUsers,
             'search' => $search,
-            'activeMembers' => $allUsers->where('is_active', true)->count(),
-            'inactiveMembers' => $allUsers->where('is_active', false)->count(),
+            'activeMembers' => $activeMembers,
+            'inactiveMembers' => $inactiveMembers,
         ]);
     }
 
@@ -195,5 +200,45 @@ class MemberController extends Controller
         }, $filename, [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
+    }
+
+    public function bulkAction(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()->canManageMembers(), 403);
+
+        $action = $request->input('action');
+        $userIds = $request->input('candidate_ids', []);
+
+        if (empty($userIds)) {
+            return back()->with('error', 'Tidak ada anggota yang dipilih untuk aksi massal.');
+        }
+
+        $users = PendingMember::whereIn('id', $userIds)->get();
+
+        switch ($action) {
+            case 'approve':
+                foreach ($users as $user) {
+                    try {
+                        $user = $this->verification->approve($user, $request->user());
+                    } catch (AuthorizationException $e) {
+                        return back()->with('error', $e->getMessage());
+                    }
+                }
+
+                return back()->with('status', 'Anggota terpilih berhasil diaktifkan kembali.');
+            case 'reject':
+                foreach ($users as $user) {
+                    try {
+                        $this->verification->reject($user, $request->user());
+                    } catch (AuthorizationException $e) {
+                        return back()->with('error', $e->getMessage());
+                    }
+
+                }
+
+                return back()->with('status', 'Anggota terpilih berhasil dinonaktifkan.');
+            default:
+                return back()->with('error', 'Aksi massal tidak valid.');
+        }
     }
 }

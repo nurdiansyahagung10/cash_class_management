@@ -24,7 +24,7 @@ class ExpenseController extends Controller
             ->when($search !== '', fn ($query) => $query->where(
                 // Guests may not search notes: a match would reveal text they are not shown.
                 fn ($q) => $q->where('title', 'like', "%{$search}%")
-                    ->when(! $isGuest, fn ($q) => $q->orWhere('notes', 'like', "%{$search}%"))
+                    ->when(!$isGuest, fn ($q) => $q->orWhere('notes', 'like', "%{$search}%"))
             ))
             ->latest('spent_at')
             ->latest('id')

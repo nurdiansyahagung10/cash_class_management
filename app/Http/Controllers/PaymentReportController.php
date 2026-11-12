@@ -268,7 +268,7 @@ class PaymentReportController extends Controller
 
                 foreach ($matrixData['periods'] as $period) {
                     $cell = $row['cells'][$period->id] ?? null;
-                    if (! $cell || $cell['status'] === 'none') {
+                    if (!$cell || $cell['status'] === 'none') {
                         $line[] = '-';
                     } elseif ($cell['status'] === 'paid') {
                         $line[] = 'Lunas ('.$cell['paid'].')';
@@ -349,7 +349,7 @@ class PaymentReportController extends Controller
                 $periodTitle = $payload['period_title'] ?? $payload['period'] ?? 'Uang Kas';
                 $viaStaff = ! empty($payload['paid_by_staff_name']) ? " (via Bendahara: {$payload['paid_by_staff_name']})" : '';
                 $desc = "Penerimaan iuran kas: {$name}".($studentNo !== '' ? " ({$studentNo})" : '')." — {$periodTitle}{$viaStaff}";
-                if (! empty($payload['order_id'])) {
+                if (!empty($payload['order_id'])) {
                     $ref = $payload['order_id'];
                 }
             } elseif ($entry->type === LedgerEntryType::ExpenseApproved) {
@@ -358,7 +358,7 @@ class PaymentReportController extends Controller
                 $totalCredit += $amount;
                 $title = $payload['title'] ?? 'Pengeluaran kas kelas';
                 $desc = "Pengeluaran kas: {$title}";
-                if (! empty($payload['expense_id'])) {
+                if (!empty($payload['expense_id'])) {
                     $ref = 'EXP-'.$payload['expense_id'];
                 }
             } elseif ($entry->type === LedgerEntryType::Reversal) {
@@ -442,7 +442,7 @@ class PaymentReportController extends Controller
 
             foreach ($allPeriods as $period) {
                 $inv = $invoicesMap[$member->id][$period->id] ?? null;
-                if (! $inv) {
+                if (!$inv) {
                     $cells[$period->id] = [
                         'status' => 'none',
                         'paid' => 0,
@@ -529,7 +529,7 @@ class PaymentReportController extends Controller
             ])
             ->values();
 
-        if (! $applyStatusFilter) {
+        if (!$applyStatusFilter) {
             return $invoices;
         }
 

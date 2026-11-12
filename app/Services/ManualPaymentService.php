@@ -48,7 +48,7 @@ class ManualPaymentService
                 'is_late' => $isLate,
             ];
 
-            if (! empty($payment->gateway_response['paid_by_staff_name'])) {
+            if (!empty($payment->gateway_response['paid_by_staff_name'])) {
                 $payload['paid_by_staff_id'] = $payment->gateway_response['paid_by_staff_id'] ?? null;
                 $payload['paid_by_staff_name'] = $payment->gateway_response['paid_by_staff_name'];
             }

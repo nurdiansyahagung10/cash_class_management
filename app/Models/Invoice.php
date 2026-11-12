@@ -55,7 +55,7 @@ class Invoice extends Model
 
     public function overdueDays(): int
     {
-        if (! $this->isOverdue()) {
+        if (!$this->isOverdue()) {
             return 0;
         }
 

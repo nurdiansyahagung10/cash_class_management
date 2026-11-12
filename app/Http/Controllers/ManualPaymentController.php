@@ -46,7 +46,7 @@ class ManualPaymentController extends Controller
 
         $uri = $this->resolveQrContent($invoice->period->qris_url, $targetAmount, $qrisService);
 
-        if (! $pendingPayment) {
+        if (!$pendingPayment) {
             $existingCount = $invoice->payments()->count();
             $orderId = $existingCount === 0 ? 'KAS-'.$invoice->id : 'KAS-'.$invoice->id.'-'.($existingCount + 1);
 
@@ -66,7 +66,7 @@ class ManualPaymentController extends Controller
             if ($payment->qr_content !== $uri && $uri !== null) {
                 $updates['qr_content'] = $uri;
             }
-            if (! $payment->category_id && $invoice->period->category_id) {
+            if (!$payment->category_id && $invoice->period->category_id) {
                 $updates['category_id'] = $invoice->period->category_id;
             }
             if ($updates !== []) {
@@ -109,7 +109,7 @@ class ManualPaymentController extends Controller
         $uri = $this->resolveQrContent($invoice->period->qris_url, $targetAmount, $qrisService);
 
         $payment = $invoice->payments()->where('status', 'pending')->latest('id')->first();
-        if (! $payment) {
+        if (!$payment) {
             $existingCount = $invoice->payments()->count();
             $orderId = $existingCount === 0 ? 'KAS-'.$invoice->id : 'KAS-'.$invoice->id.'-'.($existingCount + 1);
             $invoice->payments()->create([
@@ -180,7 +180,7 @@ class ManualPaymentController extends Controller
             $gatewayData['paid_by_staff_name'] = $request->user()->name;
         }
 
-        if (! $payment) {
+        if (!$payment) {
             $existingCount = $invoice->payments()->count();
             $orderId = $existingCount === 0 ? 'KAS-'.$invoice->id : 'KAS-'.$invoice->id.'-'.($existingCount + 1);
             $payment = $invoice->payments()->create([

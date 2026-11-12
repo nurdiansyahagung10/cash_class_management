@@ -22,7 +22,7 @@ class MemberVerification
      */
     public function add(User $creator, string $name, string $studentNo, string $initialPassword): PendingMember
     {
-        if (! in_array($creator->role, [UserRole::Staff, UserRole::Admin], true)) {
+        if (!in_array($creator->role, [UserRole::Staff, UserRole::Admin], true)) {
             throw new AuthorizationException('Only staff or admin can add candidates.');
         }
 

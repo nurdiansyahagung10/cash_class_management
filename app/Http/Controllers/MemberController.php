@@ -101,7 +101,7 @@ class MemberController extends Controller
         $user->is_active = ! $user->is_active;
         $user->save();
 
-        if (! $user->is_active) {
+        if (!$user->is_active) {
             $ledger->append(
                 LedgerEntryType::AccountDeactivated,
                 [
@@ -172,12 +172,12 @@ class MemberController extends Controller
         $result = $importService->import($request->file('file'), $request->user());
 
         $status = "{$result['success']} calon anggota berhasil diimpor ke antrean verifikasi.";
-        if (! empty($result['skipped'])) {
+        if (!empty($result['skipped'])) {
             $status .= ' ('.count($result['skipped']).' baris dilewati/gagal).';
         }
 
         $redirect = redirect()->route('members.index')->with('status', $status);
-        if (! empty($result['skipped'])) {
+        if (!empty($result['skipped'])) {
             $redirect->with('import_errors', $result['skipped']);
         }
 

@@ -35,7 +35,7 @@ class LoginController extends Controller
                 ->with('error', $message);
         }
 
-        if (! Auth::attempt([
+        if (!Auth::attempt([
             'student_no' => $validated['student_no'],
             'password' => $validated['password'],
             'is_active' => true,

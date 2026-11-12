@@ -15,7 +15,7 @@ class StaffAdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->user()?->isStaff() && ! $request->user()?->isAdmin()) {
+        if (!$request->user()?->isStaff() && !$request->user()?->isAdmin()) {
             return redirect()->route('dashboard');
         }
 

@@ -123,11 +123,11 @@ class PeriodController extends Controller
             'qris_url' => ['nullable', 'string', 'max:4096', $qrisRequiredRule],
         ]);
 
-        if (! empty($validated['qris_url']) && ! str_starts_with(trim($validated['qris_url']), '000201') && ! filter_var($validated['qris_url'], FILTER_VALIDATE_URL)) {
+        if (!empty($validated['qris_url']) && ! str_starts_with(trim($validated['qris_url']), '000201') && ! filter_var($validated['qris_url'], FILTER_VALIDATE_URL)) {
             return back()->withErrors(['qris_url' => 'Format URL atau string QRIS tidak valid.'])->withInput();
         }
 
-        if (! empty($validated['new_category'])) {
+        if (!empty($validated['new_category'])) {
             $cat = Category::firstOrCreate(['name' => trim($validated['new_category'])]);
             $validated['category_id'] = $cat->id;
         }
@@ -138,14 +138,14 @@ class PeriodController extends Controller
             $validated['category_id'] = $defaultCat->id;
         }
 
-        if (! empty($validated['qris_payload'])) {
+        if (!empty($validated['qris_payload'])) {
             $validated['qris_url'] = trim($validated['qris_payload']);
         } elseif ($request->hasFile('qris_image')) {
             $path = $request->file('qris_image')->store('qris', 'public');
             $validated['qris_url'] = asset('storage/'.$path);
-        } elseif (! empty($validated['qris_url'])) {
+        } elseif (!empty($validated['qris_url'])) {
             $validated['qris_url'] = trim($validated['qris_url']);
-        } elseif (! empty($validated['existing_qris'])) {
+        } elseif (!empty($validated['existing_qris'])) {
             $validated['qris_url'] = trim($validated['existing_qris']);
         } elseif ($latestQrisUrl) {
             $validated['qris_url'] = $latestQrisUrl;

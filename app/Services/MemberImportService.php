@@ -115,7 +115,7 @@ class MemberImportService
     {
         $rows = [];
         $handle = fopen($path, 'r');
-        if (! $handle) {
+        if (!$handle) {
             return [];
         }
 
@@ -130,7 +130,7 @@ class MemberImportService
         $delimiter = (substr_count($firstLine, ';') > substr_count($firstLine, ',')) ? ';' : ',';
 
         $firstRow = str_getcsv($firstLine, $delimiter);
-        if (! empty($firstRow)) {
+        if (!empty($firstRow)) {
             $rows[] = array_map('trim', $firstRow);
         }
 
@@ -148,7 +148,7 @@ class MemberImportService
      */
     private function parseXlsx(string $path): array
     {
-        if (! class_exists(ZipArchive::class)) {
+        if (!class_exists(ZipArchive::class)) {
             throw new \RuntimeException('Ekstensi PHP ZipArchive tidak tersedia di server.');
         }
 
@@ -196,7 +196,7 @@ class MemberImportService
         }
 
         $xml = @simplexml_load_string($sheetXmlContent);
-        if (! $xml || ! isset($xml->sheetData)) {
+        if (!$xml || ! isset($xml->sheetData)) {
             return [];
         }
 

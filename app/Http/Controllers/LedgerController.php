@@ -23,9 +23,9 @@ class LedgerController extends Controller
 
         $entries = LedgerEntry::query()
             ->with('actor')
-            ->when($search !== '', fn ($query) => $query->where(
+            ->when($search !== '', fn($query) => $query->where(
                 // Guests may not search payloads: matching a name would reveal who paid.
-                fn ($q) => $q->when(! $isGuest, fn ($q) => $q->orWhere('payload', 'like', "%{$search}%"))
+                fn($q) => $q->when(!$isGuest, fn($q) => $q->orWhere('payload', 'like', "%{$search}%"))
                     ->orWhere('type', 'like', "%{$search}%")
                     ->orWhere('hash', 'like', "{$search}%")
             ))
@@ -67,7 +67,7 @@ class LedgerController extends Controller
         abort_unless($request->user()->isAdmin(), 403);
 
         $allowedTypes = [LedgerEntryType::PaymentConfirmed, LedgerEntryType::ExpenseApproved];
-        if (! in_array($entry->type, $allowedTypes, true)) {
+        if (!in_array($entry->type, $allowedTypes, true)) {
             return back()->with('error', 'Hanya entri konfirmasi pembayaran dan pengeluaran yang dapat dibatalkan.');
         }
 
@@ -127,7 +127,7 @@ class LedgerController extends Controller
 
     public function export(): StreamedResponse
     {
-        $filename = 'ledger-kas-kelas-'.now()->format('Ymd-His').'.csv';
+        $filename = 'ledger-kas-kelas-' . now()->format('Ymd-His') . '.csv';
 
         return response()->streamDownload(function () {
             $handle = fopen('php://output', 'w');

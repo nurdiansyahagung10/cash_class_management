@@ -33,7 +33,7 @@ class QrisService
             $payload = $matches[0];
         } else {
             $payload = rtrim($payload, " \t\n\r\0\x0B");
-            if (! str_ends_with($payload, '6304')) {
+            if (!str_ends_with($payload, '6304')) {
                 $payload .= '6304';
             }
         }

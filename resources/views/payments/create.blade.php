@@ -106,7 +106,7 @@
                         Pelunasan Sisa Tagihan (Sudah dicicil Rp{{ number_format($paidAmount, 0, ',', '.') }})
                     </span>
                 @endif
-                @if (! $isDynamicQris)
+                @if (!$isDynamicQris)
                     <button type="button"
                             onclick="navigator.clipboard.writeText('{{ $payment->amount }}'); this.innerText = 'Nominal tersalin!'; setTimeout(() => this.innerText = 'Salin nominal angka', 2000)"
                             class="mt-1 inline-flex min-h-9 items-center rounded-xl border border-line bg-canvas/60 px-3 text-xs font-semibold text-muted hover:text-black transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">

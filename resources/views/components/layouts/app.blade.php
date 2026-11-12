@@ -3,7 +3,12 @@
     $user = auth()->user();
     $links = [
         ['route' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'home', 'show' => true],
-        ['route' => 'reports.payments', 'label' => 'Laporan pembayaran', 'icon' => 'billing', 'show' => true],
+        [
+            'route' => 'reports.payments',
+            'label' => 'Laporan pembayaran',
+            'icon' => 'billing',
+            'show' => $user->canManageMembers(),
+        ],
         ['route' => 'expenses.index', 'label' => 'Pengeluaran kas', 'icon' => 'expense', 'show' => true],
         ['route' => 'ledger', 'label' => 'Ledger publik', 'icon' => 'ledger', 'show' => true],
         [

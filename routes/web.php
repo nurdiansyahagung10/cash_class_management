@@ -29,7 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/password', [PasswordController::class, 'update'])->name('password.update');
 
     Route::middleware('password.changed')->group(function () {
-        Route::middleware(['staff', 'admin'])->group(function () {
+        Route::middleware('staff_admin')->group(function () {
             Route::get('/reports/payments', [PaymentReportController::class, 'index'])->name('reports.payments');
             Route::get('/reports/payments/export', [PaymentReportController::class, 'export'])->name('reports.payments.export');
             Route::get('/reports/payments/export-bku', [PaymentReportController::class, 'exportBku'])->name('reports.payments.export-bku');
@@ -40,6 +40,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/periods', [PeriodController::class, 'index'])->name('periods.index');
             Route::post('/periods', [PeriodController::class, 'store'])->name('periods.store');
             Route::get('/periods/{period}', [PeriodController::class, 'show'])->name('periods.show');
+            Route::get('/reports/payments', [PaymentReportController::class, 'index'])->name('reports.payments');
+            Route::get('/reports/payments/export', [PaymentReportController::class, 'export'])->name('reports.payments.export');
+            Route::get('/reports/payments/export-bku', [PaymentReportController::class, 'exportBku'])->name('reports.payments.export-bku');
+            Route::get('/reports/payments/export-matrix', [PaymentReportController::class, 'exportMatrix'])->name('reports.payments.export-matrix');
 
             Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
             Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
@@ -47,10 +51,6 @@ Route::middleware('auth')->group(function () {
 
         Route::middleware('admin')->group(function () {
 
-            Route::get('/reports/payments', [PaymentReportController::class, 'index'])->name('reports.payments');
-            Route::get('/reports/payments/export', [PaymentReportController::class, 'export'])->name('reports.payments.export');
-            Route::get('/reports/payments/export-bku', [PaymentReportController::class, 'exportBku'])->name('reports.payments.export-bku');
-            Route::get('/reports/payments/export-matrix', [PaymentReportController::class, 'exportMatrix'])->name('reports.payments.export-matrix');
             Route::get('/members', [MemberController::class, 'index'])->name('members.index');
             Route::post('/members', [MemberController::class, 'store'])->name('members.store');
             Route::post('/members/import', [MemberController::class, 'import'])->name('members.import');
@@ -59,7 +59,6 @@ Route::middleware('auth')->group(function () {
             Route::delete('/members/{pending}', [MemberController::class, 'reject'])->name('members.reject');
             Route::post('/members/{user}/toggle-staff', [MemberController::class, 'toggleStaff'])->name('members.toggle-staff');
             Route::post('/members/{user}/toggle-status', [MemberController::class, 'toggleStatus'])->name('members.toggle-status');
-            Route::post('/members/{user}/reset-password', [MemberController::class, 'resetPassword'])->name('members.reset-password');
             Route::post('/members/bulk-action', [MemberController::class, 'bulkAction'])->name('members.bulk-action');
 
         });

@@ -3,6 +3,7 @@
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\ContentSecurityPolicy;
 use App\Http\Middleware\EnsurePasswordChanged;
+use App\Http\Middleware\StaffAdminMiddleware;
 use App\Http\Middleware\StaffMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'password.changed' => EnsurePasswordChanged::class,
             'admin' => AdminMiddleware::class,
             'staff' => StaffMiddleware::class,
+            'staff_admin' => StaffAdminMiddleware::class,
         ]);
         $middleware->append(ContentSecurityPolicy::class);
     })

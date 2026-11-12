@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\ContentSecurityPolicy;
 use App\Http\Middleware\EnsurePasswordChanged;
+use App\Http\Middleware\StaffMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,8 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['password.changed' => EnsurePasswordChanged::class]);
-        $middleware->preventRequestForgery(except: ['payments/midtrans/notification']);
+        $middleware->alias([
+            'password.changed' => EnsurePasswordChanged::class,
+            'admin' => AdminMiddleware::class,
+            'staff' => StaffMiddleware::class,
+        ]);
         $middleware->append(ContentSecurityPolicy::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

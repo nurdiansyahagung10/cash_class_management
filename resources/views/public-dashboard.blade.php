@@ -24,29 +24,76 @@
         </p>
     </header>
 
-    <section aria-label="Ringkasan kas" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        @foreach ([
-        ['Saldo kas', 'Rp' . number_format($balance, 0, ',', '.'), 'Dihitung dari ledger'],
-        ['Anggota aktif', $activeMembers, 'Anggota yang ditagih'],
-        ['Tingkat pelunasan', $paidRate . '%', 'Tagihan yang sudah lunas'],
-        [
-            'Integritas ledger',
-            $brokenSeq === null && $anchorsIntact ? 'Utuh' : 'Terputus',
-            match (true) {
-                $brokenSeq !== null => 'Entri bermasalah: #' . $brokenSeq,
-                !$anchorsIntact => 'Anchor harian tidak cocok',
-                default => 'Rantai hash SHA-256 valid',
-            },
-        ],
-    ] as [$label, $value, $detail])
-            <article
-                class="flex min-h-28 flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-xs">
-                <h2 class="text-[11px] font-semibold uppercase tracking-wider text-muted">{{ $label }}</h2>
-                <p class="my-1 text-2xl font-bold tracking-tight text-black tabular-nums sm:text-3xl">
-                    {{ $value }}</p>
-                <p class="text-[11px] text-muted">{{ $detail }}</p>
-            </article>
-        @endforeach
+    {{-- Notion / Figma Stat Tiles Carousel --}}
+    <section aria-label="Ringkasan" class="relative min-w-0">
+
+        @php
+            $stats = [
+                ['Saldo kas', 'Rp' . number_format($balance, 0, ',', '.'), 'Dihitung dari ledger'],
+                ['Anggota aktif', $activeMembers, 'Anggota yang ditagih'],
+                ['Tingkat pelunasan', $paidRate . '%', 'Tagihan yang sudah lunas'],
+                [
+                    'Integritas ledger',
+                    $brokenSeq === null && $anchorsIntact ? 'Utuh' : 'Terputus',
+                    match (true) {
+                        $brokenSeq !== null => 'Entri bermasalah: #' . $brokenSeq,
+                        !$anchorsIntact => 'Anchor harian tidak cocok',
+                        default => 'Rantai hash SHA-256 valid',
+                    },
+                ],
+            ];
+        @endphp
+
+        {{-- Carousel Header --}}
+        <div class="mb-4 flex items-center justify-between gap-4">
+            <h2 class="text-sm font-semibold tracking-tight text-black">
+                Ringkasan
+            </h2>
+
+            <div class="flex items-center gap-2">
+                <button type="button"
+                    class="stats-prev flex h-8 w-8 items-center justify-center rounded-full border border-line bg-white text-black transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30"
+                    aria-label="Statistik sebelumnya">
+                    <span aria-hidden="true">&larr;</span>
+                </button>
+
+                <button type="button"
+                    class="stats-next flex h-8 w-8 items-center justify-center rounded-full border border-line bg-white text-black transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30"
+                    aria-label="Statistik berikutnya">
+                    <span aria-hidden="true">&rarr;</span>
+                </button>
+            </div>
+        </div>
+
+        {{-- Swiper --}}
+        <div class="swiper stats-swiper min-w-0">
+            <div class="swiper-wrapper">
+
+                @foreach ($stats as [$label, $value, $detail])
+                    <div class="swiper-slide !h-auto">
+                        <article
+                            class="flex h-full min-h-32 flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-xs transition-all hover:border-black/20 hover:shadow-sm">
+
+                            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                                {{ $label }}
+                            </h3>
+
+                            <p
+                                class="my-2 break-words text-2xl font-bold tracking-tight text-black tabular-nums sm:text-3xl">
+                                {{ $value }}
+                            </p>
+
+                            <p class="text-[11px] text-muted">
+                                {{ $detail }}
+                            </p>
+
+                        </article>
+                    </div>
+                @endforeach
+
+            </div>
+        </div>
+
     </section>
 
     @if ($latestAnchor)
@@ -69,4 +116,40 @@
     @endif
 
     <x-cash-calendar :calendar="$cashCalendar" />
+
+    <script nonce="{{ Vite::cspNonce() }}">
+        document.addEventListener('DOMContentLoaded', () => {
+            const statsCarousel = document.querySelector('.stats-swiper');
+
+            if (!statsCarousel || typeof Swiper === 'undefined') return;
+
+            new Swiper(statsCarousel, {
+                slidesPerView: 1.15,
+                spaceBetween: 16,
+                speed: 450,
+                grabCursor: true,
+                watchOverflow: true,
+
+                navigation: {
+                    nextEl: '.stats-next',
+                    prevEl: '.stats-prev',
+                },
+
+                breakpoints: {
+                    480: {
+                        slidesPerView: 1.5,
+                    },
+                    640: {
+                        slidesPerView: 2,
+                    },
+                    1024: {
+                        slidesPerView: 3,
+                    },
+                    1280: {
+                        slidesPerView: 4,
+                    },
+                },
+            });
+        });
+    </script>
 </x-layouts.public>

@@ -17,6 +17,8 @@
     <title>{{ $title }} · Kas Kelas 1A</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|source-serif-4:400,600" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -107,3 +109,5 @@
         withoutTransition(() => setOpen(mobileMq.matches ? false : isOpen()));
     });
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>

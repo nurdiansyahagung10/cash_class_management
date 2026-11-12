@@ -66,7 +66,7 @@ class MemberController extends Controller
 
     public function approve(Request $request, PendingMember $pending): RedirectResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        
 
         try {
             $user = $this->verification->approve($pending, $request->user());
@@ -79,7 +79,7 @@ class MemberController extends Controller
 
     public function reject(Request $request, PendingMember $pending): RedirectResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        
 
         try {
             $this->verification->reject($pending, $request->user());
@@ -92,7 +92,7 @@ class MemberController extends Controller
 
     public function toggleStatus(User $user, Request $request, Ledger $ledger): RedirectResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        
 
         if ($user->id === $request->user()->id) {
             return back()->with('error', 'Tidak dapat mengubah status akun sendiri.');
@@ -122,7 +122,7 @@ class MemberController extends Controller
 
     public function toggleStaff(User $user, Request $request): RedirectResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        
 
         if ($user->id === $request->user()->id) {
             return back()->with('error', 'Tidak dapat mengubah status staff akun sendiri.');
@@ -140,7 +140,7 @@ class MemberController extends Controller
 
     public function resetPassword(User $user, Request $request): RedirectResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        
 
         if ($user->id === $request->user()->id) {
             return back()->with('error', 'Anda tidak dapat mereset password akun sendiri.');

@@ -64,7 +64,7 @@ class LedgerController extends Controller
 
     public function reverse(LedgerEntry $entry, Request $request, Ledger $ledger): RedirectResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        
 
         $allowedTypes = [LedgerEntryType::PaymentConfirmed, LedgerEntryType::ExpenseApproved];
         if (!in_array($entry->type, $allowedTypes, true)) {

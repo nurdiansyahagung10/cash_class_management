@@ -33,6 +33,17 @@
                     / anggota</p>
             </div>
             <div class="flex items-center gap-2">
+                @if ($period->canBeCancelled())
+                    <form method="POST" action="{{ route('periods.destroy', $period) }}" class="print:hidden"
+                        onsubmit="return confirm('Batalkan tagihan ini? Semua tagihan anggota akan dihapus.')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="inline-flex min-h-11 items-center rounded-xl bg-[#fde4e0] px-4 text-xs font-semibold text-[#8f1d0e] transition-colors hover:bg-[#fbd0c9]">
+                            Batalkan Tagihan
+                        </button>
+                    </form>
+                @endif
                 <button type="button" onclick="window.print()"
                     class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line bg-white px-4 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-black/5 print:hidden">
                     <svg class="size-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">

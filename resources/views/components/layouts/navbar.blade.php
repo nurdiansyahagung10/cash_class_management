@@ -38,7 +38,7 @@
         {{-- Sidebar Navigation (Desktop & Mobile) --}}
 
         <nav aria-label="Navigasi utama"
-            class=" border-line bg-canvas/80 backdrop-blur-md h-screen md:h-screen md:sticky fixed top-0 left-0 w-64 overflow-y-auto border-r border-b-0 z-999 overflow-hidden transition-[left] duration-300 ease-in-out ">
+            class=" border-line bg-canvas/80 backdrop-blur-md h-screen  md:sticky fixed top-0 left-0 w-64 overflow-y-auto border-r border-b-0 z-999 overflow-hidden transition-[left] duration-300 ease-in-out ">
             <div class="p-5 flex shrink-0 flex-col gap-1 h-screen">
                 {{-- Brand Header --}}
                 <div class="flex items-center justify-between px-2 py-2 pb-6">

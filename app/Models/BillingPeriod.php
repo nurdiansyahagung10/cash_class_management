@@ -37,6 +37,15 @@ class BillingPeriod extends Model
     }
 
     /**
+     * Cancellable only within a day of creation and while no payment (of any status) exists.
+     */
+    public function canBeCancelled(): bool
+    {
+        return $this->created_at->addDay()->isFuture()
+            && ! Payment::whereIn('invoice_id', $this->invoices()->select('id'))->exists();
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array

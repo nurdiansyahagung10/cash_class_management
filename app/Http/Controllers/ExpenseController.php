@@ -24,19 +24,24 @@ class ExpenseController extends Controller
             ->when($search !== '', fn ($query) => $query->where(
                 // Guests may not search notes: a match would reveal text they are not shown.
                 fn ($q) => $q->where('title', 'like', "%{$search}%")
-                    ->when(!$isGuest, fn ($q) => $q->orWhere('notes', 'like', "%{$search}%"))
+                    ->when(! $isGuest, fn ($q) => $q->orWhere('notes', 'like', "%{$search}%"))
             ))
             ->latest('spent_at')
             ->latest('id')
             ->paginate(15)
             ->withQueryString();
 
-        return view('expenses.index', [
-            'expenses' => $expenses,
+        $stats = [
             'totalExpense' => Expense::sum('amount'),
             'balance' => $ledger->balance(),
+            'unpaidInvoices' => Expense::count(),
+        ];
+
+        return view('expenses.index', [
+            'expenses' => $expenses,
             'search' => $search,
             'isGuest' => $isGuest,
+            'stats' => $stats,
         ]);
     }
 

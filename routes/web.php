@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('password.changed')->group(function () {
         Route::middleware('staff_admin')->group(function () {
+            Route::get('/reports/payments/pdf', [PaymentReportController::class, 'pdf'])->name('reports.payments.pdf');
             Route::get('/reports/payments', [PaymentReportController::class, 'index'])->name('reports.payments');
             Route::get('/reports/payments/export', [PaymentReportController::class, 'export'])->name('reports.payments.export');
             Route::get('/reports/payments/export-bku', [PaymentReportController::class, 'exportBku'])->name('reports.payments.export-bku');
@@ -40,6 +41,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/periods', [PeriodController::class, 'index'])->name('periods.index');
             Route::post('/periods', [PeriodController::class, 'store'])->name('periods.store');
             Route::get('/periods/{period}', [PeriodController::class, 'show'])->name('periods.show');
+            Route::delete('/periods/{period}', [PeriodController::class, 'destroy'])->name('periods.destroy');
             Route::get('/reports/payments', [PaymentReportController::class, 'index'])->name('reports.payments');
             Route::get('/reports/payments/export', [PaymentReportController::class, 'export'])->name('reports.payments.export');
             Route::get('/reports/payments/export-bku', [PaymentReportController::class, 'exportBku'])->name('reports.payments.export-bku');

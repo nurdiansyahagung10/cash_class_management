@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BillingPeriod;
+use App\Models\Category;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\ManualPaymentService;
@@ -46,7 +48,7 @@ class ManualPaymentController extends Controller
 
         $uri = $this->resolveQrContent($invoice->period->qris_url, $targetAmount, $qrisService);
 
-        if (!$pendingPayment) {
+        if (! $pendingPayment) {
             $existingCount = $invoice->payments()->count();
             $orderId = $existingCount === 0 ? 'KAS-'.$invoice->id : 'KAS-'.$invoice->id.'-'.($existingCount + 1);
 
@@ -66,7 +68,7 @@ class ManualPaymentController extends Controller
             if ($payment->qr_content !== $uri && $uri !== null) {
                 $updates['qr_content'] = $uri;
             }
-            if (!$payment->category_id && $invoice->period->category_id) {
+            if (! $payment->category_id && $invoice->period->category_id) {
                 $updates['category_id'] = $invoice->period->category_id;
             }
             if ($updates !== []) {
@@ -109,7 +111,7 @@ class ManualPaymentController extends Controller
         $uri = $this->resolveQrContent($invoice->period->qris_url, $targetAmount, $qrisService);
 
         $payment = $invoice->payments()->where('status', 'pending')->latest('id')->first();
-        if (!$payment) {
+        if (! $payment) {
             $existingCount = $invoice->payments()->count();
             $orderId = $existingCount === 0 ? 'KAS-'.$invoice->id : 'KAS-'.$invoice->id.'-'.($existingCount + 1);
             $invoice->payments()->create([
@@ -180,7 +182,7 @@ class ManualPaymentController extends Controller
             $gatewayData['paid_by_staff_name'] = $request->user()->name;
         }
 
-        if (!$payment) {
+        if (! $payment) {
             $existingCount = $invoice->payments()->count();
             $orderId = $existingCount === 0 ? 'KAS-'.$invoice->id : 'KAS-'.$invoice->id.'-'.($existingCount + 1);
             $payment = $invoice->payments()->create([
@@ -249,20 +251,47 @@ class ManualPaymentController extends Controller
 
     public function index(Request $request): View
     {
-        
+        $tab = $request->query('tab') === 'approved' ? 'approved' : 'pending';
+        $periodId = $request->integer('period_id') ?: null;
+        $categoryId = $request->integer('category_id') ?: null;
+        $search = trim((string) $request->query('q'));
+
+        $filtered = fn (string $status) => Payment::query()
+            ->where('status', $status)
+            ->when($status === 'pending', fn ($q) => $q->whereNotNull('proof_path'))
+            ->when($periodId, fn ($q) => $q->whereHas('invoice', fn ($i) => $i->where('billing_period_id', $periodId)))
+            ->when($categoryId, fn ($q) => $q->where(
+                fn ($w) => $w->where('category_id', $categoryId)
+                    ->orWhereHas('invoice.period', fn ($p) => $p->where('category_id', $categoryId))
+            ))
+            ->when($search !== '', fn ($q) => $q->whereHas('invoice.user', fn ($u) => $u->where(
+                fn ($w) => $w->where('name', 'like', "%{$search}%")->orWhere('student_no', 'like', "%{$search}%")
+            )));
+
+        $payments = $filtered($tab === 'approved' ? 'paid' : 'pending')
+            ->with(['invoice.user', 'invoice.period.category', 'category', 'reviewer'])
+            ->when($tab === 'approved', fn ($q) => $q->orderByDesc('reviewed_at')->orderByDesc('id'), fn ($q) => $q->latest())
+            ->paginate(8)
+            ->withQueryString();
 
         return view('payments.review', [
-            'payments' => Payment::with(['invoice.user', 'invoice.period.category', 'category'])
-                ->where('status', 'pending')
-                ->whereNotNull('proof_path')
-                ->latest()
-                ->get(),
+            'payments' => $payments,
+            'tab' => $tab,
+            'pendingCount' => $filtered('pending')->count(),
+            'approvedCount' => $filtered('paid')->count(),
+            'periods' => BillingPeriod::orderByDesc('id')->get(['id', 'title']),
+            'categories' => Category::orderBy('name')->get(['id', 'name']),
+            'selectedPeriodId' => $periodId,
+            'selectedCategoryId' => $categoryId,
+            'search' => $search,
         ]);
     }
 
     public function approve(Payment $payment, Request $request, ManualPaymentService $service): RedirectResponse
     {
-        
+
+        abort_if($payment->needsAdminReview() && ! $request->user()->isAdmin(), 403, 'Pembayaran staf hanya dapat diverifikasi oleh admin.');
+
         $service->approve($payment, $request->user());
 
         return back()->with('status', 'Pembayaran diverifikasi dan dicatat ke ledger.');
@@ -270,7 +299,9 @@ class ManualPaymentController extends Controller
 
     public function reject(Payment $payment, Request $request): RedirectResponse
     {
-        
+
+        abort_if($payment->needsAdminReview() && ! $request->user()->isAdmin(), 403, 'Pembayaran staf hanya dapat diproses oleh admin.');
+
         if ($payment->isPaid()) {
             return back()->with('error', 'Pembayaran yang sudah lunas tidak dapat ditolak.');
         }

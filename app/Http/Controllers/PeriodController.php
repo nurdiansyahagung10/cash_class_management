@@ -6,11 +6,13 @@ use App\Enums\LedgerEntryType;
 use App\Enums\UserRole;
 use App\Models\BillingPeriod;
 use App\Models\Category;
+use App\Models\LedgerEntry;
 use App\Models\User;
 use App\Services\Ledger;
 use App\Services\PaymentReminder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -41,6 +43,16 @@ class PeriodController extends Controller
         } elseif ($status === 'active') {
             $periods = $periods->filter(fn ($p) => ! $p->due_date->isPast() && $p->paid_count < $p->invoices_count);
         }
+
+        $perPage = 8;
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $periods = (new LengthAwarePaginator(
+            $periods->forPage($page, $perPage)->values(),
+            $periods->count(),
+            $perPage,
+            $page,
+            ['path' => LengthAwarePaginator::resolveCurrentPath()]
+        ))->withQueryString();
 
         $existingQrisList = BillingPeriod::whereNotNull('qris_url')
             ->select('qris_url', 'title', 'id')
@@ -123,11 +135,11 @@ class PeriodController extends Controller
             'qris_url' => ['nullable', 'string', 'max:4096', $qrisRequiredRule],
         ]);
 
-        if (!empty($validated['qris_url']) && ! str_starts_with(trim($validated['qris_url']), '000201') && ! filter_var($validated['qris_url'], FILTER_VALIDATE_URL)) {
+        if (! empty($validated['qris_url']) && ! str_starts_with(trim($validated['qris_url']), '000201') && ! filter_var($validated['qris_url'], FILTER_VALIDATE_URL)) {
             return back()->withErrors(['qris_url' => 'Format URL atau string QRIS tidak valid.'])->withInput();
         }
 
-        if (!empty($validated['new_category'])) {
+        if (! empty($validated['new_category'])) {
             $cat = Category::firstOrCreate(['name' => trim($validated['new_category'])]);
             $validated['category_id'] = $cat->id;
         }
@@ -138,14 +150,14 @@ class PeriodController extends Controller
             $validated['category_id'] = $defaultCat->id;
         }
 
-        if (!empty($validated['qris_payload'])) {
+        if (! empty($validated['qris_payload'])) {
             $validated['qris_url'] = trim($validated['qris_payload']);
         } elseif ($request->hasFile('qris_image')) {
             $path = $request->file('qris_image')->store('qris', 'public');
             $validated['qris_url'] = asset('storage/'.$path);
-        } elseif (!empty($validated['qris_url'])) {
+        } elseif (! empty($validated['qris_url'])) {
             $validated['qris_url'] = trim($validated['qris_url']);
-        } elseif (!empty($validated['existing_qris'])) {
+        } elseif (! empty($validated['existing_qris'])) {
             $validated['qris_url'] = trim($validated['existing_qris']);
         } elseif ($latestQrisUrl) {
             $validated['qris_url'] = $latestQrisUrl;
@@ -180,5 +192,45 @@ class PeriodController extends Controller
         });
 
         return back()->with('status', "{$period->title} ({$period->category?->name}): tagihan dibuat untuk {$period->invoices()->count()} anggota aktif.");
+    }
+
+    public function destroy(BillingPeriod $period, Request $request, Ledger $ledger): RedirectResponse
+    {
+        abort_unless($request->user()->canManageMembers(), 403);
+
+        $created = LedgerEntry::where('type', LedgerEntryType::InvoiceCreated)
+            ->where('ref_table', 'billing_periods')
+            ->where('ref_id', $period->id)
+            ->first();
+
+        $cancelled = DB::transaction(function () use ($period, $created, $request, $ledger) {
+            if (! BillingPeriod::lockForUpdate()->find($period->id)?->canBeCancelled()) {
+                return false;
+            }
+
+            $period->invoices()->delete();
+            $period->delete();
+
+            $ledger->append(
+                LedgerEntryType::Reversal,
+                [
+                    'reversed_seq' => $created?->seq,
+                    'type' => LedgerEntryType::InvoiceCreated->value,
+                    'amount' => 0,
+                    'reason' => "Tagihan \"{$period->title}\" dibatalkan",
+                ],
+                $request->user(),
+                'billing_periods',
+                $period->id,
+            );
+
+            return true;
+        });
+
+        if (! $cancelled) {
+            return back()->with('error', 'Tagihan tidak dapat dibatalkan: sudah lewat 1 hari atau sudah ada pembayaran.');
+        }
+
+        return redirect()->route('periods.index')->with('status', "Tagihan {$period->title} dibatalkan.");
     }
 }

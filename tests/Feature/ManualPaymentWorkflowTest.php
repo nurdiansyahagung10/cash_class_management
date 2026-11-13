@@ -239,3 +239,56 @@ test('admin can create period with raw qris payload string', function () {
     $period = BillingPeriod::where('title', 'Kas Dinamis DANA Bisnis')->firstOrFail();
     expect($period->qris_url)->toBe($payload);
 });
+
+test('review page lists approved history and filters by period and category', function () {
+    $admin = User::factory()->admin()->create();
+    $member = User::factory()->create(['name' => 'Gita Lestari']);
+    $catA = Category::create(['name' => 'Kat Alpha']);
+    $catB = Category::create(['name' => 'Kat Beta']);
+    $periodA = BillingPeriod::factory()->create(['title' => 'Periode Alpha', 'category_id' => $catA->id]);
+    $periodB = BillingPeriod::factory()->create(['title' => 'Periode Beta', 'category_id' => $catB->id]);
+
+    foreach ([[$periodA, $catA, 'KAS-HIST-A'], [$periodB, $catB, 'KAS-HIST-B']] as [$period, $cat, $order]) {
+        $invoice = Invoice::factory()->create(['user_id' => $member->id, 'billing_period_id' => $period->id]);
+        Payment::create([
+            'invoice_id' => $invoice->id, 'category_id' => $cat->id, 'order_id' => $order,
+            'amount' => $invoice->amount, 'status' => 'paid', 'reviewed_by' => $admin->id, 'reviewed_at' => now(),
+        ]);
+    }
+
+    $this->actingAs($admin)->get(route('payments.review', ['tab' => 'approved']))
+        ->assertOk()->assertSee('KAS-HIST-A')->assertSee('KAS-HIST-B')->assertSee($admin->name);
+
+    $this->actingAs($admin)->get(route('payments.review', ['tab' => 'approved', 'period_id' => $periodA->id]))
+        ->assertSee('KAS-HIST-A')->assertDontSee('KAS-HIST-B');
+
+    $this->actingAs($admin)->get(route('payments.review', ['tab' => 'approved', 'category_id' => $catB->id]))
+        ->assertSee('KAS-HIST-B')->assertDontSee('KAS-HIST-A');
+
+    $this->actingAs($admin)->get(route('payments.review'))
+        ->assertOk()->assertDontSee('KAS-HIST-A');
+});
+
+test('payments made by staff can only be verified by admin but stay visible to staff', function () {
+    $admin = User::factory()->admin()->create();
+    $staff = User::factory()->staff()->create(['name' => 'Bendahara Satu']);
+    $otherStaff = User::factory()->staff()->create();
+    $period = BillingPeriod::factory()->create();
+    $invoice = Invoice::factory()->create(['user_id' => $staff->id, 'billing_period_id' => $period->id]);
+    $payment = Payment::create([
+        'invoice_id' => $invoice->id, 'order_id' => 'KAS-STAFF-1', 'amount' => $invoice->amount,
+        'status' => 'pending', 'proof_path' => 'payment-proofs/x.jpg',
+    ]);
+
+    $this->actingAs($otherStaff)->get(route('payments.review'))
+        ->assertOk()->assertSee('Bendahara Satu')->assertSee('hanya')->assertDontSee(route('payments.approve', $payment));
+
+    $this->actingAs($otherStaff)->post(route('payments.approve', $payment))->assertForbidden();
+    $this->actingAs($staff)->post(route('payments.approve', $payment))->assertForbidden();
+    $this->actingAs($otherStaff)->post(route('payments.reject', $payment))->assertForbidden();
+    expect($payment->fresh()->status)->toBe('pending');
+
+    $this->actingAs($admin)->get(route('payments.review'))->assertSee(route('payments.approve', $payment));
+    $this->actingAs($admin)->post(route('payments.approve', $payment))->assertRedirect();
+    expect($payment->fresh()->status)->toBe('paid');
+});

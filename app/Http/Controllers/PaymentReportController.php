@@ -11,8 +11,10 @@ use App\Models\Invoice;
 use App\Models\LedgerEntry;
 use App\Models\User;
 use App\Services\Ledger;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -86,18 +88,16 @@ class PaymentReportController extends Controller
                 ];
             });
 
-        // Data Buku Kas Umum (BKU)
-        $bkuData = $this->buildBkuData();
-
-        // Data Matriks Iuran Kas Siswa
-        $matrixData = $this->buildMatrixData();
+        $activeTab = (string) $request->query('tab', 'detail');
+        $bkuData = $activeTab === 'bku' ? $this->buildBkuData($request) : null;
+        $matrixData = $activeTab === 'matrix' ? $this->buildMatrixData($request) : null;
 
         // Data Kas Kelas
         $totalExpense = (int) Expense::sum('amount');
         $realCashBalance = $ledger->balance();
 
         return view('reports.payments', [
-            'activeTab' => (string) $request->query('tab', 'detail'),
+            'activeTab' => $activeTab,
             'invoices' => $invoices,
             'periodSummaries' => $periodSummaries,
             'periods' => BillingPeriod::orderByDesc('id')->get(),
@@ -185,6 +185,51 @@ class PaymentReportController extends Controller
     }
 
     /**
+     * Laporan PDF terformat (kop, ringkasan, tabel, tanda tangan) untuk tab aktif.
+     * `inline=1` membuka PDF di browser agar bisa langsung dicetak.
+     */
+    public function pdf(Request $request): Response
+    {
+        $tab = in_array($request->query('tab'), ['matrix', 'bku'], true) ? $request->query('tab') : 'detail';
+
+        $data = [
+            'generatedAt' => now(),
+            'printedBy' => $request->user()->name,
+            ...$this->signoffData($request),
+        ];
+
+        if ($tab === 'bku') {
+            $data += [
+                'title' => 'Buku Kas Umum (BKU)',
+                'subtitle' => 'Jurnal kronologis penerimaan, pengeluaran, dan saldo kas kelas.',
+                'bkuData' => $this->buildBkuData(),
+            ];
+        } elseif ($tab === 'matrix') {
+            $data += [
+                'title' => 'Matriks Rekapitulasi Iuran Siswa',
+                'subtitle' => 'Status setoran kas setiap anggota per periode tagihan.',
+                'matrixData' => $this->buildMatrixData(),
+            ];
+        } else {
+            $invoices = $this->filteredInvoices($request, applyStatusFilter: true)->values();
+            $totalPaid = (int) $invoices->sum(fn (Invoice $inv) => $inv->paidAmount());
+            $data += [
+                'title' => 'Rincian Pembayaran & Cicilan Anggota',
+                'subtitle' => 'Menurut filter yang sedang dipilih di halaman laporan.',
+                'invoices' => $invoices,
+                'totalTarget' => (int) $invoices->sum('amount'),
+                'totalPaid' => $totalPaid,
+            ];
+        }
+
+        $pdf = Pdf::loadView("reports.pdf.{$tab}", $data)
+            ->setPaper('a4', $tab === 'matrix' ? 'landscape' : 'portrait');
+        $filename = "laporan-kas-{$tab}-".now()->format('Ymd-His').'.pdf';
+
+        return $request->boolean('inline') ? $pdf->stream($filename) : $pdf->download($filename);
+    }
+
+    /**
      * Ekspor Buku Kas Umum (BKU) Standar Kas Sekolah Indonesia
      */
     public function exportBku(Request $request): StreamedResponse
@@ -268,7 +313,7 @@ class PaymentReportController extends Controller
 
                 foreach ($matrixData['periods'] as $period) {
                     $cell = $row['cells'][$period->id] ?? null;
-                    if (!$cell || $cell['status'] === 'none') {
+                    if (! $cell || $cell['status'] === 'none') {
                         $line[] = '-';
                     } elseif ($cell['status'] === 'paid') {
                         $line[] = 'Lunas ('.$cell['paid'].')';
@@ -314,7 +359,7 @@ class PaymentReportController extends Controller
      *     endingBalance: int
      * }
      */
-    public function buildBkuData(): array
+    public function buildBkuData(?Request $request = null, int $perPage = 25): array
     {
         $bkuTypes = [
             LedgerEntryType::PaymentConfirmed->value,
@@ -322,18 +367,21 @@ class PaymentReportController extends Controller
             LedgerEntryType::Reversal->value,
         ];
 
-        $entries = LedgerEntry::query()
-            ->whereIn('type', $bkuTypes)
-            ->orderBy('seq', 'asc')
-            ->get();
+        $cashTypes = [LedgerEntryType::PaymentConfirmed->value, LedgerEntryType::ExpenseApproved->value];
 
         $runningBalance = 0;
         $bkuEntries = [];
         $totalDebit = 0;
         $totalCredit = 0;
 
-        foreach ($entries as $index => $entry) {
+        // Chunked read keeps memory flat; saldo berjalan tetap dihitung dari seluruh ledger.
+        foreach (LedgerEntry::query()->whereIn('type', $bkuTypes)->lazyById(500, 'seq') as $entry) {
             $payload = json_decode($entry->payload, true) ?? [];
+
+            if ($entry->type === LedgerEntryType::Reversal && ! in_array($payload['type'] ?? null, $cashTypes, true)) {
+                continue;
+            }
+
             $amount = (int) ($payload['amount'] ?? 0);
             $debit = 0;
             $credit = 0;
@@ -349,7 +397,7 @@ class PaymentReportController extends Controller
                 $periodTitle = $payload['period_title'] ?? $payload['period'] ?? 'Uang Kas';
                 $viaStaff = ! empty($payload['paid_by_staff_name']) ? " (via Bendahara: {$payload['paid_by_staff_name']})" : '';
                 $desc = "Penerimaan iuran kas: {$name}".($studentNo !== '' ? " ({$studentNo})" : '')." — {$periodTitle}{$viaStaff}";
-                if (!empty($payload['order_id'])) {
+                if (! empty($payload['order_id'])) {
                     $ref = $payload['order_id'];
                 }
             } elseif ($entry->type === LedgerEntryType::ExpenseApproved) {
@@ -358,7 +406,7 @@ class PaymentReportController extends Controller
                 $totalCredit += $amount;
                 $title = $payload['title'] ?? 'Pengeluaran kas kelas';
                 $desc = "Pengeluaran kas: {$title}";
-                if (!empty($payload['expense_id'])) {
+                if (! empty($payload['expense_id'])) {
                     $ref = 'EXP-'.$payload['expense_id'];
                 }
             } elseif ($entry->type === LedgerEntryType::Reversal) {
@@ -382,7 +430,7 @@ class PaymentReportController extends Controller
             $dateCarbon = Carbon::parse($entry->created_at);
 
             $bkuEntries[] = [
-                'no' => $index + 1,
+                'no' => count($bkuEntries) + 1,
                 'seq' => $entry->seq,
                 'date' => $dateCarbon->format('d/m/Y'),
                 'date_full' => $dateCarbon->format('d M Y H:i'),
@@ -394,8 +442,22 @@ class PaymentReportController extends Controller
             ];
         }
 
+        $paginator = null;
+        if ($request) {
+            $lastPage = max(1, (int) ceil(count($bkuEntries) / $perPage));
+            $page = min($lastPage, max(1, $request->integer('bku_page') ?: $lastPage));
+            $paginator = (new LengthAwarePaginator(
+                array_slice($bkuEntries, ($page - 1) * $perPage, $perPage),
+                count($bkuEntries),
+                $perPage,
+                $page,
+                ['path' => $request->url(), 'pageName' => 'bku_page']
+            ))->appends($request->except('bku_page'));
+        }
+
         return [
-            'entries' => $bkuEntries,
+            'entries' => $paginator ? $paginator->items() : $bkuEntries,
+            'paginator' => $paginator,
             'totalDebit' => $totalDebit,
             'totalCredit' => $totalCredit,
             'endingBalance' => $runningBalance,
@@ -414,88 +476,109 @@ class PaymentReportController extends Controller
      *     totalRemaining: int
      * }
      */
-    public function buildMatrixData(): array
+    public function buildMatrixData(?Request $request = null, int $perPage = 25, int $periodLimit = 6): array
     {
-        $allMembers = User::payableMembers()
-            ->orderByRaw('CAST(student_no AS UNSIGNED) ASC, student_no ASC')
-            ->get();
+        $memberQuery = User::payableMembers()
+            ->orderByRaw('CAST(student_no AS UNSIGNED) ASC, student_no ASC');
 
         $allPeriods = BillingPeriod::with('category')->orderBy('id', 'asc')->get();
+        $periodsById = $allPeriods->keyBy('id');
 
-        $invoicesWithPayments = Invoice::with(['payments' => fn ($q) => $q->where('status', 'paid')])
-            ->whereHas('user', fn ($q) => $q->where('role', '!=', UserRole::Admin))
-            ->get();
+        // paid_sum is aggregated in SQL, so payment rows are never hydrated.
         $invoicesMap = [];
-        foreach ($invoicesWithPayments as $inv) {
-            $invoicesMap[$inv->user_id][$inv->billing_period_id] = $inv;
-        }
-
-        $matrixRows = [];
         $periodTotals = array_fill_keys($allPeriods->pluck('id')->all(), 0);
+        $studentTotals = [];
         $overallTarget = 0;
         $overallPaid = 0;
 
-        foreach ($allMembers as $idx => $member) {
-            $cells = [];
-            $studentPaid = 0;
-            $studentTarget = 0;
+        Invoice::query()
+            ->withSum(['payments as paid_sum' => fn ($q) => $q->where('status', 'paid')], 'amount')
+            ->whereHas('user', fn ($q) => $q->where('role', '!=', UserRole::Admin))
+            ->lazyById(500)
+            ->each(function (Invoice $inv) use (&$invoicesMap, &$periodTotals, &$studentTotals, &$overallTarget, &$overallPaid, $periodsById) {
+                $target = (int) $inv->amount;
+                $paid = $inv->status === 'paid' ? $target : min($target, (int) $inv->paid_sum);
+                $inv->setRelation('period', $periodsById[$inv->billing_period_id] ?? null);
 
-            foreach ($allPeriods as $period) {
-                $inv = $invoicesMap[$member->id][$period->id] ?? null;
-                if (!$inv) {
-                    $cells[$period->id] = [
-                        'status' => 'none',
-                        'paid' => 0,
-                        'target' => 0,
-                        'remaining' => 0,
-                        'is_overdue' => false,
-                    ];
+                $invoicesMap[$inv->user_id][$inv->billing_period_id] = ['invoice' => $inv, 'paid' => $paid];
+                $studentTotals[$inv->user_id]['target'] = ($studentTotals[$inv->user_id]['target'] ?? 0) + $target;
+                $studentTotals[$inv->user_id]['paid'] = ($studentTotals[$inv->user_id]['paid'] ?? 0) + $paid;
+                $periodTotals[$inv->billing_period_id] = ($periodTotals[$inv->billing_period_id] ?? 0) + $paid;
+                $overallTarget += $target;
+                $overallPaid += $paid;
+            });
+
+        $paginator = null;
+        $hiddenPeriods = 0;
+        $periods = $allPeriods;
+
+        if ($request) {
+            $search = trim((string) $request->query('mq', ''));
+            $memberQuery->when($search !== '', fn ($q) => $q->where(
+                fn ($w) => $w->where('name', 'like', "%{$search}%")->orWhere('student_no', 'like', "%{$search}%")
+            ));
+
+            $paginator = $memberQuery->paginate($perPage, ['*'], 'matrix_page')->withQueryString();
+            $members = $paginator->getCollection();
+            $firstNo = $paginator->firstItem() ?? 1;
+
+            if (! $request->boolean('all_periods') && $allPeriods->count() > $periodLimit) {
+                $periods = $allPeriods->slice(-$periodLimit)->values();
+                $hiddenPeriods = $allPeriods->count() - $periodLimit;
+            }
+        } else {
+            $members = $memberQuery->get();
+            $firstNo = 1;
+        }
+
+        $matrixRows = [];
+
+        foreach ($members as $idx => $member) {
+            $cells = [];
+
+            foreach ($periods as $period) {
+                $entry = $invoicesMap[$member->id][$period->id] ?? null;
+                if (! $entry) {
+                    $cells[$period->id] = ['status' => 'none', 'paid' => 0, 'target' => 0, 'remaining' => 0, 'is_overdue' => false];
 
                     continue;
                 }
 
-                $paid = $inv->paidAmount();
-                $target = (int) $inv->amount;
-                $rem = $inv->remainingAmount();
-
-                $studentPaid += $paid;
-                $studentTarget += $target;
-                $periodTotals[$period->id] += $paid;
-
+                $inv = $entry['invoice'];
                 $cells[$period->id] = [
                     'status' => $inv->status,
-                    'paid' => $paid,
-                    'target' => $target,
-                    'remaining' => $rem,
-                    'is_overdue' => $inv->isOverdue(),
+                    'paid' => $entry['paid'],
+                    'target' => (int) $inv->amount,
+                    'remaining' => max(0, (int) $inv->amount - $entry['paid']),
+                    'is_overdue' => $inv->status !== 'paid' && (bool) $inv->period?->due_date->endOfDay()->isPast(),
                     'invoice_id' => $inv->id,
                 ];
             }
 
-            $overallTarget += $studentTarget;
-            $overallPaid += $studentPaid;
-
+            $studentTarget = $studentTotals[$member->id]['target'] ?? 0;
+            $studentPaid = $studentTotals[$member->id]['paid'] ?? 0;
             $studentRemaining = max(0, $studentTarget - $studentPaid);
-            $statusText = match (true) {
-                $studentTarget > 0 && $studentRemaining === 0 => 'Lunas',
-                $studentPaid > 0 => 'Menyicil',
-                $studentTarget > 0 => 'Belum Bayar',
-                default => 'Bebas Kas',
-            };
 
             $matrixRows[] = [
-                'no' => $idx + 1,
+                'no' => $firstNo + $idx,
                 'user' => $member,
                 'cells' => $cells,
                 'total_target' => $studentTarget,
                 'total_paid' => $studentPaid,
                 'total_remaining' => $studentRemaining,
-                'status' => $statusText,
+                'status' => match (true) {
+                    $studentTarget > 0 && $studentRemaining === 0 => 'Lunas',
+                    $studentPaid > 0 => 'Menyicil',
+                    $studentTarget > 0 => 'Belum Bayar',
+                    default => 'Bebas Kas',
+                },
             ];
         }
 
         return [
-            'periods' => $allPeriods,
+            'periods' => $periods,
+            'hiddenPeriods' => $hiddenPeriods,
+            'paginator' => $paginator,
             'rows' => $matrixRows,
             'periodTotals' => $periodTotals,
             'totalTarget' => $overallTarget,
@@ -529,7 +612,7 @@ class PaymentReportController extends Controller
             ])
             ->values();
 
-        if (!$applyStatusFilter) {
+        if (! $applyStatusFilter) {
             return $invoices;
         }
 

@@ -27,6 +27,22 @@ class Payment extends Model
         return $this->belongsTo(Invoice::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    /**
+     * Separation of duties: a payment made by a staff member is verified by an admin only.
+     */
+    public function needsAdminReview(): bool
+    {
+        return $this->invoice->user->isStaff();
+    }
+
     public function isPaid(): bool
     {
         return $this->status === 'paid';

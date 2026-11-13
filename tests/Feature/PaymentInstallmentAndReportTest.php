@@ -665,3 +665,21 @@ test('staff bendahara can pay own cash and help pay installments on behalf of an
         ->assertOk()
         ->assertSee('Penerimaan iuran kas: Doni Siswa (2024015) — Kas Minggu 3 (via Bendahara: Siti Bendahara)');
 });
+
+test('report pdf renders for every tab and matrix/bku tabs paginate', function () {
+    $admin = User::factory()->admin()->create();
+    User::factory()->count(30)->create();
+
+    foreach (['detail', 'matrix', 'bku'] as $tab) {
+        $response = $this->actingAs($admin)->get(route('reports.payments.pdf', ['tab' => $tab]));
+        $response->assertOk();
+        expect($response->headers->get('content-type'))->toContain('application/pdf');
+    }
+
+    $this->actingAs($admin)
+        ->get(route('reports.payments', ['tab' => 'matrix']))
+        ->assertOk()
+        ->assertSee('1–25')
+        ->assertSee('dari')
+        ->assertSee('anggota');
+});

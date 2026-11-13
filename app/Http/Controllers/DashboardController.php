@@ -39,7 +39,7 @@ class DashboardController extends Controller
             'cashCalendar' => $ledger->calendarData($this->requestedMonth($request)),
         ];
 
-        if ($user->role === UserRole::User) {
+        if ($user->role !== UserRole::Admin) {
             $stats += [
                 'paidInvoices' => $user->invoices()->where('status', 'paid')->count(),
                 'unpaidTotal' => (int) $unpaidInvoices->sum(fn (Invoice $invoice) => $invoice->remainingAmount()),

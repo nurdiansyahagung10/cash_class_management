@@ -80,3 +80,20 @@ test('payments inherit period category and ledger confirms payment with category
         ->assertOk()
         ->assertSee('Kategori: Jaket Angkatan');
 });
+
+test('category list is paginated and searchable', function () {
+    $admin = User::factory()->admin()->create();
+    foreach (range(1, 12) as $i) {
+        Category::create(['name' => sprintf('Zkategori %02d', $i), 'description' => $i === 12 ? 'khusus-studytour' : null]);
+    }
+    $total = Category::count();
+
+    $this->actingAs($admin)->get(route('categories.index'))
+        ->assertOk()->assertSee('1–10')->assertSee("{$total} kategori");
+
+    $this->actingAs($admin)->get(route('categories.index', ['page' => 2]))
+        ->assertOk()->assertSee('11–'.$total)->assertSee('Zkategori 12');
+
+    $this->actingAs($admin)->get(route('categories.index', ['q' => 'studytour']))
+        ->assertOk()->assertSee('1 kategori')->assertSee('Zkategori 12')->assertDontSee('Zkategori 01');
+});

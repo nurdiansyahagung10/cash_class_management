@@ -298,42 +298,41 @@
                 <div class="divide-y divide-black/5">
                     @forelse ($unpaidInvoices as $invoice)
                         <div
-                            class="flex flex-wrap items-center justify-between gap-3 px-5 py-4 hover:bg-black/[0.02] transition-colors">
-                            <div class="min-w-0 flex-1">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <p class="font-semibold text-sm text-black">{{ $invoice->period->title }}</p>
+                            class="flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-black/[0.02] sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                            <div class="flex min-w-0 flex-1 flex-col gap-1.5">
+                                <p class="text-sm font-semibold text-black wrap-break-word">{{ $invoice->period->title }}</p>
+                                <div class="flex flex-wrap items-center gap-1.5">
                                     @if ($invoice->period->category)
                                         <span
-                                            class="rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-semibold text-brand border border-brand/20">
-                                            {{ $invoice->period->category->name }}
-                                        </span>
+                                            class="rounded-full border border-brand/20 bg-brand-soft px-2 py-0.5 text-[10px] font-semibold text-brand">{{ $invoice->period->category->name }}</span>
                                     @endif
                                     @if ($invoice->isPartial())
                                         <span
-                                            class="rounded-full bg-[#fff1d6] px-2 py-0.5 text-[10px] font-semibold text-[#7a4a00] border border-[#fed7aa]">
-                                            Menyicil
-                                        </span>
+                                            class="rounded-full border border-[#fed7aa] bg-[#fff1d6] px-2 py-0.5 text-[10px] font-semibold text-[#7a4a00]">Menyicil</span>
                                     @endif
                                     @if ($invoice->isOverdue())
                                         <span
-                                            class="rounded-full bg-[#fde4e0] px-2 py-0.5 text-[10px] font-semibold text-[#8f1d0e] border border-[#fecaca]">
-                                            Lewat Tenggat
-                                        </span>
+                                            class="rounded-full border border-[#fecaca] bg-[#fde4e0] px-2 py-0.5 text-[10px] font-semibold text-[#8f1d0e]">Lewat Tenggat</span>
                                     @endif
                                 </div>
-                                <p class="text-xs text-muted">
+                                <p class="text-xs leading-relaxed text-muted">
                                     Jatuh tempo {{ $invoice->period->due_date->format('d M Y') }}
                                     @if ($invoice->isPartial())
-                                        · Terbayar Rp{{ number_format($invoice->paidAmount(), 0, ',', '.') }} dari
-                                        Rp{{ number_format($invoice->amount, 0, ',', '.') }}
+                                        <span class="block sm:inline">· Terbayar
+                                            Rp{{ number_format($invoice->paidAmount(), 0, ',', '.') }} dari
+                                            Rp{{ number_format($invoice->amount, 0, ',', '.') }}</span>
                                     @endif
                                 </p>
                             </div>
-                            <div class="flex items-center gap-3">
-                                <span
-                                    class="text-sm font-bold text-black tabular-nums">Rp{{ number_format($invoice->remainingAmount(), 0, ',', '.') }}</span>
+                            <div
+                                class="flex items-center justify-between gap-3 border-t border-black/5 pt-3 sm:shrink-0 sm:justify-end sm:border-0 sm:pt-0">
+                                <div class="flex flex-col sm:items-end">
+                                    <span class="text-[10px] font-semibold uppercase tracking-wider text-muted">Sisa</span>
+                                    <span
+                                        class="text-base font-bold tabular-nums text-black">Rp{{ number_format($invoice->remainingAmount(), 0, ',', '.') }}</span>
+                                </div>
                                 <a href="{{ route('payments.create', $invoice) }}"
-                                    class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-4 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                    class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                                     {{ $invoice->isPartial() ? 'Lanjut Bayar' : 'Bayar' }}
                                 </a>
                             </div>
@@ -353,22 +352,25 @@
                 <div class="divide-y divide-black/5">
                     @forelse ($latestPayments as $payment)
                         <div
-                            class="flex items-center justify-between gap-3 px-5 py-4 hover:bg-black/[0.02] transition-colors">
-                            <div class="min-w-0">
-                                <p class="truncate text-sm font-semibold text-black">
+                            class="flex items-start justify-between gap-3 px-5 py-4 transition-colors hover:bg-black/[0.02]">
+                            <div class="flex min-w-0 flex-col gap-0.5">
+                                <p class="text-sm font-semibold text-black wrap-break-word">
                                     {{ $payment->invoice->period->title }}</p>
                                 <p class="text-xs text-muted">
-                                    {{ $payment->created_at->format('d M Y') }} ·
-                                    Rp{{ number_format($payment->amount, 0, ',', '.') }}
+                                    {{ $payment->created_at->format('d M Y') }}
                                     @if ($payment->category)
-                                        · <span class="text-brand font-medium">{{ $payment->category->name }}</span>
+                                        · <span class="font-medium text-brand">{{ $payment->category->name }}</span>
                                     @endif
                                 </p>
                             </div>
-                            <span
-                                class="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $payment->status === 'paid' ? 'bg-[#dcfce7] text-[#14532d]' : ($payment->status === 'reversed' ? 'bg-[#fde4e0] text-[#8f1d0e]' : 'bg-[#fff1d6] text-[#7a4a00]') }}">
-                                {{ $payment->status === 'paid' ? 'Lunas' : ($payment->status === 'reversed' ? 'Dibatalkan' : ($payment->proof_path ? 'Menunggu verifikasi' : 'Belum dibayar')) }}
-                            </span>
+                            <div class="flex shrink-0 flex-col items-end gap-1.5">
+                                <span
+                                    class="text-sm font-bold tabular-nums text-black">Rp{{ number_format($payment->amount, 0, ',', '.') }}</span>
+                                <span
+                                    class="rounded-full px-2.5 py-0.5 text-[11px] font-semibold {{ $payment->status === 'paid' ? 'bg-[#dcfce7] text-[#14532d]' : ($payment->status === 'reversed' ? 'bg-[#fde4e0] text-[#8f1d0e]' : 'bg-[#fff1d6] text-[#7a4a00]') }}">
+                                    {{ $payment->status === 'paid' ? 'Lunas' : ($payment->status === 'reversed' ? 'Dibatalkan' : ($payment->proof_path ? 'Menunggu verifikasi' : 'Belum dibayar')) }}
+                                </span>
+                            </div>
                         </div>
                     @empty
                         <p class="px-6 py-10 text-center text-xs text-muted">Belum ada riwayat pembayaran.</p>

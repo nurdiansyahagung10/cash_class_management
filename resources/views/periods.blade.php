@@ -11,23 +11,26 @@
         </div>
     </header>
 
-    <div class="flex flex-wrap items-start gap-6">
+    <div class="flex lg:flex-wrap flex-wrap-reverse items-start gap-6">
         <section aria-labelledby="judul-periode"
             class="flex min-w-0 flex-[999_1_30rem] flex-col rounded-2xl border border-line bg-white shadow-xs">
             <div class="flex flex-col gap-3.5 border-b border-line px-6 py-5">
                 <div class="flex flex-wrap items-center justify-between gap-3">
-                    <h2 id="judul-periode" class="text-lg font-bold text-black">Riwayat periode
-                        ({{ $periods->count() }})</h2>
-                    <form method="GET" action="{{ route('periods.index') }}" class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+                        <h2 id="judul-periode" class="text-base font-bold text-black sm:text-lg">Riwayat periode</h2>
+                        <span
+                            class="inline-flex items-center rounded-full border border-brand/20 bg-brand-soft px-3 py-1 text-xs font-semibold tabular-nums text-brand">{{ $periods->total() }} periode</span>
+                    </div>
+                    <form method="GET" action="{{ route('periods.index') }}" class="flex w-full min-w-0 items-center gap-2 sm:w-auto">
                         @if ($statusFilter)
                             <input type="hidden" name="status" value="{{ $statusFilter }}">
                         @endif
                         <label for="search-period" class="sr-only">Cari judul periode</label>
                         <input id="search-period" type="search" name="q" value="{{ $search }}"
                             placeholder="Cari judul periode..."
-                            class="min-h-11 w-48 rounded-xl border border-black/15 bg-canvas/30 px-3.5 text-xs placeholder:text-muted/60 transition-all focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20 sm:w-60">
+                            class="min-h-11 min-w-0 flex-1 rounded-xl border border-black/15 bg-canvas/30 px-3.5 text-xs placeholder:text-muted/60 transition-all focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20 sm:w-60 sm:flex-none">
                         <button type="submit"
-                            class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                            class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
                             Cari
                         </button>
                     </form>
@@ -35,19 +38,19 @@
 
                 <div class="flex flex-wrap items-center gap-1.5 text-xs">
                     <a href="{{ route('periods.index', array_filter(['q' => $search])) }}"
-                        class="rounded-xl px-3 py-1.5 font-semibold transition-colors {{ empty($statusFilter) ? 'bg-black text-white' : 'text-muted hover:bg-canvas' }}">
+                        class="inline-flex min-h-9 items-center rounded-full border px-3.5 font-semibold transition-colors {{ empty($statusFilter) ? 'border-black bg-black text-white' : 'border-black/10 bg-white text-muted hover:bg-canvas' }}">
                         Semua
                     </a>
                     <a href="{{ route('periods.index', array_filter(['status' => 'active', 'q' => $search])) }}"
-                        class="rounded-xl px-3 py-1.5 font-semibold transition-colors {{ $statusFilter === 'active' ? 'bg-brand text-white shadow-xs' : 'text-muted hover:bg-canvas' }}">
+                        class="inline-flex min-h-9 items-center rounded-full border px-3.5 font-semibold transition-colors {{ $statusFilter === 'active' ? 'border-brand bg-brand text-white shadow-xs' : 'border-black/10 bg-white text-muted hover:bg-canvas' }}">
                         Berjalan
                     </a>
                     <a href="{{ route('periods.index', array_filter(['status' => 'overdue', 'q' => $search])) }}"
-                        class="rounded-xl px-3 py-1.5 font-semibold transition-colors {{ $statusFilter === 'overdue' ? 'bg-[#8f1d0e] text-white shadow-xs' : 'text-muted hover:bg-canvas' }}">
+                        class="inline-flex min-h-9 items-center rounded-full border px-3.5 font-semibold transition-colors {{ $statusFilter === 'overdue' ? 'border-[#8f1d0e] bg-[#8f1d0e] text-white shadow-xs' : 'border-black/10 bg-white text-muted hover:bg-canvas' }}">
                         Lewat Tempo
                     </a>
                     <a href="{{ route('periods.index', array_filter(['status' => 'completed', 'q' => $search])) }}"
-                        class="rounded-xl px-3 py-1.5 font-semibold transition-colors {{ $statusFilter === 'completed' ? 'bg-[#14532d] text-white shadow-xs' : 'text-muted hover:bg-canvas' }}">
+                        class="inline-flex min-h-9 items-center rounded-full border px-3.5 font-semibold transition-colors {{ $statusFilter === 'completed' ? 'border-[#14532d] bg-[#14532d] text-white shadow-xs' : 'border-black/10 bg-white text-muted hover:bg-canvas' }}">
                         Lunas Semua
                     </a>
                 </div>
@@ -108,6 +111,8 @@
                     </div>
                 @endforelse
             </div>
+
+            <x-report-pager :paginator="$periods" label="periode" />
         </section>
 
         <section aria-labelledby="judul-buat"

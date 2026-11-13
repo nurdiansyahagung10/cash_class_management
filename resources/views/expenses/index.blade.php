@@ -11,28 +11,81 @@
         </div>
     </header>
 
-    <section aria-label="Ringkasan pengeluaran" class="grid gap-4 sm:grid-cols-3">
-        <div class="flex flex-col gap-1 rounded-2xl border border-line bg-white p-5 shadow-xs">
-            <span class="text-xs font-semibold uppercase tracking-wider text-muted">Saldo kas tersedia</span>
-            <span
-                class="text-2xl sm:text-3xl font-bold tracking-tight  tabular-nums my-1">Rp{{ number_format($balance, 0, ',', '.') }}</span>
-            <span class="text-xs text-muted">Bisa digunakan untuk keperluan</span>
+    {{-- Notion / Figma Stat Tiles Carousel --}}
+    <section aria-label="Ringkasan" class="relative min-w-0">
+
+
+
+        {{-- Carousel Header --}}
+        <div class="mb-4 flex items-center justify-between gap-4">
+            <h2 class="text-sm font-semibold tracking-tight text-black">
+                Ringkasan
+            </h2>
+
+            <div class="flex items-center gap-2">
+                <button type="button"
+                    class="stats-prev flex h-8 w-8 items-center justify-center rounded-full border border-line bg-white text-black transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30"
+                    aria-label="Statistik sebelumnya">
+                    <span aria-hidden="true">&larr;</span>
+                </button>
+
+                <button type="button"
+                    class="stats-next flex h-8 w-8 items-center justify-center rounded-full border border-line bg-white text-black transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30"
+                    aria-label="Statistik berikutnya">
+                    <span aria-hidden="true">&rarr;</span>
+                </button>
+            </div>
         </div>
-        <div class="flex flex-col gap-1 rounded-2xl border border-line bg-white p-5 shadow-xs">
-            <span class="text-xs font-semibold uppercase tracking-wider text-muted">Total pengeluaran tercatat</span>
-            <span
-                class="text-2xl sm:text-3xl font-bold tracking-tight  tabular-nums my-1">Rp{{ number_format($totalExpense, 0, ',', '.') }}</span>
-            <span class="text-xs text-muted">Dari seluruh kegiatan</span>
+
+        {{-- Swiper --}}
+        <div class="swiper stats-swiper min-w-0">
+            <div class="swiper-wrapper">
+
+                @php
+                    $sf = [
+                        [
+                            'Saldo kas tersedia',
+                            'Rp' . number_format($stats['totalExpense'], 0, ',', '.'),
+                            'bisa di gunakan untuk keperluan',
+                        ],
+                        [
+                            'Total pengeluaran tercatat',
+                            'Rp' . number_format($stats['balance'], 0, ',', '.'),
+                            'dari seluruh kegiatan',
+                        ],
+                        ['Jumlah transaksi', $stats['unpaidInvoices'], 'Pengeluaran di setujui'],
+                    ];
+                @endphp
+                @foreach ($sf as [$label, $value, $detail])
+                    <div class="swiper-slide !h-auto">
+                        <article
+                            class="flex h-full min-h-32 flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-xs transition-all hover:border-black/20 hover:shadow-sm">
+
+                            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                                {{ $label }}
+                            </h3>
+
+                            <p
+                                class="my-2 break-words text-2xl font-bold tracking-tight text-black tabular-nums sm:text-3xl">
+                                {{ $value }}
+                            </p>
+
+                            <p class="text-[11px] text-muted">
+                                {{ $detail }}
+                            </p>
+
+                        </article>
+                    </div>
+                @endforeach
+
+            </div>
         </div>
-        <div class="flex flex-col gap-1 rounded-2xl border border-line bg-white p-5 shadow-xs">
-            <span class="text-xs font-semibold uppercase tracking-wider text-muted">Jumlah transaksi</span>
-            <span
-                class="text-2xl sm:text-3xl font-bold tracking-tight text-black tabular-nums my-1">{{ $expenses->total() }}</span>
-            <span class="text-xs text-muted">Pengeluaran disetujui</span>
-        </div>
+
     </section>
 
-    <div class="flex flex-wrap items-start gap-6">
+
+
+    <div class="flex lg:flex-wrap flex-wrap-reverse items-start gap-6">
         <section aria-labelledby="judul-daftar"
             class="flex min-w-0 flex-[999_1_30rem] flex-col rounded-2xl border border-line bg-white shadow-xs">
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-4.5">
@@ -162,4 +215,39 @@
             </section>
         @endif
     </div>
+    <script nonce="{{ Vite::cspNonce() }}">
+        document.addEventListener('DOMContentLoaded', () => {
+            const statsCarousel = document.querySelector('.stats-swiper');
+
+            if (!statsCarousel || typeof Swiper === 'undefined') return;
+
+            new Swiper(statsCarousel, {
+                slidesPerView: 1.15,
+                spaceBetween: 16,
+                speed: 450,
+                grabCursor: true,
+                watchOverflow: true,
+
+                navigation: {
+                    nextEl: '.stats-next',
+                    prevEl: '.stats-prev',
+                },
+
+                breakpoints: {
+                    480: {
+                        slidesPerView: 1.5,
+                    },
+                    640: {
+                        slidesPerView: 2,
+                    },
+                    1024: {
+                        slidesPerView: 3,
+                    },
+                    1280: {
+                        slidesPerView: 4,
+                    },
+                },
+            });
+        });
+    </script>
 </x-dynamic-component>

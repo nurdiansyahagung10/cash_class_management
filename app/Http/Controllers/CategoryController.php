@@ -13,8 +13,17 @@ class CategoryController extends Controller
     {
         abort_unless($request->user()->canManageMembers(), 403);
 
+        $search = trim((string) $request->query('q'));
+
         return view('categories.index', [
-            'categories' => Category::withCount(['billingPeriods', 'payments'])->orderBy('name')->get(),
+            'search' => $search,
+            'categories' => Category::withCount(['billingPeriods', 'payments'])
+                ->when($search !== '', fn ($q) => $q->where(
+                    fn ($w) => $w->where('name', 'like', "%{$search}%")->orWhere('description', 'like', "%{$search}%")
+                ))
+                ->orderBy('name')
+                ->paginate(10)
+                ->withQueryString(),
         ]);
     }
 

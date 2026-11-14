@@ -185,11 +185,13 @@
         {{-- TAB 1: MATRIKS IURAN SISWA (BUKU PEMBANTU IURAN KAS KELAS)               --}}
         {{-- ========================================================================= --}}
         @include('reports._matrix')
+        @include('reports._signoff')
     @elseif ($activeTab === 'bku')
         {{-- ========================================================================= --}}
         {{-- TAB 2: BUKU KAS UMUM (BKU KELAS - STANDAR AKUNTANSI SEKOLAH INDONESIA)    --}}
         {{-- ========================================================================= --}}
         @include('reports._bku')
+        @include('reports._signoff')
     @else
         @if ($periodSummaries->isNotEmpty())
             <section aria-labelledby="rekap-periode-heading"
@@ -461,6 +463,25 @@
                                 </span>
                             @endif
 
+                        </div>
+
+                        {{-- Status Pembayaran --}}
+                        <div class="flex flex-wrap items-center gap-2 md:w-60 md:shrink-0 md:justify-end">
+                            @if ($isPaid)
+                                <span
+                                    class="rounded-full border border-[#bbf7d0] bg-[#dcfce7] px-2.5 py-0.5 text-xs font-semibold text-[#14532d]">Lunas</span>
+                            @elseif ($invoice->isPartial())
+                                <span
+                                    class="rounded-full border border-[#fed7aa] bg-[#fff1d6] px-2.5 py-0.5 text-xs font-semibold text-[#7a4a00]">Menyicil ({{ $pct }}%)</span>
+                            @else
+                                <span
+                                    class="rounded-full border border-[#fecaca] bg-[#fde4e0] px-2.5 py-0.5 text-xs font-semibold text-[#8f1d0e]">Belum Bayar</span>
+                            @endif
+
+                            @if ($isOverdue)
+                                <span
+                                    class="rounded-full bg-[#8f1d0e] px-2.5 py-0.5 text-[11px] font-semibold text-white">Terlambat {{ $invoice->overdueDays() }} hari · Wajib Lunas Penuh</span>
+                            @endif
                         </div>
                     </div>
 

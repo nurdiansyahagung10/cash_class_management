@@ -1,0 +1,198 @@
+- generic [ref=f17e2]:
+  - link "Lewati ke konten utama" [ref=f17e3] [cursor=pointer]:
+    - /url: "#konten-utama"
+  - navigation "Navigasi utama" [ref=f17e4]:
+    - generic [ref=f17e5]:
+      - generic [ref=f17e6]:
+        - generic [ref=f17e7]:
+          - generic [aria-hidden] [ref=f17e8]: KK
+          - generic [ref=f17e9]:
+            - generic [ref=f17e10]: Kas Kelas 1A
+            - generic [ref=f17e11]: D3 Bahasa Inggris
+        - generic [ref=f17e12]: v1.0
+      - generic [ref=f17e13]:
+        - link "Dashboard" [ref=f17e14] [cursor=pointer]:
+          - /url: http://localhost:8099
+        - link "Laporan pembayaran" [ref=f17e18] [cursor=pointer]:
+          - /url: http://localhost:8099/reports/payments
+        - link "Pengeluaran kas" [ref=f17e22] [cursor=pointer]:
+          - /url: http://localhost:8099/expenses
+        - link "Ledger publik" [ref=f17e26] [cursor=pointer]:
+          - /url: http://localhost:8099/ledger
+        - link "Kelola anggota" [ref=f17e30] [cursor=pointer]:
+          - /url: http://localhost:8099/members
+        - link "Tagihan kelas" [ref=f17e34] [cursor=pointer]:
+          - /url: http://localhost:8099/periods
+        - link "Kategori tagihan" [ref=f17e38] [cursor=pointer]:
+          - /url: http://localhost:8099/categories
+        - link "Review pembayaran" [ref=f17e43] [cursor=pointer]:
+          - /url: http://localhost:8099/payments/review
+      - generic [ref=f17e47]:
+        - generic [ref=f17e48]:
+          - generic [aria-hidden] [ref=f17e49]: AU
+          - generic [ref=f17e50]:
+            - generic [ref=f17e51]: Admin Uji
+            - generic [ref=f17e52]: admin
+        - generic [ref=f17e55]:
+          - link "Ganti password" [ref=f17e56] [cursor=pointer]:
+            - /url: http://localhost:8099/password
+          - button "Keluar" [ref=f17e58]
+  - main [ref=f17e59]:
+    - generic [ref=f17e60]:
+      - generic [ref=f17e61]:
+        - generic [ref=f17e62]: KK 1A
+        - generic [ref=f17e63]: /
+        - generic [ref=f17e64]: Dashboard
+        - generic [ref=f17e65]: ·
+        - generic [ref=f17e66]: Saturday, 14 November 2026
+      - heading "Halo, Admin Uji" [level=1] [ref=f17e67]
+      - paragraph [ref=f17e68]: Ringkasan kas, tagihan, dan antrean administrasi kelas.
+    - region "Status integritas ledger" [ref=f17e69]:
+      - generic [ref=f17e74]:
+        - generic [ref=f17e75]:
+          - 'heading "Integritas ledger: Utuh" [level=2] [ref=f17e76]'
+          - generic [ref=f17e77]: Valid
+        - paragraph [ref=f17e78]: Rantai hash tervalidasi. Data dienkripsi berurutan dengan SHA-256 dan tidak dapat dimanipulasi secara sepihak.
+      - generic [ref=f17e79]:
+        - link "Lihat ledger" [ref=f17e80] [cursor=pointer]:
+          - /url: http://localhost:8099/ledger
+        - button "Periksa ledger" [ref=f17e82]
+    - region "Ringkasan" [ref=f17e83]:
+      - generic [ref=f17e84]:
+        - heading "Ringkasan" [level=2] [ref=f17e85]
+        - generic [ref=f17e86]:
+          - button "Previous slide" [disabled] [ref=f17e87]:
+            - generic [aria-hidden] [ref=f17e88]: ←
+          - button "Next slide" [ref=f17e89]:
+            - generic [aria-hidden] [ref=f17e90]: →
+      - generic [ref=f17e92]:
+        - group "1 / 7" [ref=f17e93]:
+          - article [ref=f17e94]:
+            - heading "Saldo kas" [level=3] [ref=f17e95]
+            - paragraph [ref=f17e96]: Rp0
+            - paragraph [ref=f17e97]: Saldo dihitung langsung dari ledger
+        - group "2 / 7" [ref=f17e98]:
+          - article [ref=f17e99]:
+            - heading "Anggota aktif" [level=3] [ref=f17e100]
+            - paragraph [ref=f17e101]: "2"
+            - paragraph [ref=f17e102]: Anggota yang dapat ditagih
+        - group "3 / 7" [ref=f17e103]:
+          - article [ref=f17e104]:
+            - heading "Tagihan belum lunas" [level=3] [ref=f17e105]
+            - paragraph [ref=f17e106]: Rp40.000
+            - paragraph [ref=f17e107]: Total tagihan seluruh anggota
+        - group "4 / 7" [ref=f17e108]:
+          - article [ref=f17e109]:
+            - heading "Tingkat pelunasan" [level=3] [ref=f17e110]
+            - paragraph [ref=f17e111]: 0%
+            - paragraph [ref=f17e112]: Persentase invoice yang sudah lunas
+        - group "5 / 7" [ref=f17e113]:
+          - article [ref=f17e114]:
+            - heading "Periode tagihan" [level=3] [ref=f17e115]
+            - paragraph [ref=f17e116]: "4"
+            - paragraph [ref=f17e117]: Periode yang pernah dibuat
+        - group "6 / 7" [ref=f17e118]:
+          - article [ref=f17e119]:
+            - heading "Bukti menunggu review" [level=3] [ref=f17e120]
+            - paragraph [ref=f17e121]: "4"
+            - paragraph [ref=f17e122]: Pembayaran yang siap diperiksa
+        - group "7 / 7" [ref=f17e123]:
+          - article [ref=f17e124]:
+            - heading "Menunggu verifikasi anggota" [level=3] [ref=f17e125]
+            - paragraph [ref=f17e126]: "0"
+            - paragraph [ref=f17e127]: Pendaftar aktif di antrean
+    - region "Kalender kas · November 2026" [ref=f17e128]:
+      - generic [ref=f17e129]:
+        - generic [ref=f17e130]:
+          - heading "Kalender kas · November 2026" [level=2] [ref=f17e131]
+          - paragraph [ref=f17e132]: Masuk +Rp0 · Keluar -Rp0
+        - navigation "Navigasi bulan" [ref=f17e133]:
+          - link "Bulan sebelumnya" [ref=f17e134] [cursor=pointer]:
+            - /url: http://localhost:8099?bulan=2026-10
+            - text: ←
+          - link "Hari ini" [ref=f17e135] [cursor=pointer]:
+            - /url: http://localhost:8099
+          - link "Bulan berikutnya" [ref=f17e136] [cursor=pointer]:
+            - /url: http://localhost:8099?bulan=2026-12
+            - text: →
+      - grid [ref=f17e137]:
+        - columnheader "Sen" [ref=f17e138]
+        - columnheader "Sel" [ref=f17e139]
+        - columnheader "Rab" [ref=f17e140]
+        - columnheader "Kam" [ref=f17e141]
+        - columnheader "Jum" [ref=f17e142]
+        - columnheader "Sab" [ref=f17e143]
+        - columnheader "Min" [ref=f17e144]
+        - gridcell "1" [ref=f17e151]
+        - gridcell "2" [ref=f17e153]
+        - gridcell "3" [ref=f17e155]
+        - gridcell "4" [ref=f17e157]
+        - gridcell "5" [ref=f17e159]
+        - gridcell "6" [ref=f17e161]
+        - gridcell "7" [ref=f17e163]
+        - gridcell "8" [ref=f17e165]
+        - gridcell "9" [ref=f17e167]
+        - gridcell "10" [ref=f17e169]
+        - gridcell "11" [ref=f17e171]
+        - gridcell "12" [ref=f17e173]
+        - gridcell "13" [ref=f17e175]
+        - gridcell "14" [ref=f17e177]
+        - gridcell "15" [ref=f17e179]
+        - gridcell "16" [ref=f17e181]
+        - gridcell "17" [ref=f17e183]
+        - gridcell "18" [ref=f17e185]
+        - gridcell "19" [ref=f17e187]
+        - gridcell "20" [ref=f17e189]
+        - gridcell "21" [ref=f17e191]
+        - gridcell "22" [ref=f17e193]
+        - gridcell "23" [ref=f17e195]
+        - gridcell "24" [ref=f17e197]
+        - gridcell "25" [ref=f17e199]
+        - gridcell "26" [ref=f17e201]
+        - gridcell "27" [ref=f17e203]
+        - gridcell "28" [ref=f17e205]
+        - gridcell "29" [ref=f17e207]
+        - gridcell "30" [ref=f17e209]
+    - region "Periode terbaru" [ref=f17e217]:
+      - generic [ref=f17e218]:
+        - generic [ref=f17e219]:
+          - heading "Periode terbaru" [level=2] [ref=f17e220]
+          - paragraph [ref=f17e221]: Pantau jumlah invoice yang sudah lunas per tagihan.
+        - link "Kelola periode →" [ref=f17e222] [cursor=pointer]:
+          - /url: http://localhost:8099/periods
+      - generic [ref=f17e223]:
+        - generic [ref=f17e224]:
+          - generic [ref=f17e225]:
+            - paragraph [ref=f17e226]: Kas November (4/4)
+            - paragraph [ref=f17e227]: Jatuh tempo 06 Dec 2026
+          - generic [ref=f17e228]:
+            - generic [ref=f17e229]: Rp5.000
+            - generic [ref=f17e230]: 0 / 2 lunas
+        - generic [ref=f17e231]:
+          - generic [ref=f17e232]:
+            - paragraph [ref=f17e233]: Kas November (3/4)
+            - paragraph [ref=f17e234]: Jatuh tempo 29 Nov 2026
+          - generic [ref=f17e235]:
+            - generic [ref=f17e236]: Rp5.000
+            - generic [ref=f17e237]: 0 / 2 lunas
+        - generic [ref=f17e238]:
+          - generic [ref=f17e239]:
+            - paragraph [ref=f17e240]: Kas November (2/4)
+            - paragraph [ref=f17e241]: Jatuh tempo 22 Nov 2026
+          - generic [ref=f17e242]:
+            - generic [ref=f17e243]: Rp5.000
+            - generic [ref=f17e244]: 0 / 2 lunas
+        - generic [ref=f17e245]:
+          - generic [ref=f17e246]:
+            - paragraph [ref=f17e247]: Kas November (1/4)
+            - paragraph [ref=f17e248]: Jatuh tempo 15 Nov 2026
+          - generic [ref=f17e249]:
+            - generic [ref=f17e250]: Rp5.000
+            - generic [ref=f17e251]: 0 / 2 lunas
+    - navigation "Aksi admin" [ref=f17e252]:
+      - link "Review pembayaran (4)" [ref=f17e253] [cursor=pointer]:
+        - /url: http://localhost:8099/payments/review
+      - link "Verifikasi anggota (0)" [ref=f17e254] [cursor=pointer]:
+        - /url: http://localhost:8099/members
+      - link "Kelola kategori" [ref=f17e255] [cursor=pointer]:
+        - /url: http://localhost:8099/categories

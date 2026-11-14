@@ -1,0 +1,90 @@
+- generic [ref=f21e2]:
+  - link "Lewati ke konten utama" [ref=f21e3] [cursor=pointer]:
+    - /url: "#konten-utama"
+  - navigation "Navigasi utama" [ref=f21e4]:
+    - generic [ref=f21e5]:
+      - generic [ref=f21e6]:
+        - generic [ref=f21e7]:
+          - generic [aria-hidden] [ref=f21e8]: KK
+          - generic [ref=f21e9]:
+            - generic [ref=f21e10]: Kas Kelas 1A
+            - generic [ref=f21e11]: D3 Bahasa Inggris
+        - generic [ref=f21e12]: v1.0
+      - generic [ref=f21e13]:
+        - link "Dashboard" [ref=f21e14] [cursor=pointer]:
+          - /url: http://localhost:8099
+        - link "Laporan pembayaran" [ref=f21e18] [cursor=pointer]:
+          - /url: http://localhost:8099/reports/payments
+        - link "Pengeluaran kas" [ref=f21e22] [cursor=pointer]:
+          - /url: http://localhost:8099/expenses
+        - link "Ledger publik" [ref=f21e26] [cursor=pointer]:
+          - /url: http://localhost:8099/ledger
+        - link "Kelola anggota" [ref=f21e30] [cursor=pointer]:
+          - /url: http://localhost:8099/members
+        - link "Tagihan kelas" [ref=f21e34] [cursor=pointer]:
+          - /url: http://localhost:8099/periods
+        - link "Kategori tagihan" [ref=f21e38] [cursor=pointer]:
+          - /url: http://localhost:8099/categories
+        - link "Review pembayaran" [ref=f21e43] [cursor=pointer]:
+          - /url: http://localhost:8099/payments/review
+      - generic [ref=f21e47]:
+        - generic [ref=f21e48]:
+          - generic [aria-hidden] [ref=f21e49]: AU
+          - generic [ref=f21e50]:
+            - generic [ref=f21e51]: Admin Uji
+            - generic [ref=f21e52]: admin
+        - generic [ref=f21e55]:
+          - link "Ganti password" [ref=f21e56] [cursor=pointer]:
+            - /url: http://localhost:8099/password
+          - button "Keluar" [ref=f21e58]
+  - main [ref=f21e59]:
+    - status [ref=f21e60]:
+      - generic [ref=f21e63]: 4 pembayaran sekaligus diverifikasi dan dicatat ke ledger.
+    - generic [ref=f21e65]:
+      - generic [ref=f21e66]: Kas Kelas 1A
+      - generic [ref=f21e67]: /
+      - generic [ref=f21e68]: Review pembayaran
+      - generic [ref=f21e69]: ·
+      - generic [ref=f21e70]: Saturday, 14 November 2026
+    - region "Review pembayaran" [ref=f21e71]:
+      - generic [ref=f21e72]:
+        - generic [ref=f21e73]:
+          - generic [ref=f21e74]:
+            - heading "Review pembayaran" [level=1] [ref=f21e75]
+            - generic [ref=f21e76]: 0 menunggu
+          - paragraph [ref=f21e77]: Verifikasi bukti transfer anggota, atau telusuri riwayat pembayaran yang sudah disetujui.
+        - group "Status review" [ref=f21e78]:
+          - link "Menunggu review 0" [ref=f21e79] [cursor=pointer]:
+            - /url: http://localhost:8099/payments/review?tab=pending
+            - text: Menunggu review
+            - generic [ref=f21e80]: "0"
+          - link "Sudah disetujui 4" [ref=f21e81] [cursor=pointer]:
+            - /url: http://localhost:8099/payments/review?tab=approved
+            - text: Sudah disetujui
+            - generic [ref=f21e82]: "4"
+        - generic [ref=f21e83]:
+          - combobox "Filter periode" [ref=f21e84]:
+            - option "Semua periode" [selected]
+            - option "Kas November (4/4)"
+            - option "Kas November (3/4)"
+            - option "Kas November (2/4)"
+            - option "Kas November (1/4)"
+          - combobox "Filter kategori" [ref=f21e85]:
+            - option "Semua kategori" [selected]
+            - option "Baju & Merchandise"
+            - option "Buku & Praktikum"
+            - option "Kegiatan & Acara"
+            - option "Sosial & Duka"
+            - option "Uang Kas"
+          - generic [ref=f21e86]:
+            - searchbox "Cari nama atau NIM" [ref=f21e87]
+            - button "Terapkan" [ref=f21e88]
+      - paragraph [ref=f21e91]: Belum ada bukti pembayaran untuk direview.
+      - generic [ref=f21e92]:
+        - paragraph [ref=f21e93]: 0–0 dari 0 pembayaran
+        - generic [ref=f21e94]:
+          - generic [ref=f21e95]: 1 / 1
+          - link "Halaman sebelumnya":
+            - /url: "#"
+          - link "Halaman berikutnya":
+            - /url: "#"

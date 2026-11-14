@@ -115,6 +115,13 @@
                 @endif
             </div>
 
+            @if (($combinableCount ?? 0) > 1)
+                <a href="{{ route('payments.bulk', $invoice) }}"
+                   class="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-brand/30 bg-brand-soft px-4 text-xs font-semibold text-brand transition-colors hover:bg-brand-soft/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                    Bayar {{ $combinableCount }} tagihan sekaligus dengan satu bukti &rarr;
+                </a>
+            @endif
+
             {{-- Fitur Menyicil Sampai Tenggat --}}
             @if ($invoice->canInstallment() && $remainingAmount > 1000)
                 <div class="flex w-full flex-col gap-3 rounded-2xl border border-brand/20 bg-brand-soft/30 p-4 text-left">

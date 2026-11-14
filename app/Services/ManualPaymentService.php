@@ -30,7 +30,7 @@ class ManualPaymentService
             $invoice->syncStatusFromPayments();
 
             $categoryName = $payment->category?->name ?? $invoice->period?->category?->name ?? 'Kas Kelas';
-            $isLate = $invoice->period !== null && $invoice->period->due_date->endOfDay()->isPast();
+            $isLate = $invoice->period !== null && $invoice->period->isPastDue();
 
             $payload = [
                 'amount' => $payment->amount,

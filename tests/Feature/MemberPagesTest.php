@@ -47,32 +47,36 @@ test('ledger search filters by type', function () {
         ->assertDontSee('PAYMENT_CONFIRMED');
 });
 
-test('plain members cannot open the verification page', function () {
-    $this->actingAs(User::factory()->create())->get('/members')->assertForbidden();
+test('plain members and staff cannot open the member management page', function () {
+    $this->actingAs(User::factory()->create())->get('/members')->assertRedirect(route('dashboard'));
+    $this->actingAs(User::factory()->staff()->create())->get('/members')->assertRedirect(route('dashboard'));
 });
 
-test('staff add a candidate who then shows in the queue', function () {
-    $staff = User::factory()->staff()->create();
+test('admin adds a candidate who then shows in the queue', function () {
+    $admin = User::factory()->admin()->create();
 
-    $this->actingAs($staff)->post('/members', ['name' => 'Rina Kusuma', 'student_no' => '29', 'password' => 'initial-123'])
+    $this->actingAs($admin)->post('/members', ['name' => 'Rina Kusuma', 'student_no' => '29', 'password' => 'initial-123'])
         ->assertRedirect();
 
-    $this->actingAs($staff)->get('/members')->assertOk()->assertSee('Rina Kusuma');
+    $this->actingAs($admin)->get('/members')->assertOk()->assertSee('Rina Kusuma');
 });
 
 test('a duplicate student number is rejected in the form', function () {
-    $staff = User::factory()->staff()->create();
+    $admin = User::factory()->admin()->create();
     PendingMember::factory()->create(['student_no' => '29']);
 
-    $this->actingAs($staff)->post('/members', ['name' => 'Rina', 'student_no' => '29', 'password' => 'initial-123'])
+    $this->actingAs($admin)->post('/members', ['name' => 'Rina', 'student_no' => '29', 'password' => 'initial-123'])
         ->assertSessionHasErrors('student_no');
 });
 
-test('staff cannot approve', function () {
+test('staff cannot add or approve candidates', function () {
     $staff = User::factory()->staff()->create();
     $pending = PendingMember::factory()->create();
 
-    $this->actingAs($staff)->post("/members/{$pending->id}/approve")->assertForbidden();
+    $this->actingAs($staff)->post('/members', ['name' => 'Rina', 'student_no' => '88', 'password' => 'initial-123'])->assertRedirect(route('dashboard'));
+    $this->actingAs($staff)->post("/members/{$pending->id}/approve")->assertRedirect(route('dashboard'));
+
+    expect(PendingMember::count())->toBe(1)->and(User::where('student_no', $pending->student_no)->exists())->toBeFalse();
 });
 
 test('admin approves a candidate and the ledger records it', function () {
@@ -94,17 +98,17 @@ test('admin rejects a candidate', function () {
     expect(PendingMember::count())->toBe(0)->and(LedgerEntry::count())->toBe(0);
 });
 
-test('staff can search members by name or student number', function () {
-    $staff = User::factory()->staff()->create();
+test('admin can search members by name or student number', function () {
+    $admin = User::factory()->admin()->create();
     User::factory()->create(['name' => 'Budi Pratama', 'student_no' => '101']);
     User::factory()->create(['name' => 'Siti Aisyah', 'student_no' => '102']);
 
-    $this->actingAs($staff)->get(route('members.index', ['q' => 'Budi']))
+    $this->actingAs($admin)->get(route('members.index', ['q' => 'Budi']))
         ->assertOk()
         ->assertSee('Budi Pratama')
         ->assertDontSee('Siti Aisyah');
 
-    $this->actingAs($staff)->get(route('members.index', ['q' => '102']))
+    $this->actingAs($admin)->get(route('members.index', ['q' => '102']))
         ->assertOk()
         ->assertSee('Siti Aisyah')
         ->assertDontSee('Budi Pratama');

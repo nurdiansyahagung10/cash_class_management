@@ -131,12 +131,10 @@ test('public dashboard shows the latest anchor for readers to keep', function ()
     appendAnchorTestPayments(10000, 20000);
     $anchor = app(Ledger::class)->anchor();
 
-    $this->get('/')
-        ->assertOk()
-        ->assertSee('Anchor harian')
-        ->assertSee('entri #2')
-        ->assertSee(substr($anchor->hash, 0, 4).'…'.substr($anchor->hash, -4))
-        ->assertSee($anchor->hash)
-        ->assertSee('tangkap layar')
-        ->assertSee('Rantai hash SHA-256 valid');
+    $this->get('/')->assertOk();
+    $page = preg_replace('/\s+/', ' ', strip_tags($this->get('/')->getContent()));
+
+    expect($page)->toContain('Anchor harian', 'entri #2', 'tangkap layar', 'Rantai hash SHA-256 valid')
+        ->toContain(substr($anchor->hash, 0, 4).'…'.substr($anchor->hash, -4))
+        ->toContain($anchor->hash);
 });

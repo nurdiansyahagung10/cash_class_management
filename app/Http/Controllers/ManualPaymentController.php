@@ -6,6 +6,7 @@ use App\Models\BillingPeriod;
 use App\Models\Category;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\User;
 use App\Services\ManualPaymentService;
 use App\Services\QrisService;
 use Endroid\QrCode\Encoding\Encoding;
@@ -15,7 +16,10 @@ use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use QrisDinamis\Qris;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -24,6 +28,8 @@ use Zxing\QrReader;
 
 class ManualPaymentController extends Controller
 {
+    private const COMBINED_LOCK_MESSAGE = 'Tagihan ini termasuk pembayaran sekaligus yang sedang menunggu verifikasi admin.';
+
     public function create(Invoice $invoice, Request $request, QrisService $qrisService): View|RedirectResponse
     {
         abort_if($invoice->user->isAdmin(), 403, 'Admin dikecualikan dari pembayaran.');
@@ -32,6 +38,10 @@ class ManualPaymentController extends Controller
         abort_unless($isOwner || $isStaff, 403, 'Hanya pemilik tagihan atau bendahara (staff) yang dapat mengakses halaman pembayaran ini.');
         if ($invoice->isPaid()) {
             return back()->with('status', 'Tagihan ini sudah lunas.');
+        }
+
+        if ($this->isInCombinedPayment($invoice)) {
+            return redirect()->route('dashboard')->with('status', self::COMBINED_LOCK_MESSAGE);
         }
 
         $invoice->load(['user', 'period.category', 'payments' => fn ($q) => $q->latest('id')]);
@@ -78,7 +88,9 @@ class ManualPaymentController extends Controller
 
         $isAssisting = $isStaff && ! $isOwner;
 
-        return view('payments.create', compact('invoice', 'payment', 'remainingAmount', 'paidAmount', 'paidPayments', 'isAssisting'));
+        $combinableCount = $this->payableInvoices($invoice->user)->count();
+
+        return view('payments.create', compact('invoice', 'payment', 'remainingAmount', 'paidAmount', 'paidPayments', 'isAssisting', 'combinableCount'));
     }
 
     public function updateInstallment(Invoice $invoice, Request $request, QrisService $qrisService): RedirectResponse
@@ -90,6 +102,10 @@ class ManualPaymentController extends Controller
 
         if ($invoice->isPaid()) {
             return back()->with('status', 'Tagihan ini sudah lunas.');
+        }
+
+        if ($this->isInCombinedPayment($invoice)) {
+            return back()->with('status', self::COMBINED_LOCK_MESSAGE);
         }
 
         $invoice->load(['period', 'user']);
@@ -147,6 +163,10 @@ class ManualPaymentController extends Controller
 
         if ($invoice->isPaid()) {
             return back()->with('status', 'Tagihan ini sudah lunas.');
+        }
+
+        if ($this->isInCombinedPayment($invoice)) {
+            return back()->with('status', self::COMBINED_LOCK_MESSAGE);
         }
 
         $invoice->load(['period', 'user']);
@@ -210,6 +230,135 @@ class ManualPaymentController extends Controller
         return back()->with('status', $msg);
     }
 
+    /**
+     * Pick several of one member's unpaid invoices and settle them with a single transfer and proof.
+     */
+    public function bulk(Invoice $invoice, Request $request, QrisService $qrisService): View
+    {
+        $this->authorizeCombined($invoice, $request);
+
+        $invoices = $this->payableInvoices($invoice->user);
+        $ids = collect($request->query('ids', [$invoice->id]))->map(fn ($id) => (int) $id)->all();
+        $selected = $invoices->whereIn('id', $ids)->values();
+        $total = (int) $selected->sum(fn (Invoice $item) => $item->remainingAmount());
+        $qrisUrl = $selected->map(fn (Invoice $item) => $item->period->qris_url)->filter()->last();
+
+        return view('payments.bulk', [
+            'anchor' => $invoice,
+            'member' => $invoice->user,
+            'invoices' => $invoices,
+            'selectedIds' => $selected->pluck('id')->all(),
+            'total' => $total,
+            'qrContent' => $total > 0 && $qrisUrl ? $this->resolveQrContent($qrisUrl, $total, $qrisService) : null,
+            'isAssisting' => $this->isAssisting($invoice, $request),
+        ]);
+    }
+
+    /**
+     * One proof for many invoices: each gets its own payment row (so the ledger keeps one entry per invoice) sharing a batch key and the proof file.
+     */
+    public function submitBulk(Invoice $invoice, Request $request): RedirectResponse
+    {
+        $this->authorizeCombined($invoice, $request);
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:60'],
+            'ids.*' => ['integer'],
+            'proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ]);
+
+        $payable = $this->payableInvoices($invoice->user)->keyBy('id');
+        $ids = collect($validated['ids'])->map(fn ($id) => (int) $id)->unique()->values();
+
+        if ($ids->contains(fn (int $id) => ! $payable->has($id))) {
+            return back()->withErrors(['ids' => 'Sebagian tagihan sudah lunas atau sedang menunggu verifikasi. Muat ulang halaman lalu pilih lagi.']);
+        }
+
+        $isAssisting = $this->isAssisting($invoice, $request);
+        $batchKey = (string) Str::uuid();
+        $proofPath = $validated['proof']->store('payment-proofs');
+        $total = 0;
+
+        DB::transaction(function () use ($ids, $payable, $isAssisting, $request, $batchKey, $proofPath, &$total) {
+            foreach ($ids as $id) {
+                $item = $payable[$id];
+                $amount = $item->remainingAmount();
+                $total += $amount;
+
+                $attributes = [
+                    'amount' => $amount,
+                    'category_id' => $item->period->category_id,
+                    'proof_path' => $proofPath,
+                    'batch_key' => $batchKey,
+                    'rejection_note' => null,
+                    'gateway_response' => $isAssisting
+                        ? ['paid_by_staff_id' => $request->user()->id, 'paid_by_staff_name' => $request->user()->name]
+                        : null,
+                ];
+
+                $pending = $item->payments()->where('status', 'pending')->whereNull('proof_path')->latest('id')->first();
+                if ($pending) {
+                    $pending->update($attributes);
+
+                    continue;
+                }
+
+                $existingCount = $item->payments()->count();
+                $item->payments()->create([
+                    ...$attributes,
+                    'order_id' => $existingCount === 0 ? 'KAS-'.$item->id : 'KAS-'.$item->id.'-'.($existingCount + 1),
+                ]);
+            }
+        });
+
+        return redirect()->route('dashboard')->with('status', "Bukti pembayaran sekaligus untuk {$ids->count()} tagihan (Rp".number_format($total, 0, ',', '.').') dikirim. Menunggu verifikasi admin.');
+    }
+
+    /**
+     * Unpaid invoices that can join a combined payment, earliest deadline first. Invoices whose proof is already awaiting review are left out.
+     *
+     * @return Collection<int, Invoice>
+     */
+    private function payableInvoices(User $member): Collection
+    {
+        return Invoice::query()
+            ->where('user_id', $member->id)
+            ->whereIn('status', ['unpaid', 'partial'])
+            ->whereDoesntHave('payments', fn ($q) => $q->where('status', 'pending')->whereNotNull('proof_path'))
+            ->with(['period.category', 'payments'])
+            ->get()
+            ->sortBy(fn (Invoice $item) => $item->period->due_date->getTimestamp())
+            ->values();
+    }
+
+    private function authorizeCombined(Invoice $invoice, Request $request): void
+    {
+        abort_if($invoice->user->isAdmin(), 403, 'Admin dikecualikan dari pembayaran.');
+        abort_unless($invoice->user_id === $request->user()->id || $request->user()->isStaff(), 403, 'Hanya pemilik tagihan atau bendahara (staff) yang dapat membayar sekaligus.');
+    }
+
+    private function isAssisting(Invoice $invoice, Request $request): bool
+    {
+        return $request->user()->isStaff() && $invoice->user_id !== $request->user()->id;
+    }
+
+    private function isInCombinedPayment(Invoice $invoice): bool
+    {
+        return $invoice->payments()->where('status', 'pending')->whereNotNull('batch_key')->exists();
+    }
+
+    /**
+     * The pending payments that were sent with this one proof (just itself for a normal payment).
+     *
+     * @return Collection<int, Payment>
+     */
+    private function batchOf(Payment $payment): Collection
+    {
+        return $payment->batch_key
+            ? Payment::where('batch_key', $payment->batch_key)->where('status', 'pending')->get()
+            : collect([$payment]);
+    }
+
     private function resolveQrContent(?string $qrContent, int $amount, QrisService $qrisService): ?string
     {
         if ($qrContent === null || $qrContent === '') {
@@ -258,7 +407,9 @@ class ManualPaymentController extends Controller
 
         $filtered = fn (string $status) => Payment::query()
             ->where('status', $status)
-            ->when($status === 'pending', fn ($q) => $q->whereNotNull('proof_path'))
+            ->when($status === 'pending', fn ($q) => $q->whereNotNull('proof_path')->where(
+                fn ($w) => $w->whereNull('batch_key')->orWhereIn('id', Payment::query()->selectRaw('MIN(id)')->where('status', 'pending')->whereNotNull('batch_key')->groupBy('batch_key'))
+            ))
             ->when($periodId, fn ($q) => $q->whereHas('invoice', fn ($i) => $i->where('billing_period_id', $periodId)))
             ->when($categoryId, fn ($q) => $q->where(
                 fn ($w) => $w->where('category_id', $categoryId)
@@ -274,8 +425,11 @@ class ManualPaymentController extends Controller
             ->paginate(8)
             ->withQueryString();
 
+        $batchKeys = $payments->pluck('batch_key')->filter()->unique()->values();
+
         return view('payments.review', [
             'payments' => $payments,
+            'batches' => $batchKeys->isEmpty() ? collect() : Payment::with('invoice.period')->whereIn('batch_key', $batchKeys)->get()->groupBy('batch_key'),
             'tab' => $tab,
             'pendingCount' => $filtered('pending')->count(),
             'approvedCount' => $filtered('paid')->count(),
@@ -292,9 +446,16 @@ class ManualPaymentController extends Controller
 
         abort_if($payment->needsAdminReview() && ! $request->user()->isAdmin(), 403, 'Pembayaran staf hanya dapat diverifikasi oleh admin.');
 
-        $service->approve($payment, $request->user());
+        $batch = $this->batchOf($payment);
+        DB::transaction(function () use ($batch, $service, $request) {
+            foreach ($batch as $row) {
+                $service->approve($row, $request->user());
+            }
+        });
 
-        return back()->with('status', 'Pembayaran diverifikasi dan dicatat ke ledger.');
+        return back()->with('status', $batch->count() > 1
+            ? "{$batch->count()} pembayaran sekaligus diverifikasi dan dicatat ke ledger."
+            : 'Pembayaran diverifikasi dan dicatat ke ledger.');
     }
 
     public function reject(Payment $payment, Request $request): RedirectResponse
@@ -310,17 +471,27 @@ class ManualPaymentController extends Controller
             'rejection_note' => ['nullable', 'string', 'max:255'],
         ]);
 
-        if ($payment->proof_path && Storage::exists($payment->proof_path)) {
-            Storage::delete($payment->proof_path);
+        $proofPath = $payment->proof_path;
+        $batch = $this->batchOf($payment);
+
+        DB::transaction(function () use ($batch, $validated, $request) {
+            foreach ($batch as $row) {
+                $row->update([
+                    'proof_path' => null,
+                    'batch_key' => null,
+                    'rejection_note' => $validated['rejection_note'] ?? 'Bukti pembayaran ditolak admin. Silakan unggah bukti yang benar.',
+                    'reviewed_by' => $request->user()->id,
+                    'reviewed_at' => now(),
+                ]);
+            }
+        });
+
+        if ($proofPath && Storage::exists($proofPath)) {
+            Storage::delete($proofPath);
         }
 
-        $payment->update([
-            'proof_path' => null,
-            'rejection_note' => $validated['rejection_note'] ?? 'Bukti pembayaran ditolak admin. Silakan unggah bukti yang benar.',
-            'reviewed_by' => $request->user()->id,
-            'reviewed_at' => now(),
-        ]);
-
-        return back()->with('status', 'Bukti pembayaran ditolak. Anggota dapat mengunggah bukti baru.');
+        return back()->with('status', $batch->count() > 1
+            ? 'Bukti pembayaran sekaligus ditolak untuk '.$batch->count().' tagihan. Anggota dapat mengunggah bukti baru.'
+            : 'Bukti pembayaran ditolak. Anggota dapat mengunggah bukti baru.');
     }
 }

@@ -50,16 +50,16 @@ class Invoice extends Model
     {
         return ! $this->isPaid()
             && $this->period !== null
-            && $this->period->due_date->endOfDay()->isPast();
+            && $this->period->isPastDue();
     }
 
     public function overdueDays(): int
     {
-        if (!$this->isOverdue()) {
+        if (! $this->isOverdue()) {
             return 0;
         }
 
-        return max(1, (int) $this->period->due_date->startOfDay()->diffInDays(now()->startOfDay()));
+        return max(1, (int) $this->period->dueAt()->startOfDay()->diffInDays(now(BillingPeriod::TIMEZONE)->startOfDay()));
     }
 
     public function canInstallment(): bool

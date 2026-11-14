@@ -20,13 +20,18 @@ test('a member logs in with student number and password', function () {
     $this->assertAuthenticatedAs($user);
 });
 
-test('seeded demo member can log in immediately', function () {
+test('seeded admins can log in with the initial password but must change it first', function () {
     $this->seed();
 
-    $this->post('/login', ['student_no' => '2024001', 'password' => 'password'])
-        ->assertRedirect(route('dashboard'));
+    foreach (['admin1', 'admin2'] as $studentNo) {
+        $this->post('/login', ['student_no' => $studentNo, 'password' => 'password'])
+            ->assertRedirect(route('dashboard'));
 
-    $this->assertAuthenticated();
+        $this->assertAuthenticated();
+        $this->get('/')->assertRedirect(route('password.edit'));
+
+        auth()->logout();
+    }
 });
 
 test('a wrong password is refused and explains why on the login page', function () {
@@ -121,12 +126,13 @@ test('logout ends the session', function () {
 test('authenticated layout shows change password and logout links', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user)
+    $response = $this->actingAs($user)
         ->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('Ganti password')
         ->assertSee(route('password.edit'))
         ->assertSee('Keluar');
+
+    expect(preg_replace('/\s+/', ' ', $response->getContent()))->toContain('Ganti password');
 });
 
 test('repeated failed login attempts trigger rate limiting', function () {

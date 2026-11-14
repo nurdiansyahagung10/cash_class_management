@@ -1,0 +1,146 @@
+- generic [ref=f4e2]:
+  - link "Lewati ke konten utama" [ref=f4e3] [cursor=pointer]:
+    - /url: "#konten-utama"
+  - navigation "Navigasi utama" [ref=f4e4]:
+    - generic [ref=f4e5]:
+      - generic [ref=f4e6]:
+        - generic [ref=f4e7]:
+          - generic [aria-hidden] [ref=f4e8]: KK
+          - generic [ref=f4e9]:
+            - generic [ref=f4e10]: Kas Kelas 1A
+            - generic [ref=f4e11]: D3 Bahasa Inggris
+        - generic [ref=f4e12]: v1.0
+      - generic [ref=f4e13]:
+        - link "Dashboard" [ref=f4e14] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099
+        - link "Laporan pembayaran" [ref=f4e18] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/reports/payments
+        - link "Pengeluaran kas" [ref=f4e22] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/expenses
+        - link "Ledger publik" [ref=f4e26] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/ledger
+        - link "Kelola anggota" [ref=f4e30] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/members
+        - link "Tagihan kelas" [ref=f4e34] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/periods
+        - link "Kategori tagihan" [ref=f4e38] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/categories
+        - link "Review pembayaran" [ref=f4e43] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/payments/review
+      - generic [ref=f4e47]:
+        - generic [ref=f4e48]:
+          - generic [aria-hidden] [ref=f4e49]: AU
+          - generic [ref=f4e50]:
+            - generic [ref=f4e51]: Admin Uji
+            - generic [ref=f4e52]: admin
+        - generic [ref=f4e55]:
+          - link "Ganti password" [ref=f4e56] [cursor=pointer]:
+            - /url: http://127.0.0.1:8099/password
+          - button "Keluar" [ref=f4e58]
+  - main [ref=f4e59]:
+    - generic [ref=f4e62]:
+      - generic [ref=f4e63]: Kas Kelas 1A
+      - generic [ref=f4e64]: /
+      - generic [ref=f4e65]: Tagihan
+      - generic [ref=f4e66]: ·
+      - generic [ref=f4e67]: Saturday, 14 November 2026
+    - generic [ref=f4e68]:
+      - region "Riwayat periode" [ref=f4e69]:
+        - generic [ref=f4e70]:
+          - generic [ref=f4e71]:
+            - generic [ref=f4e72]:
+              - heading "Riwayat periode" [level=2] [ref=f4e73]
+              - generic [ref=f4e74]: 0 periode
+            - generic [ref=f4e75]:
+              - generic [ref=f4e76]: Cari judul periode
+              - searchbox "Cari judul periode" [ref=f4e77]
+              - button "Cari" [ref=f4e78]
+          - generic [ref=f4e79]:
+            - link "Semua" [ref=f4e80] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods
+            - link "Berjalan" [ref=f4e81] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods?status=active
+            - link "Lewat Tempo" [ref=f4e82] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods?status=overdue
+            - link "Lunas Semua" [ref=f4e83] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods?status=completed
+        - paragraph [ref=f4e86]: Tidak ada periode tagihan yang cocok.
+        - generic [ref=f4e87]:
+          - paragraph [ref=f4e88]: 0–0 dari 0 periode
+          - generic [ref=f4e89]:
+            - generic [ref=f4e90]: 1 / 1
+            - link "Halaman sebelumnya":
+              - /url: "#"
+            - link "Halaman berikutnya":
+              - /url: "#"
+      - region "Buat periode" [ref=f4e91]:
+        - generic [ref=f4e92]:
+          - heading "Buat periode" [level=2] [ref=f4e93]
+          - generic [ref=f4e94]: Berlaku untuk 2 anggota aktif.
+        - generic [ref=f4e95]:
+          - generic [ref=f4e96]:
+            - generic [ref=f4e97]: Judul Periode Tagihan
+            - textbox "Judul Periode Tagihan" [ref=f4e98]:
+              - /placeholder: "Contoh: Kas Minggu 9 / Jaket Angkatan"
+              - text: Kas November
+          - generic [ref=f4e99]:
+            - generic [ref=f4e100]:
+              - generic [ref=f4e101]: Kategori Tagihan
+              - combobox "Kategori Tagihan" [ref=f4e102]:
+                - option "Baju & Merchandise" [selected]
+                - option "Buku & Praktikum"
+                - option "Kegiatan & Acara"
+                - option "Sosial & Duka"
+                - option "Uang Kas"
+            - generic [ref=f4e103]:
+              - generic [ref=f4e104]: "Atau buat kategori baru:"
+              - textbox "Atau buat kategori baru:" [ref=f4e105]:
+                - /placeholder: Ketik nama kategori baru jika belum ada
+          - generic [ref=f4e106]:
+            - generic [ref=f4e107]: Nominal per Anggota (Rp)
+            - spinbutton "Nominal per Anggota (Rp)" [ref=f4e108]: "5000"
+          - generic [ref=f4e109]:
+            - generic [ref=f4e110]: Jatuh tempo
+            - textbox "Jatuh tempo Berlaku sampai pukul 23.59 WIB. Diabaikan jika dibagi beberapa pembayaran." [ref=f4e111]
+            - generic [ref=f4e112]: Berlaku sampai pukul 23.59 WIB. Diabaikan jika dibagi beberapa pembayaran.
+          - group [ref=f4e113]:
+            - generic "Bagi jadi beberapa pembayaran (opsional)" [active] [ref=f4e114] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f4e116]: ▾
+            - generic [ref=f4e134]:
+              - paragraph [ref=f4e135]: Buat satu tagihan per hari, minggu, atau bulan sekaligus. Tiap tagihan punya tenggat sendiri di akhir hari, minggu (Minggu), atau bulan itu pukul 23.59 WIB. Yang terlewat tetap bisa dibayar, dan yang belum jatuh tempo bisa dibayar sekaligus.
+              - generic [ref=f4e136]:
+                - generic [ref=f4e137]:
+                  - generic [ref=f4e138]: Jumlah pembayaran
+                  - spinbutton "Jumlah pembayaran" [ref=f4e139]: "1"
+                - generic [ref=f4e140]:
+                  - generic [ref=f4e141]: Tenggat tiap
+                  - combobox "Tenggat tiap" [ref=f4e142]:
+                    - option "Minggu" [selected]
+                    - option "Hari"
+                    - option "Bulan"
+              - generic [ref=f4e143]:
+                - generic [ref=f4e144]:
+                  - generic [ref=f4e145]: Mulai tanggal (kosong = hari ini)
+                  - textbox "Mulai tanggal (kosong = hari ini)" [ref=f4e146]
+                - generic [ref=f4e147]:
+                  - generic [ref=f4e148]: Nominal di atas adalah
+                  - combobox "Nominal di atas adalah" [ref=f4e149]:
+                    - option "Per pembayaran" [selected]
+                    - option "Total, dibagi rata"
+          - generic [ref=f4e117]:
+            - generic [ref=f4e118]:
+              - generic [ref=f4e119]: QRIS Pembayaran
+              - generic [ref=f4e120]: Belum ada QRIS tersimpan. Masukkan QRIS baru di bawah.
+            - generic [ref=f4e121]:
+              - generic [ref=f4e122]:
+                - generic [ref=f4e123]: "Pilih metode input QRIS:"
+                - tablist "Metode input QRIS baru" [ref=f4e124]:
+                  - tab "Upload File" [selected] [ref=f4e125]
+                  - tab "String DANA" [ref=f4e126]
+                  - tab "Link URL" [ref=f4e127]
+              - tabpanel "Upload File" [ref=f4e128]:
+                - generic [ref=f4e129]:
+                  - generic [ref=f4e130]: Upload File Gambar QRIS (PNG/JPG)
+                  - button "Upload File Gambar QRIS (PNG/JPG)" [ref=f4e131]
+                - generic [ref=f4e132]: File gambar dari DANA Bisnis atau bank. Otomatis dipindai jika didukung browser.
+          - button "Buat tagihan" [ref=f4e133]

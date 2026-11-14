@@ -73,7 +73,7 @@ class PaymentReportController extends Controller
                 $paidCount = $period->invoices->where('status', 'paid')->count();
                 $partialCount = $period->invoices->where('status', 'partial')->count();
                 $unpaidCount = $period->invoices->where('status', 'unpaid')->count();
-                $isOverdue = $period->due_date->endOfDay()->isPast() && $paidCount < $period->invoices->count();
+                $isOverdue = $period->isPastDue() && $paidCount < $period->invoices->count();
 
                 return [
                     'period' => $period,
@@ -550,7 +550,7 @@ class PaymentReportController extends Controller
                     'paid' => $entry['paid'],
                     'target' => (int) $inv->amount,
                     'remaining' => max(0, (int) $inv->amount - $entry['paid']),
-                    'is_overdue' => $inv->status !== 'paid' && (bool) $inv->period?->due_date->endOfDay()->isPast(),
+                    'is_overdue' => $inv->status !== 'paid' && (bool) $inv->period?->isPastDue(),
                     'invoice_id' => $inv->id,
                 ];
             }

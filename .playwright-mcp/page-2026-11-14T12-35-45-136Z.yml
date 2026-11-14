@@ -1,0 +1,108 @@
+- generic [ref=f22e2]:
+  - link "Lewati ke konten utama" [ref=f22e3] [cursor=pointer]:
+    - /url: "#konten-utama"
+  - navigation "Navigasi utama" [ref=f22e4]:
+    - generic [ref=f22e5]:
+      - generic [ref=f22e6]:
+        - generic [ref=f22e7]:
+          - generic [aria-hidden] [ref=f22e8]: KK
+          - generic [ref=f22e9]:
+            - generic [ref=f22e10]: Kas Kelas 1A
+            - generic [ref=f22e11]: D3 Bahasa Inggris
+        - generic [ref=f22e12]: v1.0
+      - generic [ref=f22e13]:
+        - link "Dashboard" [ref=f22e14] [cursor=pointer]:
+          - /url: http://localhost.:8099
+        - link "Pengeluaran kas" [ref=f22e18] [cursor=pointer]:
+          - /url: http://localhost.:8099/expenses
+        - link "Ledger publik" [ref=f22e22] [cursor=pointer]:
+          - /url: http://localhost.:8099/ledger
+      - link "Masuk" [ref=f22e26] [cursor=pointer]:
+        - /url: http://localhost.:8099/login
+  - main [ref=f22e28]:
+    - generic [ref=f22e29]:
+      - generic [ref=f22e30]:
+        - generic [ref=f22e31]: Kas Kelas 1A
+        - generic [ref=f22e32]: /
+        - generic [ref=f22e33]: Dashboard
+        - generic [ref=f22e34]: ·
+        - generic [ref=f22e35]: Saturday, 14 November 2026
+      - heading "Halo" [level=1] [ref=f22e36]
+      - paragraph [ref=f22e37]: Ringkasan kas dan tagihan kelas 1A
+    - region "Ringkasan" [ref=f22e38]:
+      - heading "Ringkasan" [level=2] [ref=f22e40]
+      - generic [ref=f22e42]:
+        - group "1 / 4" [ref=f22e43]:
+          - article [ref=f22e44]:
+            - heading "Saldo kas" [level=3] [ref=f22e45]
+            - paragraph [ref=f22e46]: Rp20.000
+            - paragraph [ref=f22e47]: Dihitung dari ledger
+        - group "2 / 4" [ref=f22e48]:
+          - article [ref=f22e49]:
+            - heading "Anggota aktif" [level=3] [ref=f22e50]
+            - paragraph [ref=f22e51]: "2"
+            - paragraph [ref=f22e52]: Anggota yang ditagih
+        - group "3 / 4" [ref=f22e53]:
+          - article [ref=f22e54]:
+            - heading "Tingkat pelunasan" [level=3] [ref=f22e55]
+            - paragraph [ref=f22e56]: 50%
+            - paragraph [ref=f22e57]: Tagihan yang sudah lunas
+        - group "4 / 4" [ref=f22e58]:
+          - article [ref=f22e59]:
+            - heading "Integritas ledger" [level=3] [ref=f22e60]
+            - paragraph [ref=f22e61]: Utuh
+            - paragraph [ref=f22e62]: Rantai hash SHA-256 valid
+    - region "Kalender kas · November 2026" [ref=f22e63]:
+      - generic [ref=f22e64]:
+        - generic [ref=f22e65]:
+          - heading "Kalender kas · November 2026" [level=2] [ref=f22e66]
+          - paragraph [ref=f22e67]: Masuk +Rp20.000 · Keluar -Rp0
+        - navigation "Navigasi bulan" [ref=f22e68]:
+          - link "Bulan sebelumnya" [ref=f22e69] [cursor=pointer]:
+            - /url: http://localhost.:8099?bulan=2026-10
+            - text: ←
+          - link "Hari ini" [ref=f22e70] [cursor=pointer]:
+            - /url: http://localhost.:8099
+          - link "Bulan berikutnya" [ref=f22e71] [cursor=pointer]:
+            - /url: http://localhost.:8099?bulan=2026-12
+            - text: →
+      - grid [ref=f22e72]:
+        - columnheader "Sen" [ref=f22e73]
+        - columnheader "Sel" [ref=f22e74]
+        - columnheader "Rab" [ref=f22e75]
+        - columnheader "Kam" [ref=f22e76]
+        - columnheader "Jum" [ref=f22e77]
+        - columnheader "Sab" [ref=f22e78]
+        - columnheader "Min" [ref=f22e79]
+        - gridcell "1" [ref=f22e86]
+        - gridcell "2" [ref=f22e88]
+        - gridcell "3" [ref=f22e90]
+        - gridcell "4" [ref=f22e92]
+        - gridcell "5" [ref=f22e94]
+        - gridcell "6" [ref=f22e96]
+        - gridcell "7" [ref=f22e98]
+        - gridcell "8" [ref=f22e100]
+        - gridcell "9" [ref=f22e102]
+        - gridcell "10" [ref=f22e104]
+        - gridcell "11" [ref=f22e106]
+        - gridcell "12" [ref=f22e108]
+        - gridcell "13" [ref=f22e110]
+        - gridcell "14 +20k" [ref=f22e112]:
+          - generic [ref=f22e113]: "14"
+          - generic [ref=f22e114]: +20k
+        - gridcell "15" [ref=f22e115]
+        - gridcell "16" [ref=f22e117]
+        - gridcell "17" [ref=f22e119]
+        - gridcell "18" [ref=f22e121]
+        - gridcell "19" [ref=f22e123]
+        - gridcell "20" [ref=f22e125]
+        - gridcell "21" [ref=f22e127]
+        - gridcell "22" [ref=f22e129]
+        - gridcell "23" [ref=f22e131]
+        - gridcell "24" [ref=f22e133]
+        - gridcell "25" [ref=f22e135]
+        - gridcell "26" [ref=f22e137]
+        - gridcell "27" [ref=f22e139]
+        - gridcell "28" [ref=f22e141]
+        - gridcell "29" [ref=f22e143]
+        - gridcell "30" [ref=f22e145]

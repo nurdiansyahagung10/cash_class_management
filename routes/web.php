@@ -14,9 +14,11 @@ use Illuminate\Support\Facades\Route;
 
 // Guests see the public cash summary; members get their own dashboard on the same URL.
 
-Route::get('/', DashboardController::class)->name('dashboard');
-Route::get('/ledger', LedgerController::class)->name('ledger');
-Route::get('/expenses', [ExpenseController::class, 'index'])->name('expenses.index');
+Route::middleware('password.changed')->group(function () {
+    Route::get('/', DashboardController::class)->name('dashboard');
+    Route::get('/ledger', LedgerController::class)->name('ledger');
+    Route::get('/expenses', [ExpenseController::class, 'index'])->name('expenses.index');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
@@ -74,6 +76,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/invoices/{invoice}/pay', [ManualPaymentController::class, 'create'])->name('payments.create');
         Route::post('/invoices/{invoice}/installment', [ManualPaymentController::class, 'updateInstallment'])->name('payments.installment');
         Route::post('/invoices/{invoice}/payment-proof', [ManualPaymentController::class, 'submitProof'])->name('payments.proof');
+        Route::get('/invoices/{invoice}/pay-all', [ManualPaymentController::class, 'bulk'])->name('payments.bulk');
+        Route::post('/invoices/{invoice}/pay-all', [ManualPaymentController::class, 'submitBulk'])->name('payments.bulk.submit');
         Route::get('/payments/{payment}/proof', [ManualPaymentController::class, 'proof'])->name('payments.proof.show');
 
     });

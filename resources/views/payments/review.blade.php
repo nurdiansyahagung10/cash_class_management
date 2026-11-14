@@ -12,7 +12,7 @@
     @php
         $baseQuery = array_filter(
             ['period_id' => $selectedPeriodId, 'category_id' => $selectedCategoryId, 'q' => $search],
-            fn ($v) => $v !== null && $v !== '',
+            fn($v) => $v !== null && $v !== '',
         );
         $hasFilter = $baseQuery !== [];
     @endphp
@@ -37,11 +37,11 @@
             <div class="flex flex-wrap items-center gap-2 text-xs" role="group" aria-label="Status review">
                 @foreach ([['pending', 'Menunggu review', $pendingCount], ['approved', 'Sudah disetujui', $approvedCount]] as [$key, $label, $count])
                     <a href="{{ route('payments.review', $baseQuery + ['tab' => $key]) }}"
-                        @if ($tab === $key) aria-current="true" @endif
-                        @class([
+                        @if ($tab === $key) aria-current="true" @endif @class([
                             'inline-flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 font-semibold transition-colors',
                             'border-black bg-black text-white' => $tab === $key,
-                            'border-black/10 bg-white text-muted hover:bg-canvas hover:text-black' => $tab !== $key,
+                            'border-black/10 bg-white text-muted hover:bg-canvas hover:text-black' =>
+                                $tab !== $key,
                         ])>
                         {{ $label }}
                         <span @class([
@@ -92,11 +92,13 @@
             @forelse ($payments as $payment)
                 @php
                     $invoice = $payment->invoice;
+                    $group = $tab === 'pending' && $payment->batch_key ? ($batches[$payment->batch_key] ?? null) : null;
                     $categoryName = $payment->category->name ?? ($invoice->period->category->name ?? 'Uang Kas');
                     $staffPayment = $invoice->user->isStaff();
-                    $canReview = ! $staffPayment || auth()->user()->isAdmin();
+                    $canReview = !$staffPayment || auth()->user()->isAdmin();
                 @endphp
-                <article class="flex flex-col gap-4 px-4 py-5 transition-colors hover:bg-black/1.5 sm:flex-row sm:items-start sm:gap-5 sm:px-6">
+                <article
+                    class="flex flex-col gap-4 px-4 py-5 transition-colors hover:bg-black/1.5 sm:flex-row sm:items-start sm:gap-5 sm:px-6">
                     @if ($payment->proof_path)
                         <a href="{{ route('payments.proof.show', $payment) }}" target="_blank" rel="noopener"
                             class="group relative block h-40 w-full shrink-0 overflow-hidden rounded-2xl border border-line bg-canvas/60 shadow-xs sm:size-28">
@@ -104,21 +106,35 @@
                                 alt="Bukti transfer {{ $invoice->user->name }}"
                                 class="size-full object-cover transition duration-200 group-hover:scale-105">
                             <span
-                                class="absolute inset-x-0 bottom-0 bg-black/70 py-1 text-center text-[11px] font-semibold text-white">Buka foto</span>
+                                class="absolute inset-x-0 bottom-0 bg-black/70 py-1 text-center text-[11px] font-semibold text-white">Buka
+                                foto</span>
                         </a>
                     @endif
 
                     <div class="flex min-w-0 flex-1 flex-col gap-3">
                         <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
                             <div class="flex min-w-0 flex-col gap-1">
-                                <strong class="text-base font-bold text-black wrap-break-word">{{ $invoice->user->name }}</strong>
+                                <strong
+                                    class="text-base font-bold text-black wrap-break-word">{{ $invoice->user->name }}</strong>
                                 <span class="text-xs text-muted">NIM <span
                                         class="font-mono font-bold text-black">{{ $invoice->user->student_no ?? '—' }}</span>
                                     · <span class="font-mono">{{ $payment->order_id }}</span></span>
                             </div>
                             <span
-                                class="text-lg font-bold tabular-nums text-black">Rp{{ number_format($payment->amount, 0, ',', '.') }}</span>
+                                class="text-lg font-bold tabular-nums text-black">Rp{{ number_format($group ? $group->sum('amount') : $payment->amount, 0, ',', '.') }}</span>
                         </div>
+
+                        @if ($group)
+                            <div class="rounded-xl border border-brand/20 bg-brand-soft/40 px-3.5 py-2.5 text-xs leading-relaxed text-black">
+                                <strong>Dibayar sekaligus · {{ $group->count() }} tagihan</strong>
+                                <ul class="mt-1 text-muted">
+                                    @foreach ($group as $row)
+                                        <li>{{ $row->invoice->period->title }}: Rp{{ number_format($row->amount, 0, ',', '.') }}</li>
+                                    @endforeach
+                                </ul>
+                                <span class="font-medium">Verifikasi atau tolak berlaku untuk semuanya.</span>
+                            </div>
+                        @endif
 
                         <div class="flex flex-wrap items-center gap-1.5">
                             <span
@@ -143,10 +159,11 @@
 
                             @if ($staffPayment)
                                 <span
-                                    class="rounded-full border border-navy/20 bg-navy/10 px-2.5 py-0.5 text-[11px] font-semibold text-navy">Pembayaran staf</span>
+                                    class="rounded-full border border-navy/20 bg-navy/10 px-2.5 py-0.5 text-[11px] font-semibold text-navy">Pembayaran
+                                    staf</span>
                             @endif
 
-                            @if (! empty($payment->gateway_response['paid_by_staff_name']))
+                            @if (!empty($payment->gateway_response['paid_by_staff_name']))
                                 <span
                                     class="rounded-full border border-navy/20 bg-navy/10 px-2.5 py-0.5 text-[11px] font-semibold text-navy">Via
                                     Bendahara: {{ $payment->gateway_response['paid_by_staff_name'] }}</span>
@@ -156,18 +173,22 @@
                         @if ($tab === 'approved')
                             <p class="text-xs text-muted">
                                 Disetujui
-                                <span class="font-semibold text-black">{{ ($payment->reviewed_at ?? $payment->paid_at ?? $payment->updated_at)->translatedFormat('d M Y, H:i') }}</span>
+                                <span
+                                    class="font-semibold text-black">{{ ($payment->reviewed_at ?? ($payment->paid_at ?? $payment->updated_at))->translatedFormat('d M Y, H:i') }}</span>
                                 @if ($payment->reviewer)
                                     oleh <span class="font-semibold text-black">{{ $payment->reviewer->name }}</span>
                                 @endif
                             </p>
-                        @elseif (! $canReview)
+                        @elseif (!$canReview)
                             <p
                                 class="flex items-start gap-2 rounded-xl border border-navy/15 bg-navy/5 px-3.5 py-2.5 text-xs leading-relaxed text-navy">
-                                <svg class="mt-0.5 size-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4" />
+                                <svg class="mt-0.5 size-4 shrink-0" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4" />
                                 </svg>
-                                <span>Pembayaran ini dilakukan oleh staf, sehingga hanya <strong>admin</strong> yang dapat memverifikasinya.</span>
+                                <span>Pembayaran ini dilakukan oleh staf, sehingga hanya <strong>admin</strong> yang
+                                    dapat memverifikasinya.</span>
                             </p>
                         @else
                             <div class="flex flex-wrap items-start gap-2.5">

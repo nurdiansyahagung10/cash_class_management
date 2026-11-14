@@ -27,9 +27,11 @@ test('staff and admin can manage categories, but regular user cannot', function 
 
     expect(Category::where('name', 'Study Tour Bali')->exists())->toBeTrue();
 
-    // Regular user is forbidden
-    $this->actingAs($user)->get(route('categories.index'))->assertForbidden();
-    $this->actingAs($user)->post(route('categories.store'), ['name' => 'Hacker Cat'])->assertForbidden();
+    // Regular user is sent back to the dashboard
+    $this->actingAs($user)->get(route('categories.index'))->assertRedirect(route('dashboard'));
+    $this->actingAs($user)->post(route('categories.store'), ['name' => 'Hacker Cat'])->assertRedirect(route('dashboard'));
+
+    expect(Category::where('name', 'Hacker Cat')->exists())->toBeFalse();
 });
 
 test('payments inherit period category and ledger confirms payment with category in blockchain payload', function () {

@@ -1,0 +1,22 @@
+- main [ref=f6e2]:
+  - generic [ref=f6e3]:
+    - generic [aria-hidden] [ref=f6e4]: K
+    - generic [ref=f6e5]:
+      - generic [ref=f6e6]: Kas Kelas 1A
+      - generic [ref=f6e7]: D3 Bahasa Inggris
+  - generic [ref=f6e8]:
+    - heading "Masuk" [level=1] [ref=f6e9]
+    - paragraph [ref=f6e10]: Pakai No. absen / NIM dan password dari staff kelas.
+  - generic [ref=f6e12]:
+    - generic [ref=f6e13]:
+      - generic [ref=f6e14]: No. absen / NIM
+      - textbox "No. absen / NIM" [active] [ref=f6e15]:
+        - /placeholder: "Contoh: 29 atau NIM Anda"
+    - generic [ref=f6e16]:
+      - generic [ref=f6e17]: Password
+      - textbox "Password" [ref=f6e18]:
+        - /placeholder: ••••••••
+    - generic [ref=f6e19] [cursor=pointer]:
+      - checkbox "Ingat saya" [ref=f6e20]
+      - generic [ref=f6e21]: Ingat saya
+    - button "Masuk" [ref=f6e22]

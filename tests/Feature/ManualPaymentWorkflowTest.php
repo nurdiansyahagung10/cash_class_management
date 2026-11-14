@@ -161,7 +161,7 @@ test('admin can access review list with category information while regular user 
 
     $this->actingAs($other)
         ->get(route('payments.review'))
-        ->assertForbidden();
+        ->assertRedirect(route('dashboard'));
 
     $this->actingAs($admin)
         ->get(route('payments.review'))

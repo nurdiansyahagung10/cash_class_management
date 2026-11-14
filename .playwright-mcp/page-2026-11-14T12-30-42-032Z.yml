@@ -1,0 +1,181 @@
+- generic [ref=f7e2]:
+  - link "Lewati ke konten utama" [ref=f7e3] [cursor=pointer]:
+    - /url: "#konten-utama"
+  - navigation "Navigasi utama" [ref=f7e4]:
+    - generic [ref=f7e5]:
+      - generic [ref=f7e6]:
+        - generic [ref=f7e7]:
+          - generic [aria-hidden] [ref=f7e8]: KK
+          - generic [ref=f7e9]:
+            - generic [ref=f7e10]: Kas Kelas 1A
+            - generic [ref=f7e11]: D3 Bahasa Inggris
+        - generic [ref=f7e12]: v1.0
+      - generic [ref=f7e13]:
+        - link "Dashboard" [ref=f7e14] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099
+        - link "Pengeluaran kas" [ref=f7e18] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/expenses
+        - link "Ledger publik" [ref=f7e22] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/ledger
+      - generic [ref=f7e26]:
+        - generic [ref=f7e27]:
+          - generic [aria-hidden] [ref=f7e28]: SA
+          - generic [ref=f7e29]:
+            - generic [ref=f7e30]: Siti Aisyah
+            - generic [ref=f7e31]: user
+        - generic [ref=f7e34]:
+          - link "Ganti password" [ref=f7e35] [cursor=pointer]:
+            - /url: http://127.0.0.1:8099/password
+          - button "Keluar" [ref=f7e37]
+  - main [ref=f7e38]:
+    - generic [ref=f7e39]:
+      - generic [ref=f7e40]:
+        - generic [ref=f7e41]: KK 1A
+        - generic [ref=f7e42]: /
+        - generic [ref=f7e43]: Dashboard
+        - generic [ref=f7e44]: ·
+        - generic [ref=f7e45]: Saturday, 14 November 2026
+      - heading "Halo, Siti Aisyah" [level=1] [ref=f7e46]
+      - paragraph [ref=f7e47]: Pantau tagihan dan riwayat pembayaran kas kelasmu.
+    - region "Status integritas ledger" [ref=f7e48]:
+      - generic [ref=f7e53]:
+        - generic [ref=f7e54]:
+          - 'heading "Integritas ledger: Utuh" [level=2] [ref=f7e55]'
+          - generic [ref=f7e56]: Valid
+        - paragraph [ref=f7e57]: Rantai hash tervalidasi. Data dienkripsi berurutan dengan SHA-256 dan tidak dapat dimanipulasi secara sepihak.
+      - generic [ref=f7e58]:
+        - link "Lihat ledger" [ref=f7e59] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/ledger
+        - button "Periksa ledger" [ref=f7e61]
+    - region "Ringkasan" [ref=f7e62]:
+      - heading "Ringkasan" [level=2] [ref=f7e64]
+      - generic [ref=f7e66]:
+        - group "1 / 4" [ref=f7e67]:
+          - article [ref=f7e68]:
+            - heading "Tagihan belum lunas" [level=3] [ref=f7e69]
+            - paragraph [ref=f7e70]: Rp20.000
+            - paragraph [ref=f7e71]: Jumlah yang perlu dibayar
+        - group "2 / 4" [ref=f7e72]:
+          - article [ref=f7e73]:
+            - heading "Tagihan lunas" [level=3] [ref=f7e74]
+            - paragraph [ref=f7e75]: "0"
+            - paragraph [ref=f7e76]: Invoice yang sudah dibayar
+        - group "3 / 4" [ref=f7e77]:
+          - article [ref=f7e78]:
+            - heading "Bukti menunggu review" [level=3] [ref=f7e79]
+            - paragraph [ref=f7e80]: "0"
+            - paragraph [ref=f7e81]: Bukti pembayaran yang dikirim
+        - group "4 / 4" [ref=f7e82]:
+          - article [ref=f7e83]:
+            - heading "Saldo kas kelas" [level=3] [ref=f7e84]
+            - paragraph [ref=f7e85]: Rp0
+            - paragraph [ref=f7e86]: Transparan dan dihitung dari ledger
+    - region "Kalender kas · November 2026" [ref=f7e87]:
+      - generic [ref=f7e88]:
+        - generic [ref=f7e89]:
+          - heading "Kalender kas · November 2026" [level=2] [ref=f7e90]
+          - paragraph [ref=f7e91]: Masuk +Rp0 · Keluar -Rp0
+        - navigation "Navigasi bulan" [ref=f7e92]:
+          - link "Bulan sebelumnya" [ref=f7e93] [cursor=pointer]:
+            - /url: http://127.0.0.1:8099?bulan=2026-10
+            - text: ←
+          - link "Hari ini" [ref=f7e94] [cursor=pointer]:
+            - /url: http://127.0.0.1:8099
+          - link "Bulan berikutnya" [ref=f7e95] [cursor=pointer]:
+            - /url: http://127.0.0.1:8099?bulan=2026-12
+            - text: →
+      - grid [ref=f7e96]:
+        - columnheader "Sen" [ref=f7e97]
+        - columnheader "Sel" [ref=f7e98]
+        - columnheader "Rab" [ref=f7e99]
+        - columnheader "Kam" [ref=f7e100]
+        - columnheader "Jum" [ref=f7e101]
+        - columnheader "Sab" [ref=f7e102]
+        - columnheader "Min" [ref=f7e103]
+        - gridcell "1" [ref=f7e110]
+        - gridcell "2" [ref=f7e112]
+        - gridcell "3" [ref=f7e114]
+        - gridcell "4" [ref=f7e116]
+        - gridcell "5" [ref=f7e118]
+        - gridcell "6" [ref=f7e120]
+        - gridcell "7" [ref=f7e122]
+        - gridcell "8" [ref=f7e124]
+        - gridcell "9" [ref=f7e126]
+        - gridcell "10" [ref=f7e128]
+        - gridcell "11" [ref=f7e130]
+        - gridcell "12" [ref=f7e132]
+        - gridcell "13" [ref=f7e134]
+        - gridcell "14" [ref=f7e136]
+        - gridcell "15" [ref=f7e138]
+        - gridcell "16" [ref=f7e140]
+        - gridcell "17" [ref=f7e142]
+        - gridcell "18" [ref=f7e144]
+        - gridcell "19" [ref=f7e146]
+        - gridcell "20" [ref=f7e148]
+        - gridcell "21" [ref=f7e150]
+        - gridcell "22" [ref=f7e152]
+        - gridcell "23" [ref=f7e154]
+        - gridcell "24" [ref=f7e156]
+        - gridcell "25" [ref=f7e158]
+        - gridcell "26" [ref=f7e160]
+        - gridcell "27" [ref=f7e162]
+        - gridcell "28" [ref=f7e164]
+        - gridcell "29" [ref=f7e166]
+        - gridcell "30" [ref=f7e168]
+    - generic [ref=f7e176]:
+      - region "Tagihan belum lunas" [ref=f7e177]:
+        - generic [ref=f7e178]:
+          - heading "Tagihan belum lunas" [level=2] [ref=f7e179]
+          - paragraph [ref=f7e180]: Pilih tagihan untuk membuka QRIS dan mengirim bukti transfer.
+          - link "Bayar 4 tagihan sekaligus →" [ref=f7e181] [cursor=pointer]:
+            - /url: http://127.0.0.1:8099/invoices/7/pay-all
+        - generic [ref=f7e182]:
+          - generic [ref=f7e183]:
+            - generic [ref=f7e184]:
+              - paragraph [ref=f7e185]: Kas November (4/4)
+              - generic [ref=f7e186]: Baju & Merchandise
+              - paragraph [ref=f7e188]: Jatuh tempo 06 Dec 2026
+            - generic [ref=f7e189]:
+              - generic [ref=f7e190]:
+                - generic [ref=f7e191]: Sisa
+                - generic [ref=f7e192]: Rp5.000
+              - link "Bayar" [ref=f7e193] [cursor=pointer]:
+                - /url: http://127.0.0.1:8099/invoices/7/pay
+          - generic [ref=f7e194]:
+            - generic [ref=f7e195]:
+              - paragraph [ref=f7e196]: Kas November (3/4)
+              - generic [ref=f7e197]: Baju & Merchandise
+              - paragraph [ref=f7e199]: Jatuh tempo 29 Nov 2026
+            - generic [ref=f7e200]:
+              - generic [ref=f7e201]:
+                - generic [ref=f7e202]: Sisa
+                - generic [ref=f7e203]: Rp5.000
+              - link "Bayar" [ref=f7e204] [cursor=pointer]:
+                - /url: http://127.0.0.1:8099/invoices/5/pay
+          - generic [ref=f7e205]:
+            - generic [ref=f7e206]:
+              - paragraph [ref=f7e207]: Kas November (2/4)
+              - generic [ref=f7e208]: Baju & Merchandise
+              - paragraph [ref=f7e210]: Jatuh tempo 22 Nov 2026
+            - generic [ref=f7e211]:
+              - generic [ref=f7e212]:
+                - generic [ref=f7e213]: Sisa
+                - generic [ref=f7e214]: Rp5.000
+              - link "Bayar" [ref=f7e215] [cursor=pointer]:
+                - /url: http://127.0.0.1:8099/invoices/3/pay
+          - generic [ref=f7e216]:
+            - generic [ref=f7e217]:
+              - paragraph [ref=f7e218]: Kas November (1/4)
+              - generic [ref=f7e219]: Baju & Merchandise
+              - paragraph [ref=f7e221]: Jatuh tempo 15 Nov 2026
+            - generic [ref=f7e222]:
+              - generic [ref=f7e223]:
+                - generic [ref=f7e224]: Sisa
+                - generic [ref=f7e225]: Rp5.000
+              - link "Bayar" [ref=f7e226] [cursor=pointer]:
+                - /url: http://127.0.0.1:8099/invoices/1/pay
+      - region "Riwayat pembayaran" [ref=f7e227]:
+        - generic [ref=f7e228]:
+          - heading "Riwayat pembayaran" [level=2] [ref=f7e229]
+          - paragraph [ref=f7e230]: Lima transaksi pembayaran terakhirmu.
+        - paragraph [ref=f7e232]: Belum ada riwayat pembayaran.

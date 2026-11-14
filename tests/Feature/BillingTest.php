@@ -58,8 +58,8 @@ test('staff and admin can create periods with category, writing to ledger', func
 test('regular user cannot create or view periods', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user)->post('/periods', ['title' => 'x', 'amount' => 10000, 'due_date' => now()->toDateString()])->assertForbidden();
-    $this->actingAs($user)->get('/periods')->assertForbidden();
+    $this->actingAs($user)->post('/periods', ['title' => 'x', 'amount' => 10000, 'due_date' => now()->toDateString()])->assertRedirect(route('dashboard'));
+    $this->actingAs($user)->get('/periods')->assertRedirect(route('dashboard'));
 
     expect(BillingPeriod::count())->toBe(0);
 });
@@ -189,11 +189,10 @@ test('admin can create period selecting specific existing QRIS from dropdown', f
     expect($newPeriod->qris_url)->toBe('00020101021126580016ID.CO.DANA.WWW5802ID6304ABCD');
 });
 
-test('sidebar navigation uses sticky h-screen desktop layout', function () {
+test('sidebar navigation is full height and sticks on desktop', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user)->get(route('dashboard'))
-        ->assertOk()
-        ->assertSee('md:h-screen')
-        ->assertSee('md:sticky');
+    $html = $this->actingAs($user)->get(route('dashboard'))->assertOk()->getContent();
+
+    expect($html)->toMatch('/<nav aria-label="Navigasi utama"[^>]*class="[^"]*\bh-screen\b[^"]*\bmd:sticky\b/');
 });

@@ -1,0 +1,178 @@
+- generic [ref=f5e2]:
+  - link "Lewati ke konten utama" [ref=f5e3] [cursor=pointer]:
+    - /url: "#konten-utama"
+  - navigation "Navigasi utama" [ref=f5e4]:
+    - generic [ref=f5e5]:
+      - generic [ref=f5e6]:
+        - generic [ref=f5e7]:
+          - generic [aria-hidden] [ref=f5e8]: KK
+          - generic [ref=f5e9]:
+            - generic [ref=f5e10]: Kas Kelas 1A
+            - generic [ref=f5e11]: D3 Bahasa Inggris
+        - generic [ref=f5e12]: v1.0
+      - generic [ref=f5e13]:
+        - link "Dashboard" [ref=f5e14] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099
+        - link "Laporan pembayaran" [ref=f5e18] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/reports/payments
+        - link "Pengeluaran kas" [ref=f5e22] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/expenses
+        - link "Ledger publik" [ref=f5e26] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/ledger
+        - link "Kelola anggota" [ref=f5e30] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/members
+        - link "Tagihan kelas" [ref=f5e34] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/periods
+        - link "Kategori tagihan" [ref=f5e38] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/categories
+        - link "Review pembayaran" [ref=f5e43] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/payments/review
+      - generic [ref=f5e47]:
+        - generic [ref=f5e48]:
+          - generic [aria-hidden] [ref=f5e49]: AU
+          - generic [ref=f5e50]:
+            - generic [ref=f5e51]: Admin Uji
+            - generic [ref=f5e52]: admin
+        - generic [ref=f5e55]:
+          - link "Ganti password" [ref=f5e56] [cursor=pointer]:
+            - /url: http://127.0.0.1:8099/password
+          - button "Keluar" [ref=f5e58]
+  - main [ref=f5e59]:
+    - status [ref=f5e60]:
+      - generic [ref=f5e63]: "Kas November: 4 tagihan dibuat untuk 2 anggota aktif, tenggat terakhir 06 Dec 2026 pukul 23.59 WIB."
+    - generic [ref=f5e66]:
+      - generic [ref=f5e67]: Kas Kelas 1A
+      - generic [ref=f5e68]: /
+      - generic [ref=f5e69]: Tagihan
+      - generic [ref=f5e70]: ·
+      - generic [ref=f5e71]: Saturday, 14 November 2026
+    - generic [ref=f5e72]:
+      - region "Riwayat periode" [ref=f5e73]:
+        - generic [ref=f5e74]:
+          - generic [ref=f5e75]:
+            - generic [ref=f5e76]:
+              - heading "Riwayat periode" [level=2] [ref=f5e77]
+              - generic [ref=f5e78]: 4 periode
+            - generic [ref=f5e79]:
+              - generic [ref=f5e80]: Cari judul periode
+              - searchbox "Cari judul periode" [ref=f5e81]
+              - button "Cari" [ref=f5e82]
+          - generic [ref=f5e83]:
+            - link "Semua" [ref=f5e84] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods
+            - link "Berjalan" [ref=f5e85] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods?status=active
+            - link "Lewat Tempo" [ref=f5e86] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods?status=overdue
+            - link "Lunas Semua" [ref=f5e87] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods?status=completed
+        - generic [ref=f5e88]:
+          - generic [ref=f5e89]:
+            - generic [ref=f5e90]:
+              - generic [ref=f5e91]:
+                - link "Kas November (4/4) →" [ref=f5e92] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8099/periods/4
+                - generic [ref=f5e93]: Baju & Merchandise
+                - generic [ref=f5e94]: Berjalan
+              - generic [ref=f5e95]: Jatuh tempo 06 Dec 2026
+            - generic [ref=f5e96]: Rp5.000
+            - link "0 / 2 lunas" [ref=f5e97] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods/4
+          - generic [ref=f5e98]:
+            - generic [ref=f5e99]:
+              - generic [ref=f5e100]:
+                - link "Kas November (3/4) →" [ref=f5e101] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8099/periods/3
+                - generic [ref=f5e102]: Baju & Merchandise
+                - generic [ref=f5e103]: Berjalan
+              - generic [ref=f5e104]: Jatuh tempo 29 Nov 2026
+            - generic [ref=f5e105]: Rp5.000
+            - link "0 / 2 lunas" [ref=f5e106] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods/3
+          - generic [ref=f5e107]:
+            - generic [ref=f5e108]:
+              - generic [ref=f5e109]:
+                - link "Kas November (2/4) →" [ref=f5e110] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8099/periods/2
+                - generic [ref=f5e111]: Baju & Merchandise
+                - generic [ref=f5e112]: Berjalan
+              - generic [ref=f5e113]: Jatuh tempo 22 Nov 2026
+            - generic [ref=f5e114]: Rp5.000
+            - link "0 / 2 lunas" [ref=f5e115] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods/2
+          - generic [ref=f5e116]:
+            - generic [ref=f5e117]:
+              - generic [ref=f5e118]:
+                - link "Kas November (1/4) →" [ref=f5e119] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8099/periods/1
+                - generic [ref=f5e120]: Baju & Merchandise
+                - generic [ref=f5e121]: Berjalan
+              - generic [ref=f5e122]: Jatuh tempo 15 Nov 2026
+            - generic [ref=f5e123]: Rp5.000
+            - link "0 / 2 lunas" [ref=f5e124] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods/1
+        - generic [ref=f5e125]:
+          - paragraph [ref=f5e126]: 1–4 dari 4 periode
+          - generic [ref=f5e127]:
+            - generic [ref=f5e128]: 1 / 1
+            - link "Halaman sebelumnya":
+              - /url: "#"
+            - link "Halaman berikutnya":
+              - /url: "#"
+      - region "Buat periode" [ref=f5e129]:
+        - generic [ref=f5e130]:
+          - heading "Buat periode" [level=2] [ref=f5e131]
+          - generic [ref=f5e132]: Berlaku untuk 2 anggota aktif.
+        - generic [ref=f5e133]:
+          - generic [ref=f5e134]:
+            - generic [ref=f5e135]: Judul Periode Tagihan
+            - textbox "Judul Periode Tagihan" [ref=f5e136]:
+              - /placeholder: "Contoh: Kas Minggu 9 / Jaket Angkatan"
+          - generic [ref=f5e137]:
+            - generic [ref=f5e138]:
+              - generic [ref=f5e139]: Kategori Tagihan
+              - combobox "Kategori Tagihan" [ref=f5e140]:
+                - option "Baju & Merchandise" [selected]
+                - option "Buku & Praktikum"
+                - option "Kegiatan & Acara"
+                - option "Sosial & Duka"
+                - option "Uang Kas"
+            - generic [ref=f5e141]:
+              - generic [ref=f5e142]: "Atau buat kategori baru:"
+              - textbox "Atau buat kategori baru:" [ref=f5e143]:
+                - /placeholder: Ketik nama kategori baru jika belum ada
+          - generic [ref=f5e144]:
+            - generic [ref=f5e145]: Nominal per Anggota (Rp)
+            - spinbutton "Nominal per Anggota (Rp)" [ref=f5e146]
+          - generic [ref=f5e147]:
+            - generic [ref=f5e148]: Jatuh tempo
+            - textbox "Jatuh tempo Berlaku sampai pukul 23.59 WIB. Diabaikan jika dibagi beberapa pembayaran." [ref=f5e149]
+            - generic [ref=f5e150]: Berlaku sampai pukul 23.59 WIB. Diabaikan jika dibagi beberapa pembayaran.
+          - group [ref=f5e151]:
+            - generic "Bagi jadi beberapa pembayaran (opsional)" [ref=f5e152] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f5e154]: ▾
+            - option "Minggu" [selected]
+            - option "Hari"
+            - option "Bulan"
+            - option "Per pembayaran" [selected]
+            - option "Total, dibagi rata"
+          - generic [ref=f5e155]:
+            - generic [ref=f5e156]:
+              - generic [ref=f5e157]: QRIS Pembayaran
+              - combobox "QRIS Pembayaran Dapat langsung memakai QRIS dari tagihan sebelumnya atau pilih opsi baru di bawah." [ref=f5e158]:
+                - option "[Gambar/URL] Kas November (4/4)" [selected]
+                - option "+ Upload / Masukkan QRIS Baru"
+              - generic [ref=f5e159]: Dapat langsung memakai QRIS dari tagihan sebelumnya atau pilih opsi baru di bawah.
+            - generic [ref=f5e160]:
+              - generic [ref=f5e161]:
+                - generic [ref=f5e162]: "Atau gunakan QRIS baru:"
+                - tablist "Metode input QRIS baru" [ref=f5e163]:
+                  - tab "Upload File" [selected] [ref=f5e164]
+                  - tab "String DANA" [ref=f5e165]
+                  - tab "Link URL" [ref=f5e166]
+              - tabpanel "Upload File" [ref=f5e167]:
+                - generic [ref=f5e168]:
+                  - generic [ref=f5e169]: Upload File Gambar QRIS (PNG/JPG)
+                  - button "Upload File Gambar QRIS (PNG/JPG)" [ref=f5e170]
+                - generic [ref=f5e171]: File gambar dari DANA Bisnis atau bank. Otomatis dipindai jika didukung browser.
+          - button "Buat tagihan" [ref=f5e172]

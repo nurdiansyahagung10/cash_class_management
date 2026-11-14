@@ -1,0 +1,113 @@
+- generic [ref=f20e2]:
+  - link "Lewati ke konten utama" [ref=f20e3] [cursor=pointer]:
+    - /url: "#konten-utama"
+  - navigation "Navigasi utama" [ref=f20e4]:
+    - generic [ref=f20e5]:
+      - generic [ref=f20e6]:
+        - generic [ref=f20e7]:
+          - generic [aria-hidden] [ref=f20e8]: KK
+          - generic [ref=f20e9]:
+            - generic [ref=f20e10]: Kas Kelas 1A
+            - generic [ref=f20e11]: D3 Bahasa Inggris
+        - generic [ref=f20e12]: v1.0
+      - generic [ref=f20e13]:
+        - link "Dashboard" [ref=f20e14] [cursor=pointer]:
+          - /url: http://localhost:8099
+        - link "Laporan pembayaran" [ref=f20e18] [cursor=pointer]:
+          - /url: http://localhost:8099/reports/payments
+        - link "Pengeluaran kas" [ref=f20e22] [cursor=pointer]:
+          - /url: http://localhost:8099/expenses
+        - link "Ledger publik" [ref=f20e26] [cursor=pointer]:
+          - /url: http://localhost:8099/ledger
+        - link "Kelola anggota" [ref=f20e30] [cursor=pointer]:
+          - /url: http://localhost:8099/members
+        - link "Tagihan kelas" [ref=f20e34] [cursor=pointer]:
+          - /url: http://localhost:8099/periods
+        - link "Kategori tagihan" [ref=f20e38] [cursor=pointer]:
+          - /url: http://localhost:8099/categories
+        - link "Review pembayaran" [ref=f20e43] [cursor=pointer]:
+          - /url: http://localhost:8099/payments/review
+      - generic [ref=f20e47]:
+        - generic [ref=f20e48]:
+          - generic [aria-hidden] [ref=f20e49]: AU
+          - generic [ref=f20e50]:
+            - generic [ref=f20e51]: Admin Uji
+            - generic [ref=f20e52]: admin
+        - generic [ref=f20e55]:
+          - link "Ganti password" [ref=f20e56] [cursor=pointer]:
+            - /url: http://localhost:8099/password
+          - button "Keluar" [ref=f20e58]
+  - main [ref=f20e59]:
+    - generic [ref=f20e61]:
+      - generic [ref=f20e62]: Kas Kelas 1A
+      - generic [ref=f20e63]: /
+      - generic [ref=f20e64]: Review pembayaran
+      - generic [ref=f20e65]: ·
+      - generic [ref=f20e66]: Saturday, 14 November 2026
+    - region "Review pembayaran" [ref=f20e67]:
+      - generic [ref=f20e68]:
+        - generic [ref=f20e69]:
+          - generic [ref=f20e70]:
+            - heading "Review pembayaran" [level=1] [ref=f20e71]
+            - generic [ref=f20e72]: 1 menunggu
+          - paragraph [ref=f20e73]: Verifikasi bukti transfer anggota, atau telusuri riwayat pembayaran yang sudah disetujui.
+        - group "Status review" [ref=f20e74]:
+          - link "Menunggu review 1" [ref=f20e75] [cursor=pointer]:
+            - /url: http://localhost:8099/payments/review?tab=pending
+            - text: Menunggu review
+            - generic [ref=f20e76]: "1"
+          - link "Sudah disetujui 0" [ref=f20e77] [cursor=pointer]:
+            - /url: http://localhost:8099/payments/review?tab=approved
+            - text: Sudah disetujui
+            - generic [ref=f20e78]: "0"
+        - generic [ref=f20e79]:
+          - combobox "Filter periode" [ref=f20e80]:
+            - option "Semua periode" [selected]
+            - option "Kas November (4/4)"
+            - option "Kas November (3/4)"
+            - option "Kas November (2/4)"
+            - option "Kas November (1/4)"
+          - combobox "Filter kategori" [ref=f20e81]:
+            - option "Semua kategori" [selected]
+            - option "Baju & Merchandise"
+            - option "Buku & Praktikum"
+            - option "Kegiatan & Acara"
+            - option "Sosial & Duka"
+            - option "Uang Kas"
+          - generic [ref=f20e82]:
+            - searchbox "Cari nama atau NIM" [ref=f20e83]
+            - button "Terapkan" [ref=f20e84]
+      - article [ref=f20e86]:
+        - link "Bukti transfer Siti Aisyah Buka foto" [ref=f20e87] [cursor=pointer]:
+          - /url: http://localhost:8099/payments/1/proof
+          - img "Bukti transfer Siti Aisyah" [ref=f20e88]
+          - generic [ref=f20e89]: Buka foto
+        - generic [ref=f20e90]:
+          - generic [ref=f20e91]:
+            - generic [ref=f20e92]:
+              - strong [ref=f20e93]: Siti Aisyah
+              - generic [ref=f20e94]: NIM 101 · KAS-1
+            - generic [ref=f20e95]: Rp20.000
+          - generic [ref=f20e96]:
+            - strong [ref=f20e97]: Dibayar sekaligus · 4 tagihan
+            - list [ref=f20e98]:
+              - listitem [ref=f20e99]: "Kas November (1/4): Rp5.000"
+              - listitem [ref=f20e100]: "Kas November (2/4): Rp5.000"
+              - listitem [ref=f20e101]: "Kas November (3/4): Rp5.000"
+              - listitem [ref=f20e102]: "Kas November (4/4): Rp5.000"
+            - text: Verifikasi atau tolak berlaku untuk semuanya.
+          - generic [ref=f20e103]:
+            - generic [ref=f20e104]: Baju & Merchandise
+            - generic [ref=f20e105]: Kas November (1/4)
+          - generic [ref=f20e106]:
+            - button "Verifikasi lunas" [ref=f20e108]
+            - group [ref=f20e109]:
+              - generic "Tolak bukti" [ref=f20e110] [cursor=pointer]
+      - generic [ref=f20e111]:
+        - paragraph [ref=f20e112]: 1–1 dari 1 pembayaran
+        - generic [ref=f20e113]:
+          - generic [ref=f20e114]: 1 / 1
+          - link "Halaman sebelumnya":
+            - /url: "#"
+          - link "Halaman berikutnya":
+            - /url: "#"

@@ -1,0 +1,2 @@
+[     508ms] [LOG] 🔍 Browser logger active (MCP server detected). Posting to: http://127.0.0.1:8099/_boost/browser-logs @ http://127.0.0.1:8099/invoices/1/pay-all?ids%5B0%5D=1&ids%5B1%5D=3&ids%5B2%5D=5&ids%5B3%5D=7:21
+[     515ms] [ERROR] Failed to load resource: net::ERR_NAME_NOT_RESOLVED @ https://example.test/qris.png:1

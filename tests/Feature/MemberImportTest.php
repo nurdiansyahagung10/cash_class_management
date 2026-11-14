@@ -67,10 +67,10 @@ function createTestXlsx(array $rows, string $filePath): void
     $zip->close();
 }
 
-test('staff and admin can download member import template', function () {
-    $staff = User::factory()->staff()->create();
+test('admin can download member import template', function () {
+    $admin = User::factory()->admin()->create();
 
-    $response = $this->actingAs($staff)->get(route('members.template'));
+    $response = $this->actingAs($admin)->get(route('members.template'));
 
     $response->assertOk()
         ->assertHeader('Content-Disposition', 'attachment; filename=template-import-anggota.csv')
@@ -79,15 +79,17 @@ test('staff and admin can download member import template', function () {
     expect($response->streamedContent())->toContain('Nama,NIM,"Password Awal"');
 });
 
-test('regular member cannot download template or import members', function () {
-    $member = User::factory()->create();
+test('only admin can download the template or import members; others go back to the dashboard', function () {
+    foreach ([User::factory()->create(), User::factory()->staff()->create()] as $actor) {
+        $this->actingAs($actor)->get(route('members.template'))->assertRedirect(route('dashboard'));
+        $this->actingAs($actor)->post(route('members.import'))->assertRedirect(route('dashboard'));
+    }
 
-    $this->actingAs($member)->get(route('members.template'))->assertForbidden();
-    $this->actingAs($member)->post(route('members.import'))->assertForbidden();
+    expect(PendingMember::count())->toBe(0);
 });
 
-test('staff can import members from csv file', function () {
-    $staff = User::factory()->staff()->create();
+test('admin can import members from csv file', function () {
+    $admin = User::factory()->admin()->create();
 
     $csvContent = "\xEF\xBB\xBFNama,NIM,Password Awal\n"
         ."Ahmad Fauzi,101,password123\n"
@@ -95,7 +97,7 @@ test('staff can import members from csv file', function () {
 
     $file = UploadedFile::fake()->createWithContent('anggota.csv', $csvContent);
 
-    $response = $this->actingAs($staff)->post(route('members.import'), [
+    $response = $this->actingAs($admin)->post(route('members.import'), [
         'file' => $file,
     ]);
 
@@ -107,11 +109,11 @@ test('staff can import members from csv file', function () {
     $candidate1 = PendingMember::where('student_no', '101')->first();
     expect($candidate1)->not->toBeNull()
         ->and($candidate1->name)->toBe('Ahmad Fauzi')
-        ->and($candidate1->created_by)->toBe($staff->id);
+        ->and($candidate1->created_by)->toBe($admin->id);
 });
 
-test('staff can import members from excel xlsx file', function () {
-    $staff = User::factory()->staff()->create();
+test('admin can import members from excel xlsx file', function () {
+    $admin = User::factory()->admin()->create();
 
     $tempPath = tempnam(sys_get_temp_dir(), 'test_xlsx_').'.xlsx';
 
@@ -123,7 +125,7 @@ test('staff can import members from excel xlsx file', function () {
 
     $file = new UploadedFile($tempPath, 'anggota.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true);
 
-    $response = $this->actingAs($staff)->post(route('members.import'), [
+    $response = $this->actingAs($admin)->post(route('members.import'), [
         'file' => $file,
     ]);
 
@@ -142,7 +144,7 @@ test('staff can import members from excel xlsx file', function () {
 });
 
 test('import skips rows with existing nim, short password, or duplicate within file', function () {
-    $staff = User::factory()->staff()->create();
+    $admin = User::factory()->admin()->create();
 
     // Existing active member
     User::factory()->create(['student_no' => '301', 'name' => 'Existing User']);
@@ -160,7 +162,7 @@ test('import skips rows with existing nim, short password, or duplicate within f
 
     $file = UploadedFile::fake()->createWithContent('daftar.csv', $csvContent);
 
-    $response = $this->actingAs($staff)->post(route('members.import'), [
+    $response = $this->actingAs($admin)->post(route('members.import'), [
         'file' => $file,
     ]);
 

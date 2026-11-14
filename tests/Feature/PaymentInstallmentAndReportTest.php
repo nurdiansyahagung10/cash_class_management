@@ -642,7 +642,7 @@ test('staff bendahara can pay own cash and help pay installments on behalf of an
     $this->actingAs($admin)
         ->get(route('payments.review'))
         ->assertOk()
-        ->assertSee('Disetor via Bendahara: Siti Bendahara')
+        ->assertSee('Bendahara: Siti Bendahara')
         ->assertSee('Doni Siswa');
 
     // 7. Admin approves the payment -> ledger & BKU record the transaction and staff assistance

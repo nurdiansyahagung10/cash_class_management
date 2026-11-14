@@ -1,0 +1,129 @@
+- generic [ref=f2e2]:
+  - link "Lewati ke konten utama" [ref=f2e3] [cursor=pointer]:
+    - /url: "#konten-utama"
+  - navigation "Navigasi utama" [ref=f2e4]:
+    - generic [ref=f2e5]:
+      - generic [ref=f2e6]:
+        - generic [ref=f2e7]:
+          - generic [aria-hidden] [ref=f2e8]: KK
+          - generic [ref=f2e9]:
+            - generic [ref=f2e10]: Kas Kelas 1A
+            - generic [ref=f2e11]: D3 Bahasa Inggris
+        - generic [ref=f2e12]: v1.0
+      - generic [ref=f2e13]:
+        - link "Dashboard" [ref=f2e14] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099
+        - link "Laporan pembayaran" [ref=f2e18] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/reports/payments
+        - link "Pengeluaran kas" [ref=f2e22] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/expenses
+        - link "Ledger publik" [ref=f2e26] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/ledger
+        - link "Kelola anggota" [ref=f2e30] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/members
+        - link "Tagihan kelas" [ref=f2e34] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/periods
+        - link "Kategori tagihan" [ref=f2e38] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/categories
+        - link "Review pembayaran" [ref=f2e43] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/payments/review
+      - generic [ref=f2e47]:
+        - generic [ref=f2e48]:
+          - generic [aria-hidden] [ref=f2e49]: AU
+          - generic [ref=f2e50]:
+            - generic [ref=f2e51]: Admin Uji
+            - generic [ref=f2e52]: admin
+        - generic [ref=f2e55]:
+          - link "Ganti password" [ref=f2e56] [cursor=pointer]:
+            - /url: http://127.0.0.1:8099/password
+          - button "Keluar" [ref=f2e58]
+  - main [ref=f2e59]:
+    - generic [ref=f2e62]:
+      - generic [ref=f2e63]: Kas Kelas 1A
+      - generic [ref=f2e64]: /
+      - generic [ref=f2e65]: Tagihan
+      - generic [ref=f2e66]: ·
+      - generic [ref=f2e67]: Saturday, 14 November 2026
+    - generic [ref=f2e68]:
+      - region "Riwayat periode" [ref=f2e69]:
+        - generic [ref=f2e70]:
+          - generic [ref=f2e71]:
+            - generic [ref=f2e72]:
+              - heading "Riwayat periode" [level=2] [ref=f2e73]
+              - generic [ref=f2e74]: 0 periode
+            - generic [ref=f2e75]:
+              - generic [ref=f2e76]: Cari judul periode
+              - searchbox "Cari judul periode" [ref=f2e77]
+              - button "Cari" [ref=f2e78]
+          - generic [ref=f2e79]:
+            - link "Semua" [ref=f2e80] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods
+            - link "Berjalan" [ref=f2e81] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods?status=active
+            - link "Lewat Tempo" [ref=f2e82] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods?status=overdue
+            - link "Lunas Semua" [ref=f2e83] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/periods?status=completed
+        - paragraph [ref=f2e86]: Tidak ada periode tagihan yang cocok.
+        - generic [ref=f2e87]:
+          - paragraph [ref=f2e88]: 0–0 dari 0 periode
+          - generic [ref=f2e89]:
+            - generic [ref=f2e90]: 1 / 1
+            - link "Halaman sebelumnya":
+              - /url: "#"
+            - link "Halaman berikutnya":
+              - /url: "#"
+      - region "Buat periode" [ref=f2e91]:
+        - generic [ref=f2e92]:
+          - heading "Buat periode" [level=2] [ref=f2e93]
+          - generic [ref=f2e94]: Berlaku untuk 2 anggota aktif.
+        - generic [ref=f2e95]:
+          - generic [ref=f2e96]:
+            - generic [ref=f2e97]: Judul Periode Tagihan
+            - textbox "Judul Periode Tagihan" [ref=f2e98]:
+              - /placeholder: "Contoh: Kas Minggu 9 / Jaket Angkatan"
+          - generic [ref=f2e99]:
+            - generic [ref=f2e100]:
+              - generic [ref=f2e101]: Kategori Tagihan
+              - combobox "Kategori Tagihan" [ref=f2e102]:
+                - option "Baju & Merchandise" [selected]
+                - option "Buku & Praktikum"
+                - option "Kegiatan & Acara"
+                - option "Sosial & Duka"
+                - option "Uang Kas"
+            - generic [ref=f2e103]:
+              - generic [ref=f2e104]: "Atau buat kategori baru:"
+              - textbox "Atau buat kategori baru:" [ref=f2e105]:
+                - /placeholder: Ketik nama kategori baru jika belum ada
+          - generic [ref=f2e106]:
+            - generic [ref=f2e107]: Nominal per Anggota (Rp)
+            - spinbutton "Nominal per Anggota (Rp)" [ref=f2e108]
+          - generic [ref=f2e109]:
+            - generic [ref=f2e110]: Jatuh tempo
+            - textbox "Jatuh tempo Berlaku sampai pukul 23.59 WIB. Diabaikan jika dibagi beberapa pembayaran." [ref=f2e111]
+            - generic [ref=f2e112]: Berlaku sampai pukul 23.59 WIB. Diabaikan jika dibagi beberapa pembayaran.
+          - group [ref=f2e113]:
+            - generic "Bagi jadi beberapa pembayaran (opsional)" [ref=f2e114] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f2e116]: ▾
+            - option "Minggu" [selected]
+            - option "Hari"
+            - option "Bulan"
+            - option "Per pembayaran" [selected]
+            - option "Total, dibagi rata"
+          - generic [ref=f2e117]:
+            - generic [ref=f2e118]:
+              - generic [ref=f2e119]: QRIS Pembayaran
+              - generic [ref=f2e120]: Belum ada QRIS tersimpan. Masukkan QRIS baru di bawah.
+            - generic [ref=f2e121]:
+              - generic [ref=f2e122]:
+                - generic [ref=f2e123]: "Pilih metode input QRIS:"
+                - tablist "Metode input QRIS baru" [ref=f2e124]:
+                  - tab "Upload File" [selected] [ref=f2e125]
+                  - tab "String DANA" [ref=f2e126]
+                  - tab "Link URL" [ref=f2e127]
+              - tabpanel "Upload File" [ref=f2e128]:
+                - generic [ref=f2e129]:
+                  - generic [ref=f2e130]: Upload File Gambar QRIS (PNG/JPG)
+                  - button "Upload File Gambar QRIS (PNG/JPG)" [ref=f2e131]
+                - generic [ref=f2e132]: File gambar dari DANA Bisnis atau bank. Otomatis dipindai jika didukung browser.
+          - button "Buat tagihan" [ref=f2e133]

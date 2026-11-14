@@ -1,0 +1,5 @@
+[     551ms] [ERROR] Access to script at 'http://[::1]:5173/@vite/client' from origin 'http://localhost.:8099' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost.:8099/:1
+[     551ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://[::1]:5173/@vite/client:1
+[     552ms] [ERROR] Access to script at 'http://[::1]:5173/resources/js/app.js' from origin 'http://localhost.:8099' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost.:8099/:1
+[     553ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://[::1]:5173/resources/js/app.js:1
+[     683ms] [LOG] 🔍 Browser logger active (MCP server detected). Posting to: http://localhost.:8099/_boost/browser-logs @ http://localhost.:8099/:19

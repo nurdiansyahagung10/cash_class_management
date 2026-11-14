@@ -27,7 +27,7 @@ class PeriodController extends Controller
 
         $query = BillingPeriod::with('category')->withCount([
             'invoices',
-            'invoices as paid_count' => fn ($q) => $q->where('status', 'paid'),
+            'invoices as paid_count' => fn($q) => $q->where('status', 'paid'),
         ]);
 
         if ($search !== '') {
@@ -37,11 +37,11 @@ class PeriodController extends Controller
         $periods = $query->latest('id')->get();
 
         if ($status === 'completed') {
-            $periods = $periods->filter(fn ($p) => $p->invoices_count > 0 && $p->paid_count === $p->invoices_count);
+            $periods = $periods->filter(fn($p) => $p->invoices_count > 0 && $p->paid_count === $p->invoices_count);
         } elseif ($status === 'overdue') {
-            $periods = $periods->filter(fn ($p) => $p->due_date->isPast() && $p->paid_count < $p->invoices_count);
+            $periods = $periods->filter(fn($p) => $p->isPastDue() && $p->paid_count < $p->invoices_count);
         } elseif ($status === 'active') {
-            $periods = $periods->filter(fn ($p) => ! $p->due_date->isPast() && $p->paid_count < $p->invoices_count);
+            $periods = $periods->filter(fn($p) => !$p->isPastDue() && $p->paid_count < $p->invoices_count);
         }
 
         $perPage = 8;
@@ -79,19 +79,19 @@ class PeriodController extends Controller
         $filter = (string) $request->query('status', '');
 
         $allInvoices = $period->invoices()
-            ->whereHas('user', fn ($q) => $q->where('role', '!=', UserRole::Admin))
-            ->with(['user', 'period', 'payments' => fn ($q) => $q->latest('id')])
+            ->whereHas('user', fn($q) => $q->where('role', '!=', UserRole::Admin))
+            ->with(['user', 'period', 'payments' => fn($q) => $q->latest('id')])
             ->get()
-            ->sortBy(fn ($inv) => (int) ($inv->user->student_no ?? 999))
+            ->sortBy(fn($inv) => (int) ($inv->user->student_no ?? 999))
             ->values();
 
-        $unpaidInvoices = $allInvoices->filter(fn ($inv) => ! $inv->isPaid())->values();
+        $unpaidInvoices = $allInvoices->filter(fn($inv) => !$inv->isPaid())->values();
 
         $invoices = match ($filter) {
-            'paid' => $allInvoices->filter(fn ($inv) => $inv->isPaid())->values(),
-            'partial' => $allInvoices->filter(fn ($inv) => $inv->isPartial())->values(),
+            'paid' => $allInvoices->filter(fn($inv) => $inv->isPaid())->values(),
+            'partial' => $allInvoices->filter(fn($inv) => $inv->isPartial())->values(),
             'unpaid' => $unpaidInvoices,
-            'overdue' => $allInvoices->filter(fn ($inv) => $inv->isOverdue())->values(),
+            'overdue' => $allInvoices->filter(fn($inv) => $inv->isOverdue())->values(),
             default => $allInvoices,
         };
 
@@ -99,7 +99,7 @@ class PeriodController extends Controller
         $paidCount = $allInvoices->where('status', 'paid')->count();
         $partialCount = $allInvoices->where('status', 'partial')->count();
         $unpaidCount = $totalCount - $paidCount;
-        $collectedAmount = (int) $allInvoices->sum(fn ($inv) => $inv->paidAmount());
+        $collectedAmount = (int) $allInvoices->sum(fn($inv) => $inv->paidAmount());
 
         return view('periods.show', [
             'period' => $period->load('category'),
@@ -122,76 +122,112 @@ class PeriodController extends Controller
 
         $latestQrisUrl = BillingPeriod::whereNotNull('qris_url')->latest('id')->value('qris_url');
         $qrisRequiredRule = ($latestQrisUrl || $request->filled('existing_qris')) ? 'nullable' : 'required_without_all:qris_image,qris_payload';
+        $isSeries = $request->integer('installments', 1) > 1;
 
         $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
+            'title' => ['required', 'string', 'max:240'],
             'category_id' => ['nullable', 'exists:categories,id'],
             'new_category' => ['nullable', 'string', 'max:100'],
             'amount' => ['required', 'integer', 'min:1000', 'max:1000000'],
-            'due_date' => ['required', 'date', 'after_or_equal:today'],
+            'due_date' => [$isSeries ? 'nullable' : 'required', 'date', 'after_or_equal:today'],
+            'installments' => ['nullable', 'integer', 'min:1', 'max:31'],
+            'installment_unit' => [$isSeries ? 'required' : 'nullable', 'in:day,week,month'],
+            'amount_mode' => ['nullable', 'in:each,total'],
+            'starts_on' => ['nullable', 'date', 'after_or_equal:today'],
             'existing_qris' => ['nullable', 'string', 'max:4096'],
             'qris_image' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
             'qris_payload' => ['nullable', 'string', 'max:4096'],
             'qris_url' => ['nullable', 'string', 'max:4096', $qrisRequiredRule],
         ]);
 
-        if (! empty($validated['qris_url']) && ! str_starts_with(trim($validated['qris_url']), '000201') && ! filter_var($validated['qris_url'], FILTER_VALIDATE_URL)) {
+        if (!empty($validated['qris_url']) && !str_starts_with(trim($validated['qris_url']), '000201') && !filter_var($validated['qris_url'], FILTER_VALIDATE_URL)) {
             return back()->withErrors(['qris_url' => 'Format URL atau string QRIS tidak valid.'])->withInput();
         }
 
-        if (! empty($validated['new_category'])) {
+        $count = $isSeries ? (int) $validated['installments'] : 1;
+        $amounts = array_fill(0, $count, (int) $validated['amount']);
+        if ($isSeries && ($validated['amount_mode'] ?? 'each') === 'total') {
+            $each = intdiv((int) $validated['amount'], $count);
+            $amounts = array_fill(0, $count, $each);
+            $amounts[$count - 1] += (int) $validated['amount'] - $each * $count;
+        }
+
+        if (min($amounts) < 1000) {
+            return back()->withErrors(['amount' => 'Nominal tiap pembayaran minimal Rp1.000. Kurangi jumlah pembayaran atau naikkan nominal.'])->withInput();
+        }
+
+        $startsOn = $validated['starts_on'] ?? now(BillingPeriod::TIMEZONE)->toDateString();
+        $dueDates = $isSeries
+            ? array_map(fn(int $no) => BillingPeriod::scheduledDueDate($startsOn, $validated['installment_unit'], $no)->toDateString(), range(1, $count))
+            : [$validated['due_date']];
+
+        if (!empty($validated['new_category'])) {
             $cat = Category::firstOrCreate(['name' => trim($validated['new_category'])]);
             $validated['category_id'] = $cat->id;
         }
-        unset($validated['new_category']);
 
         if (empty($validated['category_id'])) {
             $defaultCat = Category::firstOrCreate(['name' => 'Uang Kas']);
             $validated['category_id'] = $defaultCat->id;
         }
 
-        if (! empty($validated['qris_payload'])) {
+        if (!empty($validated['qris_payload'])) {
             $validated['qris_url'] = trim($validated['qris_payload']);
         } elseif ($request->hasFile('qris_image')) {
             $path = $request->file('qris_image')->store('qris', 'public');
-            $validated['qris_url'] = asset('storage/'.$path);
-        } elseif (! empty($validated['qris_url'])) {
+            $validated['qris_url'] = asset('storage/' . $path);
+        } elseif (!empty($validated['qris_url'])) {
             $validated['qris_url'] = trim($validated['qris_url']);
-        } elseif (! empty($validated['existing_qris'])) {
+        } elseif (!empty($validated['existing_qris'])) {
             $validated['qris_url'] = trim($validated['existing_qris']);
         } elseif ($latestQrisUrl) {
             $validated['qris_url'] = $latestQrisUrl;
         }
-        unset($validated['qris_image'], $validated['qris_payload'], $validated['existing_qris']);
 
-        $period = DB::transaction(function () use ($validated, $request, $ledger) {
-            $period = BillingPeriod::create([...$validated, 'created_by' => $request->user()->id]);
-
+        $periods = DB::transaction(function () use ($validated, $dueDates, $amounts, $count, $isSeries, $request, $ledger) {
             $members = User::payableMembers()->pluck('id');
-            $period->invoices()->createMany(
-                $members->map(fn (int $id) => ['user_id' => $id, 'amount' => $period->amount])->all()
-            );
 
-            $period->load('category');
+            return collect($dueDates)->map(function (string $dueDate, int $index) use ($validated, $amounts, $count, $isSeries, $members, $request, $ledger) {
+                $period = BillingPeriod::create([
+                    'category_id' => $validated['category_id'],
+                    'title' => $isSeries ? sprintf('%s (%d/%d)', $validated['title'], $index + 1, $count) : $validated['title'],
+                    'amount' => $amounts[$index],
+                    'due_date' => $dueDate,
+                    'qris_url' => $validated['qris_url'] ?? null,
+                    'created_by' => $request->user()->id,
+                ]);
 
-            $ledger->append(
-                LedgerEntryType::InvoiceCreated,
-                [
-                    'period_id' => $period->id,
-                    'title' => $period->title,
-                    'category' => $period->category?->name ?? 'Uang Kas',
-                    'amount' => $period->amount,
-                    'members' => $members->count(),
-                ],
-                $request->user(),
-                'billing_periods',
-                $period->id,
-            );
+                $period->invoices()->createMany(
+                    $members->map(fn(int $id) => ['user_id' => $id, 'amount' => $period->amount])->all()
+                );
 
-            return $period;
+                $period->load('category');
+
+                $ledger->append(
+                    LedgerEntryType::InvoiceCreated,
+                    [
+                        'period_id' => $period->id,
+                        'title' => $period->title,
+                        'category' => $period->category?->name ?? 'Uang Kas',
+                        'amount' => $period->amount,
+                        'members' => $members->count(),
+                        ...($isSeries ? ['series' => ($index + 1) . '/' . $count] : []),
+                    ],
+                    $request->user(),
+                    'billing_periods',
+                    $period->id,
+                );
+
+                return $period;
+            });
         });
 
-        return back()->with('status', "{$period->title} ({$period->category?->name}): tagihan dibuat untuk {$period->invoices()->count()} anggota aktif.");
+        $first = $periods->first();
+        $memberCount = $first->invoices()->count();
+
+        return back()->with('status', $isSeries
+            ? "{$validated['title']}: {$count} tagihan dibuat untuk {$memberCount} anggota aktif, tenggat terakhir " . $periods->last()->due_date->format('d M Y') . ' pukul 23.59 WIB.'
+            : "{$first->title} ({$first->category?->name}): tagihan dibuat untuk {$memberCount} anggota aktif.");
     }
 
     public function destroy(BillingPeriod $period, Request $request, Ledger $ledger): RedirectResponse
@@ -204,7 +240,7 @@ class PeriodController extends Controller
             ->first();
 
         $cancelled = DB::transaction(function () use ($period, $created, $request, $ledger) {
-            if (! BillingPeriod::lockForUpdate()->find($period->id)?->canBeCancelled()) {
+            if (!BillingPeriod::lockForUpdate()->find($period->id)?->canBeCancelled()) {
                 return false;
             }
 
@@ -227,7 +263,7 @@ class PeriodController extends Controller
             return true;
         });
 
-        if (! $cancelled) {
+        if (!$cancelled) {
             return back()->with('error', 'Tagihan tidak dapat dibatalkan: sudah lewat 1 hari atau sudah ada pembayaran.');
         }
 

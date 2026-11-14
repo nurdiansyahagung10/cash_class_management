@@ -1,0 +1,83 @@
+- generic [ref=f12e2]:
+  - link "Lewati ke konten utama" [ref=f12e3] [cursor=pointer]:
+    - /url: "#konten-utama"
+  - navigation "Navigasi utama" [ref=f12e4]:
+    - generic [ref=f12e5]:
+      - generic [ref=f12e6]:
+        - generic [ref=f12e7]:
+          - generic [aria-hidden] [ref=f12e8]: KK
+          - generic [ref=f12e9]:
+            - generic [ref=f12e10]: Kas Kelas 1A
+            - generic [ref=f12e11]: D3 Bahasa Inggris
+        - generic [ref=f12e12]: v1.0
+      - generic [ref=f12e13]:
+        - link "Dashboard" [ref=f12e14] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099
+        - link "Pengeluaran kas" [ref=f12e18] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/expenses
+        - link "Ledger publik" [ref=f12e22] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/ledger
+      - generic [ref=f12e26]:
+        - generic [ref=f12e27]:
+          - generic [aria-hidden] [ref=f12e28]: SA
+          - generic [ref=f12e29]:
+            - generic [ref=f12e30]: Siti Aisyah
+            - generic [ref=f12e31]: user
+        - generic [ref=f12e34]:
+          - link "Ganti password" [ref=f12e35] [cursor=pointer]:
+            - /url: http://127.0.0.1:8099/password
+          - button "Keluar" [ref=f12e37]
+  - main [ref=f12e38]:
+    - generic [ref=f12e39]:
+      - generic [ref=f12e40]: Pembayaran kas
+      - heading "Bayar beberapa tagihan sekaligus" [level=1] [ref=f12e41]
+      - paragraph [ref=f12e42]: Pilih tagihan yang mau dibayar, transfer satu kali sesuai total, lalu kirim satu bukti. Admin memverifikasi semuanya bersamaan.
+    - generic [ref=f12e43]:
+      - region "Pilih tagihan" [ref=f12e44]:
+        - generic [ref=f12e45]:
+          - generic [ref=f12e46]:
+            - generic [ref=f12e47]:
+              - heading "Pilih tagihan" [level=2] [ref=f12e48]
+              - paragraph [ref=f12e49]: Diurutkan dari tenggat terdekat. Tiap tagihan dibayar penuh sebesar sisanya.
+            - link "Pilih semua" [ref=f12e50] [cursor=pointer]:
+              - /url: http://127.0.0.1:8099/invoices/1/pay-all?ids%5B0%5D=1&ids%5B1%5D=3&ids%5B2%5D=5&ids%5B3%5D=7
+          - generic [ref=f12e51]:
+            - generic [ref=f12e52] [cursor=pointer]:
+              - checkbox "Kas November (1/4) Tenggat Minggu, 15 November 2026, 23.59 WIB Rp5.000" [checked] [ref=f12e53]
+              - generic [ref=f12e54]:
+                - generic [ref=f12e55]: Kas November (1/4)
+                - generic [ref=f12e57]: Tenggat Minggu, 15 November 2026, 23.59 WIB
+              - generic [ref=f12e58]: Rp5.000
+            - generic [ref=f12e59] [cursor=pointer]:
+              - checkbox "Kas November (2/4) Tenggat Minggu, 22 November 2026, 23.59 WIB Rp5.000" [checked] [ref=f12e60]
+              - generic [ref=f12e61]:
+                - generic [ref=f12e62]: Kas November (2/4)
+                - generic [ref=f12e64]: Tenggat Minggu, 22 November 2026, 23.59 WIB
+              - generic [ref=f12e65]: Rp5.000
+            - generic [ref=f12e66] [cursor=pointer]:
+              - checkbox "Kas November (3/4) Tenggat Minggu, 29 November 2026, 23.59 WIB Rp5.000" [checked] [ref=f12e67]
+              - generic [ref=f12e68]:
+                - generic [ref=f12e69]: Kas November (3/4)
+                - generic [ref=f12e71]: Tenggat Minggu, 29 November 2026, 23.59 WIB
+              - generic [ref=f12e72]: Rp5.000
+            - generic [ref=f12e73] [cursor=pointer]:
+              - checkbox "Kas November (4/4) Tenggat Minggu, 6 Desember 2026, 23.59 WIB Rp5.000" [checked] [ref=f12e74]
+              - generic [ref=f12e75]:
+                - generic [ref=f12e76]: Kas November (4/4)
+                - generic [ref=f12e78]: Tenggat Minggu, 6 Desember 2026, 23.59 WIB
+              - generic [ref=f12e79]: Rp5.000
+          - button "Hitung total" [ref=f12e81]
+      - complementary [ref=f12e82]:
+        - generic [ref=f12e83]:
+          - generic [ref=f12e84]: Total 4 tagihan
+          - strong [ref=f12e85]: Rp20.000
+        - generic [ref=f12e86]:
+          - img "QRIS pembayaran sekaligus Rp20.000" [ref=f12e88]
+          - generic [ref=f12e89]: "QRIS statis: ketik nominal tepat Rp20.000"
+        - generic [ref=f12e90]:
+          - generic [ref=f12e91]:
+            - generic [ref=f12e92]: Upload bukti pembayaran
+            - button "Upload bukti pembayaran" [ref=f12e93]
+          - button "Kirim bukti untuk 4 tagihan" [ref=f12e94]
+        - link "← Bayar satu tagihan saja" [ref=f12e95] [cursor=pointer]:
+          - /url: http://127.0.0.1:8099/invoices/1/pay

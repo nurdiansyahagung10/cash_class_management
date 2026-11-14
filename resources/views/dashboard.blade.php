@@ -239,6 +239,9 @@
                     <h2 id="tagihan-kas-staff" class="text-base font-bold text-black">Tagihan kas pribadimu</h2>
                     <p class="text-xs text-muted">Sebagai bendahara/staff kelas, Anda juga memiliki kewajiban iuran kas
                         kelas.</p>
+                    @if ($unpaidInvoices->count() > 1)
+                        <a href="{{ route('payments.bulk', $unpaidInvoices->first()) }}" class="mt-2 inline-flex min-h-11 items-center rounded-xl border border-brand/30 bg-brand-soft px-3.5 text-xs font-semibold text-brand transition-colors hover:bg-brand-soft/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Bayar {{ $unpaidInvoices->count() }} tagihan sekaligus &rarr;</a>
+                    @endif
                 </div>
                 <div class="divide-y divide-black/5">
                     @foreach ($unpaidInvoices as $invoice)
@@ -294,6 +297,9 @@
                 <div class="border-b border-line px-5 py-4">
                     <h2 id="tagihan-belum-lunas" class="text-base font-bold text-black">Tagihan belum lunas</h2>
                     <p class="text-xs text-muted">Pilih tagihan untuk membuka QRIS dan mengirim bukti transfer.</p>
+                    @if ($unpaidInvoices->count() > 1)
+                        <a href="{{ route('payments.bulk', $unpaidInvoices->first()) }}" class="mt-2 inline-flex min-h-11 items-center rounded-xl border border-brand/30 bg-brand-soft px-3.5 text-xs font-semibold text-brand transition-colors hover:bg-brand-soft/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Bayar {{ $unpaidInvoices->count() }} tagihan sekaligus &rarr;</a>
+                    @endif
                 </div>
                 <div class="divide-y divide-black/5">
                     @forelse ($unpaidInvoices as $invoice)

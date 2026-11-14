@@ -79,6 +79,48 @@
             </div>
         </section>
 
+        @if ($filter !== 'paid' && $unpaidInvoices->isNotEmpty())
+            <section aria-labelledby="judul-pengingat"
+                class="flex flex-col rounded-2xl border border-line bg-white shadow-xs print:hidden">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-4.5">
+                    <div class="flex flex-col gap-0.5">
+                        <h2 id="judul-pengingat" class="text-lg font-bold text-black">Pengingat pembayaran</h2>
+                        <p class="text-xs text-muted">Salin pesan lalu kirim sendiri lewat WhatsApp.</p>
+                    </div>
+                    <button type="button" data-copy-text="{{ $reminder->groupMessage($period, $unpaidInvoices) }}"
+                        class="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-brand px-4 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                        <span data-copy-label>Salin pesan grup</span>
+                    </button>
+                </div>
+                <p data-copy-status role="status" aria-live="polite" class="sr-only"></p>
+
+                <ul class="divide-y divide-black/5">
+                    @foreach ($unpaidInvoices as $invoice)
+                        @php
+                            $personalUrl = $reminder->whatsAppUrl($invoice);
+                        @endphp
+                        <li class="flex flex-wrap items-center justify-between gap-3 px-6 py-3">
+                            <span class="text-sm font-semibold text-black">{{ $invoice->user->name }}
+                                <span class="font-normal text-muted tabular-nums">· sisa
+                                    Rp{{ number_format($invoice->remainingAmount(), 0, ',', '.') }}</span></span>
+                            <span class="flex flex-wrap items-center gap-2">
+                                <button type="button"
+                                    data-copy-text="{{ $reminder->personalMessage($invoice) }}"
+                                    class="inline-flex min-h-11 items-center rounded-xl border border-line bg-canvas/60 px-3.5 text-xs font-semibold text-black transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                    <span data-copy-label>Salin pesan</span>
+                                </button>
+                                @if ($personalUrl)
+                                    <a href="{{ $personalUrl }}" target="_blank" rel="noopener"
+                                        class="inline-flex min-h-11 items-center rounded-xl border border-line bg-canvas/60 px-3.5 text-xs font-semibold text-black transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Kirim
+                                        WA</a>
+                                @endif
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+        @endif
+
         <section aria-labelledby="judul-daftar" class="flex flex-col rounded-2xl border border-line bg-white shadow-xs">
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-4.5">
                 <h2 id="judul-daftar" class="text-lg font-bold text-black">Daftar Tagihan Anggota

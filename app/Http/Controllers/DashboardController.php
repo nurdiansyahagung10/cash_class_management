@@ -29,8 +29,9 @@ class DashboardController extends Controller
             : $user->invoices()
                 ->with(['period.category', 'payments'])
                 ->whereIn('status', ['unpaid', 'partial'])
-                ->latest('id')
-                ->get();
+                ->get()
+                ->sortBy(fn (Invoice $invoice) => $invoice->period->due_date->getTimestamp())
+                ->values();
 
         $stats = [
             'balance' => $ledger->balance(),

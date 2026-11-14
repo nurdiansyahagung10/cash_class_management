@@ -58,7 +58,7 @@ test('regular user cannot view period recap page', function () {
 
     $this->actingAs($user)
         ->get(route('periods.show', $period))
-        ->assertForbidden();
+        ->assertRedirect(route('dashboard'));
 });
 
 test('period recap targets specific student phone number in WhatsApp reminder if available', function () {

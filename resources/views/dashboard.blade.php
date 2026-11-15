@@ -239,9 +239,6 @@
                     <h2 id="tagihan-kas-staff" class="text-base font-bold text-black">Tagihan kas pribadimu</h2>
                     <p class="text-xs text-muted">Sebagai bendahara/staff kelas, Anda juga memiliki kewajiban iuran kas
                         kelas.</p>
-                    @if ($unpaidInvoices->count() > 1)
-                        <a href="{{ route('payments.bulk', $unpaidInvoices->first()) }}" class="mt-2 inline-flex min-h-11 items-center rounded-xl border border-brand/30 bg-brand-soft px-3.5 text-xs font-semibold text-brand transition-colors hover:bg-brand-soft/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Bayar {{ $unpaidInvoices->count() }} tagihan sekaligus &rarr;</a>
-                    @endif
                 </div>
                 <div class="divide-y divide-black/5">
                     @foreach ($unpaidInvoices as $invoice)
@@ -297,16 +294,14 @@
                 <div class="border-b border-line px-5 py-4">
                     <h2 id="tagihan-belum-lunas" class="text-base font-bold text-black">Tagihan belum lunas</h2>
                     <p class="text-xs text-muted">Pilih tagihan untuk membuka QRIS dan mengirim bukti transfer.</p>
-                    @if ($unpaidInvoices->count() > 1)
-                        <a href="{{ route('payments.bulk', $unpaidInvoices->first()) }}" class="mt-2 inline-flex min-h-11 items-center rounded-xl border border-brand/30 bg-brand-soft px-3.5 text-xs font-semibold text-brand transition-colors hover:bg-brand-soft/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Bayar {{ $unpaidInvoices->count() }} tagihan sekaligus &rarr;</a>
-                    @endif
                 </div>
                 <div class="divide-y divide-black/5">
                     @forelse ($unpaidInvoices as $invoice)
                         <div
                             class="flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-black/[0.02] sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                             <div class="flex min-w-0 flex-1 flex-col gap-1.5">
-                                <p class="text-sm font-semibold text-black wrap-break-word">{{ $invoice->period->title }}</p>
+                                <p class="text-sm font-semibold text-black wrap-break-word">
+                                    {{ $invoice->period->title }}</p>
                                 <div class="flex flex-wrap items-center gap-1.5">
                                     @if ($invoice->period->category)
                                         <span
@@ -318,7 +313,8 @@
                                     @endif
                                     @if ($invoice->isOverdue())
                                         <span
-                                            class="rounded-full border border-[#fecaca] bg-[#fde4e0] px-2 py-0.5 text-[10px] font-semibold text-[#8f1d0e]">Lewat Tenggat</span>
+                                            class="rounded-full border border-[#fecaca] bg-[#fde4e0] px-2 py-0.5 text-[10px] font-semibold text-[#8f1d0e]">Lewat
+                                            Tenggat</span>
                                     @endif
                                 </div>
                                 <p class="text-xs leading-relaxed text-muted">
@@ -333,7 +329,8 @@
                             <div
                                 class="flex items-center justify-between gap-3 border-t border-black/5 pt-3 sm:shrink-0 sm:justify-end sm:border-0 sm:pt-0">
                                 <div class="flex flex-col sm:items-end">
-                                    <span class="text-[10px] font-semibold uppercase tracking-wider text-muted">Sisa</span>
+                                    <span
+                                        class="text-[10px] font-semibold uppercase tracking-wider text-muted">Sisa</span>
                                     <span
                                         class="text-base font-bold tabular-nums text-black">Rp{{ number_format($invoice->remainingAmount(), 0, ',', '.') }}</span>
                                 </div>

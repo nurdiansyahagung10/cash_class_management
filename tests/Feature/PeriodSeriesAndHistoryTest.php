@@ -62,6 +62,20 @@ test('cash weeks are numbered by creation order, not stored', function () {
         ->and($period->due_date->toDateString())->toBe('2026-11-29');
 });
 
+test('legacy cash period names are hidden and still count toward week numbers', function () {
+    $admin = User::factory()->admin()->create();
+    $cash = Category::firstOrCreate(['name' => 'Uang Kas']);
+    $legacy = BillingPeriod::factory()->create([
+        'title' => 'Kas November (1/4)', 'category_id' => $cash->id, 'created_by' => $admin->id,
+    ]);
+    $next = BillingPeriod::factory()->create([
+        'title' => '', 'category_id' => $cash->id, 'created_by' => $admin->id,
+    ]);
+
+    expect($legacy->title)->toBe('Kas Minggu ke 1')
+        ->and($next->title)->toBe('Kas Minggu ke 2');
+});
+
 test('other categories still need a name and keep their own schedule', function () {
     $admin = User::factory()->admin()->create();
     User::factory()->create();
@@ -134,11 +148,12 @@ test('cash week names show on the dashboard, the bill list and its search', func
     $admin = User::factory()->admin()->create();
     $member = User::factory()->create();
     $cash = Category::firstOrCreate(['name' => 'Uang Kas']);
-    $period = BillingPeriod::factory()->create(['title' => '', 'category_id' => $cash->id, 'created_by' => $admin->id]);
+    $period = BillingPeriod::factory()->create(['title' => 'Nama Kas Lama', 'category_id' => $cash->id, 'created_by' => $admin->id]);
     Invoice::factory()->create(['user_id' => $member->id, 'billing_period_id' => $period->id]);
 
     $this->actingAs($member)->get(route('dashboard'))->assertOk()->assertSee('Kas Minggu ke 1');
     $this->actingAs($admin)->get(route('dashboard'))->assertOk()->assertSee('Kas Minggu ke 1');
     $this->actingAs($admin)->get(route('periods.index', ['q' => 'minggu ke 1']))->assertOk()->assertSee('Kas Minggu ke 1');
     $this->actingAs($admin)->get(route('periods.show', $period))->assertOk()->assertSee('Kas Minggu ke 1');
+    $this->actingAs($admin)->get(route('periods.show', $period))->assertDontSee('Nama Kas Lama');
 });

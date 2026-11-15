@@ -87,26 +87,21 @@ class BillingPeriod extends Model
     }
 
     /**
-     * Cash periods are stored with an empty title and shown as "Kas Minggu ke N",
-     * N being their creation order among the unnamed periods of the same category.
+     * Cash periods are shown as "Kas Minggu ke N" regardless of any legacy title
+     * stored in the database. N follows the period's creation order in that category.
      */
     protected function title(): Attribute
     {
         return Attribute::get(function (?string $value) {
-            if ($value !== null && $value !== '') {
-                return $value;
+            if ($this->exists && $this->category?->isCash()) {
+                $number = static::where('category_id', $this->category_id)
+                    ->where('id', '<=', $this->id)
+                    ->count();
+
+                return 'Kas Minggu ke '.max(1, $number);
             }
 
-            if (! $this->exists) {
-                return '';
-            }
-
-            $number = static::where('category_id', $this->category_id)
-                ->where('title', '')
-                ->where('id', '<=', $this->id)
-                ->count();
-
-            return 'Kas Minggu ke '.max(1, $number);
+            return $value ?? '';
         });
     }
 

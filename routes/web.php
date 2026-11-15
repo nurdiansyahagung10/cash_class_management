@@ -8,6 +8,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ManualPaymentController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\PaymentHistoryController;
 use App\Http\Controllers\PaymentReportController;
 use App\Http\Controllers\PeriodController;
 use Illuminate\Support\Facades\Route;
@@ -72,6 +73,8 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/expenses', [ExpenseController::class, 'store'])->name('expenses.store');
         Route::get('/expenses/{expense}/receipt', [ExpenseController::class, 'receipt'])->name('expenses.receipt');
+
+        Route::get('/riwayat', PaymentHistoryController::class)->name('payments.history');
 
         Route::get('/invoices/{invoice}/pay', [ManualPaymentController::class, 'create'])->name('payments.create');
         Route::post('/invoices/{invoice}/installment', [ManualPaymentController::class, 'updateInstallment'])->name('payments.installment');

@@ -30,11 +30,12 @@ class PeriodController extends Controller
             'invoices as paid_count' => fn($q) => $q->where('status', 'paid'),
         ]);
 
-        if ($search !== '') {
-            $query->where('title', 'like', "%{$search}%");
-        }
-
         $periods = $query->latest('id')->get();
+
+        // Cash periods have no stored title, so search the displayed name instead of the column.
+        if ($search !== '') {
+            $periods = $periods->filter(fn($p) => mb_stripos($p->title, $search) !== false);
+        }
 
         if ($status === 'completed') {
             $periods = $periods->filter(fn($p) => $p->invoices_count > 0 && $p->paid_count === $p->invoices_count);
@@ -122,10 +123,18 @@ class PeriodController extends Controller
 
         $latestQrisUrl = BillingPeriod::whereNotNull('qris_url')->latest('id')->value('qris_url');
         $qrisRequiredRule = ($latestQrisUrl || $request->filled('existing_qris')) ? 'nullable' : 'required_without_all:qris_image,qris_payload';
-        $isSeries = $request->integer('installments', 1) > 1;
+
+        // Cash ("Kas") periods are always a weekly series named "Kas Minggu ke N", so the name is not asked.
+        $categoryName = $request->filled('new_category')
+            ? $request->string('new_category')->trim()->toString()
+            : ($request->filled('category_id') ? Category::find($request->integer('category_id'))?->name : null);
+        $isCash = Category::isCashName($categoryName);
+        $isSeries = $isCash || $request->integer('installments', 1) > 1;
+
+        $request->merge($isCash ? ['installment_unit' => 'week', 'amount_mode' => 'each'] : []);
 
         $validated = $request->validate([
-            'title' => ['required', 'string', 'max:240'],
+            'title' => [$isCash ? 'nullable' : 'required', 'string', 'max:240'],
             'category_id' => ['nullable', 'exists:categories,id'],
             'new_category' => ['nullable', 'string', 'max:100'],
             'amount' => ['required', 'integer', 'min:1000', 'max:1000000'],
@@ -144,7 +153,7 @@ class PeriodController extends Controller
             return back()->withErrors(['qris_url' => 'Format URL atau string QRIS tidak valid.'])->withInput();
         }
 
-        $count = $isSeries ? (int) $validated['installments'] : 1;
+        $count = $isSeries ? max(1, (int) ($validated['installments'] ?? 1)) : 1;
         $amounts = array_fill(0, $count, (int) $validated['amount']);
         if ($isSeries && ($validated['amount_mode'] ?? 'each') === 'total') {
             $each = intdiv((int) $validated['amount'], $count);
@@ -160,6 +169,11 @@ class PeriodController extends Controller
         $dueDates = $isSeries
             ? array_map(fn(int $no) => BillingPeriod::scheduledDueDate($startsOn, $validated['installment_unit'], $no)->toDateString(), range(1, $count))
             : [$validated['due_date']];
+        $rangeStarts = $isSeries
+            ? array_map(fn(int $no) => BillingPeriod::scheduledStartDate($startsOn, $validated['installment_unit'], $no)->toDateString(), range(1, $count))
+            : [now(BillingPeriod::TIMEZONE)->toDateString()];
+
+        $titles = $this->periodTitles($validated['title'] ?? '', $count, $isSeries, $isCash);
 
         if (!empty($validated['new_category'])) {
             $cat = Category::firstOrCreate(['name' => trim($validated['new_category'])]);
@@ -184,14 +198,15 @@ class PeriodController extends Controller
             $validated['qris_url'] = $latestQrisUrl;
         }
 
-        $periods = DB::transaction(function () use ($validated, $dueDates, $amounts, $count, $isSeries, $request, $ledger) {
+        $periods = DB::transaction(function () use ($validated, $dueDates, $rangeStarts, $titles, $amounts, $count, $isSeries, $request, $ledger) {
             $members = User::payableMembers()->pluck('id');
 
-            return collect($dueDates)->map(function (string $dueDate, int $index) use ($validated, $amounts, $count, $isSeries, $members, $request, $ledger) {
+            return collect($dueDates)->map(function (string $dueDate, int $index) use ($validated, $rangeStarts, $titles, $amounts, $count, $isSeries, $members, $request, $ledger) {
                 $period = BillingPeriod::create([
                     'category_id' => $validated['category_id'],
-                    'title' => $isSeries ? sprintf('%s (%d/%d)', $validated['title'], $index + 1, $count) : $validated['title'],
+                    'title' => $titles[$index],
                     'amount' => $amounts[$index],
+                    'starts_on' => $rangeStarts[$index],
                     'due_date' => $dueDate,
                     'qris_url' => $validated['qris_url'] ?? null,
                     'created_by' => $request->user()->id,
@@ -226,8 +241,25 @@ class PeriodController extends Controller
         $memberCount = $first->invoices()->count();
 
         return back()->with('status', $isSeries
-            ? "{$validated['title']}: {$count} tagihan dibuat untuk {$memberCount} anggota aktif, tenggat terakhir " . $periods->last()->due_date->format('d M Y') . ' pukul 23.59 WIB.'
+            ? "{$periods->first()->title}" . ($count > 1 ? " – {$periods->last()->title}" : '') . ": {$count} tagihan dibuat untuk {$memberCount} anggota aktif, tenggat terakhir " . $periods->last()->due_date->format('d M Y') . ' pukul 23.59 WIB.'
             : "{$first->title} ({$first->category?->name}): tagihan dibuat untuk {$memberCount} anggota aktif.");
+    }
+
+    /**
+     * Cash periods are left unnamed (see BillingPeriod::title()); other series get " (i/n)" appended to the typed name.
+     *
+     * @return list<string>
+     */
+    private function periodTitles(string $title, int $count, bool $isSeries, bool $isCash): array
+    {
+        // Cash periods keep an empty title; BillingPeriod::title() numbers them by creation order.
+        if ($isCash) {
+            return array_fill(0, $count, '');
+        }
+
+        return $isSeries
+            ? array_map(fn(int $no) => sprintf('%s (%d/%d)', $title, $no, $count), range(1, $count))
+            : [$title];
     }
 
     public function destroy(BillingPeriod $period, Request $request, Ledger $ledger): RedirectResponse

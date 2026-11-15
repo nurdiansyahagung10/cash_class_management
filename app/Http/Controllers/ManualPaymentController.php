@@ -433,7 +433,7 @@ class ManualPaymentController extends Controller
             'tab' => $tab,
             'pendingCount' => $filtered('pending')->count(),
             'approvedCount' => $filtered('paid')->count(),
-            'periods' => BillingPeriod::orderByDesc('id')->get(['id', 'title']),
+            'periods' => BillingPeriod::orderByDesc('id')->get(['id', 'title', 'category_id']),
             'categories' => Category::orderBy('name')->get(['id', 'name']),
             'selectedPeriodId' => $periodId,
             'selectedCategoryId' => $categoryId,

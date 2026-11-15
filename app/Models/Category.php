@@ -15,6 +15,19 @@ class Category extends Model
         'description',
     ];
 
+    /**
+     * The weekly-cash category: its periods are named "Kas Minggu ke N" and always run weekly.
+     */
+    public static function isCashName(?string $name): bool
+    {
+        return in_array(mb_strtolower(trim((string) $name)), ['kas', 'uang kas'], true);
+    }
+
+    public function isCash(): bool
+    {
+        return self::isCashName($this->name);
+    }
+
     public function billingPeriods(): HasMany
     {
         return $this->hasMany(BillingPeriod::class);

@@ -9,6 +9,12 @@
             'icon' => 'billing',
             'show' => $user->canManageMembers(),
         ],
+        [
+            'route' => 'payments.history',
+            'label' => 'Riwayat pembayaran',
+            'icon' => 'review',
+            'show' => ! $user->isAdmin(),
+        ],
         ['route' => 'expenses.index', 'label' => 'Pengeluaran kas', 'icon' => 'expense', 'show' => true],
         ['route' => 'ledger', 'label' => 'Ledger publik', 'icon' => 'ledger', 'show' => true],
         [

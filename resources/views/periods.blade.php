@@ -127,23 +127,13 @@
             <form method="POST" action="{{ route('periods.store') }}" enctype="multipart/form-data"
                 class="flex flex-col gap-4">
                 @csrf
-                <label class="flex flex-col gap-1.5 text-xs font-semibold text-black">
-                    <span>Judul Periode Tagihan</span>
-                    <input type="text" name="title" value="{{ old('title') }}"
-                        placeholder="Contoh: Kas Minggu 9 / Jaket Angkatan" required
-                        class="min-h-11 rounded-xl border border-black/15 bg-canvas/30 px-3.5 text-sm font-normal text-black placeholder:text-muted/60 transition-all focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20">
-                    @error('title')
-                        <span role="alert" class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>
-                    @enderror
-                </label>
-
                 <div class="flex flex-col gap-2.5 rounded-2xl border border-line bg-canvas/40 p-4">
                     <label class="flex flex-col gap-1.5 text-xs font-semibold text-black">
                         <span>Kategori Tagihan</span>
-                        <select name="category_id"
+                        <select name="category_id" id="category-select"
                             class="min-h-11 rounded-xl border border-black/15 bg-white px-3 text-sm font-normal text-black focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20">
                             @foreach ($categories as $cat)
-                                <option value="{{ $cat->id }}" @selected(old('category_id') == $cat->id)>{{ $cat->name }}
+                                <option value="{{ $cat->id }}" data-cash="{{ $cat->isCash() ? 1 : 0 }}" @selected(old('category_id') == $cat->id)>{{ $cat->name }}
                                 </option>
                             @endforeach
                         </select>
@@ -154,7 +144,7 @@
 
                     <label class="flex flex-col gap-1 text-xs text-muted">
                         <span class="font-medium">Atau buat kategori baru:</span>
-                        <input type="text" name="new_category" value="{{ old('new_category') }}"
+                        <input type="text" name="new_category" id="new-category-input" value="{{ old('new_category') }}"
                             placeholder="Ketik nama kategori baru jika belum ada"
                             class="min-h-10 rounded-xl border border-black/15 bg-white px-3 text-xs text-black placeholder:text-muted/60 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20">
                         @error('new_category')
@@ -162,6 +152,21 @@
                         @enderror
                     </label>
                 </div>
+
+                <div id="title-field" class="flex flex-col gap-1.5">
+                    <label class="flex flex-col gap-1.5 text-xs font-semibold text-black">
+                        <span>Nama Periode Tagihan</span>
+                        <input type="text" id="title-input" name="title" value="{{ old('title') }}"
+                            placeholder="Contoh: Jaket Angkatan / Study Tour" required
+                            class="min-h-11 rounded-xl border border-black/15 bg-canvas/30 px-3.5 text-sm font-normal text-black placeholder:text-muted/60 transition-all focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20">
+                        @error('title')
+                            <span role="alert" class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>
+                        @enderror
+                    </label>
+                </div>
+                <p id="cash-note" class="hidden rounded-xl border border-brand/20 bg-brand-soft px-3.5 py-2.5 text-[11px] leading-relaxed text-brand">
+                    Kategori kas dinamai otomatis (Kas Minggu ke 1, 2, dst.), dibayar bertahap, dan tenggatnya tiap minggu.
+                </p>
 
                 <label class="flex flex-col gap-1.5 text-xs font-semibold text-black">
                     <span>Nominal per Anggota (Rp)</span>
@@ -183,7 +188,7 @@
                                 Mode pembayaran
                             </p>
                             <p class="mt-1 text-[11px] text-muted">
-                                Pilih pembayaran biasa atau bertahap.
+                                <span id="mode-hint">Pilih pembayaran biasa atau bertahap.</span>
                             </p>
                         </div>
 
@@ -324,16 +329,34 @@
                                 </label>
                             </div>
 
-                            {{-- Tanggal Mulai --}}
-                            <label class="flex flex-col gap-1.5 text-xs font-semibold text-black">
-                                <span>Mulai tanggal</span>
+                            {{-- Rentang Tanggal --}}
+                            <div class="flex flex-col gap-1.5 text-xs font-semibold text-black">
+                                <span id="range-title">Rentang tanggal</span>
 
-                                <input type="date" name="starts_on" id="series-start"
-                                    value="{{ old('starts_on') }}"
-                                    class="min-h-11 w-full rounded-xl border border-black/15 bg-white px-3 text-sm font-normal text-black outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20">
+                                <input type="hidden" name="starts_on" id="series-start" value="{{ old('starts_on') }}">
 
-                                <span class="text-xs font-normal text-muted">
-                                    Kosongkan untuk mulai hari ini.
+                                <div class="rounded-xl border border-black/15 bg-white p-3">
+                                    <div class="mb-2 flex items-center justify-between">
+                                        <button type="button" id="range-prev" aria-label="Bulan sebelumnya"
+                                            class="flex size-8 items-center justify-center rounded-lg text-muted transition hover:bg-canvas hover:text-black">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+                                        </button>
+                                        <span id="range-month" class="text-xs font-bold text-black" aria-live="polite"></span>
+                                        <button type="button" id="range-next" aria-label="Bulan berikutnya"
+                                            class="flex size-8 items-center justify-center rounded-lg text-muted transition hover:bg-canvas hover:text-black">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-7 text-center text-[10px] font-semibold text-muted">
+                                        @foreach (['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'] as $day)
+                                            <span class="py-1">{{ $day }}</span>
+                                        @endforeach
+                                    </div>
+                                    <div id="range-grid" class="grid grid-cols-7 gap-y-0.5"></div>
+                                </div>
+
+                                <span id="range-summary" class="text-xs font-normal text-muted">
+                                    Pilih satu tanggal, seluruh rentangnya ikut terpilih.
                                 </span>
 
                                 @error('starts_on')
@@ -341,7 +364,7 @@
                                         {{ $message }}
                                     </span>
                                 @enderror
-                            </label>
+                            </div>
 
                             {{-- Metode Nominal --}}
                             <label class="flex flex-col gap-1.5 text-xs font-semibold text-black">
@@ -473,6 +496,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const mode = $('series-mode');
     const amount = $('series-amount');
 
+    // Kategori & nama
+    const categorySelect = $('category-select');
+    const newCategory = $('new-category-input');
+    const titleField = $('title-field');
+    const titleInput = $('title-input');
+    const cashNote = $('cash-note');
+    const modeHint = $('mode-hint');
+
+    // Kalender rentang tanggal
+    const rangeGrid = $('range-grid');
+    const rangeMonth = $('range-month');
+    const rangeSummary = $('range-summary');
+    const rangeTitle = $('range-title');
+    const rangePrev = $('range-prev');
+    const rangeNext = $('range-next');
+
     // Preview
     const previewAmount = $('preview-amount');
     const previewTotal = $('preview-total');
@@ -489,10 +528,24 @@ document.addEventListener('DOMContentLoaded', () => {
         !mode ||
         !amount ||
         !due ||
+        !rangeGrid ||
         !previewDates
     ) {
         return;
     }
+
+    // Kategori kas: nama otomatis "Kas Minggu ke N", bertahap, tenggat tiap minggu.
+    const cashNames = ['kas', 'uang kas'];
+
+    const isCash = () => {
+        const typed = (newCategory?.value || '').trim().toLowerCase();
+
+        if (typed) {
+            return cashNames.includes(typed);
+        }
+
+        return categorySelect?.selectedOptions[0]?.dataset.cash === '1';
+    };
 
     let previousFocus = null;
     let closeTimeout = null;
@@ -527,6 +580,136 @@ document.addEventListener('DOMContentLoaded', () => {
             today.getDate()
         );
     };
+
+    const pad = (n) => String(n).padStart(2, '0');
+
+    const toYmd = (date) =>
+        `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+    const sameDay = (a, b) => toYmd(a) === toYmd(b);
+
+    const today = () => {
+        const now = new Date();
+
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    };
+
+    const addDays = (date, days) =>
+        new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+
+    /**
+     * Rentang yang ikut terpilih saat satu tanggal diklik.
+     * Minggu: Senin-Minggu, misal klik 25 -> 23-29. Bulan: tanggal 1 sampai akhir bulan.
+     */
+    const getRange = (date, kind) => {
+        if (kind === 'month') {
+            return [
+                new Date(date.getFullYear(), date.getMonth(), 1),
+                new Date(date.getFullYear(), date.getMonth() + 1, 0),
+            ];
+        }
+
+        if (kind === 'week') {
+            const monday = addDays(date, -((date.getDay() + 6) % 7));
+
+            return [monday, addDays(monday, 6)];
+        }
+
+        return [date, date];
+    };
+
+    const shortFormatter = new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'short',
+    });
+
+    const longFormatter = new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+    });
+
+    const monthFormatter = new Intl.DateTimeFormat('id-ID', {
+        month: 'long',
+        year: 'numeric',
+    });
+
+    const describeRange = ([from, to]) =>
+        sameDay(from, to)
+            ? longFormatter.format(to)
+            : `${shortFormatter.format(from)} – ${longFormatter.format(to)}`;
+
+    let viewMonth = getStartDate();
+    viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
+
+    const renderCalendar = () => {
+        if (!rangeGrid) return;
+
+        const [rangeFrom, rangeTo] = getRange(getStartDate(), unit.value);
+        const first = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
+        const gridStart = addDays(first, -((first.getDay() + 6) % 7));
+        const now = today();
+
+        rangeMonth.textContent = monthFormatter.format(first);
+        rangeGrid.replaceChildren();
+
+        for (let i = 0; i < 42; i++) {
+            const date = addDays(gridStart, i);
+            const inRange = date >= rangeFrom && date <= rangeTo;
+            const isEdge = sameDay(date, rangeFrom) || sameDay(date, rangeTo);
+            const outside = date.getMonth() !== first.getMonth();
+            const past = date < now;
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = String(date.getDate());
+            button.disabled = past;
+            button.setAttribute('aria-label', longFormatter.format(date));
+            button.setAttribute('aria-pressed', inRange ? 'true' : 'false');
+
+            const classes = ['h-9', 'text-xs', 'font-medium', 'transition-colors'];
+
+            if (inRange) {
+                classes.push(isEdge ? 'bg-brand text-white font-bold' : 'bg-brand-soft text-brand');
+                if (sameDay(date, rangeFrom) || date.getDay() === 1) classes.push('rounded-l-lg');
+                if (sameDay(date, rangeTo) || date.getDay() === 0) classes.push('rounded-r-lg');
+            } else {
+                classes.push('rounded-lg', outside ? 'text-black/30' : 'text-black');
+                if (!past) classes.push('hover:bg-canvas');
+            }
+
+            if (past) classes.push('cursor-not-allowed', 'opacity-40');
+            if (sameDay(date, now) && !inRange) classes.push('ring-1', 'ring-brand/40');
+
+            button.className = classes.join(' ');
+
+            button.addEventListener('click', () => {
+                start.value = toYmd(date);
+                viewMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+                renderCalendar();
+                updatePreview();
+            });
+
+            rangeGrid.appendChild(button);
+        }
+
+        const labels = { day: 'Tanggal', week: 'Minggu', month: 'Bulan' };
+
+        rangeTitle.textContent = `Rentang tanggal (${labels[unit.value] || 'Minggu'})`;
+        rangeSummary.textContent = start.value
+            ? `Terpilih ${describeRange([rangeFrom, rangeTo])}. Tenggat ${longFormatter.format(rangeTo)}, 23.59 WIB.`
+            : `Belum dipilih, memakai ${describeRange([rangeFrom, rangeTo])} (hari ini).`;
+    };
+
+    rangePrev?.addEventListener('click', () => {
+        viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1);
+        renderCalendar();
+    });
+
+    rangeNext?.addEventListener('click', () => {
+        viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1);
+        renderCalendar();
+    });
 
     /**
      * Menghitung tenggat setiap pembayaran.
@@ -592,14 +775,45 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isInstallment) {
             const currentCount = Number.parseInt(count.value, 10) || 1;
 
-            if (currentCount < 2) {
-                count.value = 2;
+            if (currentCount < (isCash() ? 1 : 2)) {
+                count.value = isCash() ? 1 : 2;
             }
         } else {
             count.value = 1;
         }
 
         updatePreview();
+    };
+
+    // Kategori kas mengunci nama, mode, tenggat, dan metode nominal.
+    const applyCategoryMode = () => {
+        const cash = isCash();
+
+        titleField?.classList.toggle('hidden', cash);
+        cashNote?.classList.toggle('hidden', !cash);
+
+        if (titleInput) {
+            titleInput.required = !cash;
+            titleInput.disabled = cash;
+        }
+
+        installmentToggle.disabled = cash;
+        unit.disabled = cash;
+        mode.disabled = cash;
+
+        if (cash) {
+            installmentToggle.checked = true;
+            unit.value = 'week';
+            mode.value = 'each';
+        }
+
+        if (modeHint) {
+            modeHint.textContent = cash
+                ? 'Dikunci: kas selalu bertahap, tenggat tiap minggu.'
+                : 'Pilih pembayaran biasa atau bertahap.';
+        }
+
+        updatePaymentMode();
     };
 
     const updateTrigger = (totalCount) => {
@@ -621,7 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const createScheduleItem = (number, date, nominal) => {
+    const createScheduleItem = (number, date, nominal, rangeText) => {
         const row = document.createElement('div');
 
         row.className = 'flex items-center justify-between gap-3';
@@ -644,7 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const timeLabel = document.createElement('p');
         timeLabel.className = 'text-[10px] text-muted';
-        timeLabel.textContent = '23.59 WIB';
+        timeLabel.textContent = `${rangeText} · 23.59 WIB`;
 
         dateWrapper.append(dateLabel, timeLabel);
         left.append(badge, dateWrapper);
@@ -659,7 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return row;
     };
 
-    const renderSchedule = (dates, amounts) => {
+    const renderSchedule = (dates, amounts, ranges) => {
         previewDates.replaceChildren();
 
         const total = dates.length;
@@ -686,7 +900,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 createScheduleItem(
                     index + 1,
                     dates[index],
-                    amounts[index]
+                    amounts[index],
+                    ranges[index]
                 )
             );
         });
@@ -764,16 +979,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const from = getStartDate();
 
-        const dates = Array.from(
+        const deadlines = Array.from(
             { length: totalCount },
-            (_, index) => {
-                return dateFormatter.format(
-                    getDeadline(from, unit.value, index + 1)
-                );
-            }
+            (_, index) => getDeadline(from, unit.value, index + 1)
         );
 
-        renderSchedule(dates, amounts);
+        const dates = deadlines.map((deadline) => dateFormatter.format(deadline));
+
+        const ranges = deadlines.map((deadline) => {
+            if (unit.value === 'day') return 'Satu hari';
+
+            return describeRange(getRange(deadline, unit.value)).replace(
+                /\s\d{4}$/,
+                ''
+            );
+        });
+
+        renderSchedule(dates, amounts, ranges);
 
         const noteLabels = {
             day: 'setiap hari',
@@ -855,17 +1077,30 @@ document.addEventListener('DOMContentLoaded', () => {
         start.value = '';
         mode.value = 'each';
 
+        applyCategoryMode();
+        renderCalendar();
         updatePreview();
     });
 
     // Update preview ketika input berubah
-    [count, unit, start, mode, amount].forEach((element) => {
+    [count, unit, mode, amount].forEach((element) => {
         element.addEventListener('input', updatePreview);
         element.addEventListener('change', updatePreview);
     });
 
-    // Kondisi awal berdasarkan nilai toggle
-    updatePaymentMode();
+    unit.addEventListener('change', renderCalendar);
+    categorySelect?.addEventListener('change', () => {
+        applyCategoryMode();
+        renderCalendar();
+    });
+    newCategory?.addEventListener('input', () => {
+        applyCategoryMode();
+        renderCalendar();
+    });
+
+    // Kondisi awal berdasarkan kategori dan nilai toggle
+    applyCategoryMode();
+    renderCalendar();
 });
 
                 </script>

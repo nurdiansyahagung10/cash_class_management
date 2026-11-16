@@ -18,9 +18,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
                         <h2 id="judul-periode" class="text-base font-bold text-black sm:text-lg">Riwayat periode</h2>
-                        <span
-                            class="inline-flex items-center rounded-full border border-brand/20 bg-brand-soft px-3 py-1 text-xs font-semibold tabular-nums text-brand">{{ $periods->total() }}
-                            periode</span>
+                        <span class="text-xs font-medium tabular-nums text-muted">{{ $periods->total() }} periode</span>
                     </div>
                     <form method="GET" action="{{ route('periods.index') }}"
                         class="flex w-full min-w-0 items-center gap-2 sm:w-auto">
@@ -38,21 +36,21 @@
                     </form>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                <div class="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-line text-xs">
                     <a href="{{ route('periods.index', array_filter(['q' => $search])) }}"
-                        class="inline-flex min-h-9 items-center rounded-full border px-3.5 font-semibold transition-colors {{ empty($statusFilter) ? 'border-black bg-black text-white' : 'border-black/10 bg-white text-muted hover:bg-canvas' }}">
+                        class="inline-flex min-h-9 items-center border-b-2 px-0 font-semibold transition-colors {{ empty($statusFilter) ? 'border-black text-black' : 'border-transparent text-muted hover:border-black/20 hover:text-black' }}">
                         Semua
                     </a>
                     <a href="{{ route('periods.index', array_filter(['status' => 'active', 'q' => $search])) }}"
-                        class="inline-flex min-h-9 items-center rounded-full border px-3.5 font-semibold transition-colors {{ $statusFilter === 'active' ? 'border-brand bg-brand text-white shadow-xs' : 'border-black/10 bg-white text-muted hover:bg-canvas' }}">
+                        class="inline-flex min-h-9 items-center border-b-2 px-0 font-semibold transition-colors {{ $statusFilter === 'active' ? 'border-brand text-brand' : 'border-transparent text-muted hover:border-black/20 hover:text-black' }}">
                         Berjalan
                     </a>
                     <a href="{{ route('periods.index', array_filter(['status' => 'overdue', 'q' => $search])) }}"
-                        class="inline-flex min-h-9 items-center rounded-full border px-3.5 font-semibold transition-colors {{ $statusFilter === 'overdue' ? 'border-[#8f1d0e] bg-[#8f1d0e] text-white shadow-xs' : 'border-black/10 bg-white text-muted hover:bg-canvas' }}">
+                        class="inline-flex min-h-9 items-center border-b-2 px-0 font-semibold transition-colors {{ $statusFilter === 'overdue' ? 'border-[#8f1d0e] text-[#8f1d0e]' : 'border-transparent text-muted hover:border-black/20 hover:text-black' }}">
                         Lewat Tempo
                     </a>
                     <a href="{{ route('periods.index', array_filter(['status' => 'completed', 'q' => $search])) }}"
-                        class="inline-flex min-h-9 items-center rounded-full border px-3.5 font-semibold transition-colors {{ $statusFilter === 'completed' ? 'border-[#14532d] bg-[#14532d] text-white shadow-xs' : 'border-black/10 bg-white text-muted hover:bg-canvas' }}">
+                        class="inline-flex min-h-9 items-center border-b-2 px-0 font-semibold transition-colors {{ $statusFilter === 'completed' ? 'border-[#14532d] text-[#14532d]' : 'border-transparent text-muted hover:border-black/20 hover:text-black' }}">
                         Lunas Semua
                     </a>
                 </div>
@@ -71,26 +69,21 @@
                                 <a href="{{ route('periods.show', $period) }}"
                                     class="text-[15px] font-bold text-brand hover:underline">{{ $period->title }}
                                     &rarr;</a>
-                                <span
-                                    class="rounded-full bg-brand-soft px-2.5 py-0.5 text-[11px] font-semibold text-brand border border-brand/20">
-                                    {{ $period->category->name ?? 'Uang Kas' }}
+                                <span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted">
+                                    <span class="size-1.5 bg-brand"></span>{{ $period->category->name ?? 'Uang Kas' }}
                                 </span>
                                 @if ($isCompleted)
-                                    <span
-                                        class="rounded-full bg-[#dcfce7] px-2.5 py-0.5 text-[11px] font-semibold text-[#14532d] border border-[#bbf7d0]">Lunas
-                                        Semua</span>
+                                    <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#14532d]">
+                                        <span class="size-1.5 bg-[#14532d]"></span>Lunas Semua</span>
                                 @elseif ($isOverdue)
-                                    <span
-                                        class="rounded-full bg-[#fde4e0] px-2.5 py-0.5 text-[11px] font-semibold text-[#8f1d0e] border border-[#fecaca]">Lewat
-                                        Tempo</span>
+                                    <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#8f1d0e]">
+                                        <span class="size-1.5 bg-[#8f1d0e]"></span>Lewat Tempo</span>
                                 @else
-                                    <span
-                                        class="rounded-full bg-[#fff1d6] px-2.5 py-0.5 text-[11px] font-semibold text-[#7a4a00] border border-[#fed7aa]">Berjalan</span>
+                                    <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#7a4a00]">
+                                        <span class="size-1.5 bg-[#c27a14]"></span>Berjalan</span>
                                 @endif
                                 @if ($period->qris_url && str_starts_with($period->qris_url, '000201'))
-                                    <span
-                                        class="rounded-full bg-[#e6f3fe] px-2.5 py-0.5 text-[10px] font-semibold text-brand">QRIS
-                                        Dinamis</span>
+                                    <span class="text-[10px] font-semibold uppercase tracking-wide text-brand">QRIS Dinamis</span>
                                 @endif
                             </div>
                             <span class="text-xs text-muted">Jatuh tempo
@@ -99,8 +92,8 @@
                         <span
                             class="text-sm font-bold text-black tabular-nums">Rp{{ number_format($period->amount, 0, ',', '.') }}</span>
                         <a href="{{ route('periods.show', $period) }}"
-                            class="rounded-full bg-black/5 px-3 py-1 text-xs font-semibold text-[#3d3a37] transition-colors hover:bg-black/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                            {{ $period->paid_count }} / {{ $period->invoices_count }} lunas
+                            class="border-b border-black/20 pb-0.5 text-xs font-semibold text-[#3d3a37] transition-colors hover:border-black hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                            {{ $period->paid_count }}/{{ $period->invoices_count }} lunas
                         </a>
                     </div>
                 @empty

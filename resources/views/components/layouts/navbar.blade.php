@@ -16,15 +16,9 @@
             <button type="button" data-sidebar-toggle aria-controls="topnav-mobile" aria-expanded="false"
                 aria-label="Buka menu"
                 class="group relative grid size-10 place-items-center rounded-xl hover:bg-gray-100 lg:hidden">
-                <span
-                    class="absolute h-0.5 w-5 -translate-y-1.5 rounded bg-current transition duration-300
-                         "></span>
-                <span
-                    class="absolute h-0.5 w-5 rounded bg-current transition duration-200
-                         "></span>
-                <span
-                    class="absolute h-0.5 w-5 translate-y-1.5 rounded bg-current transition duration-300
-                         "></span>
+                <span class="absolute h-0.5 w-5 -translate-y-1.5 rounded bg-current transition duration-300"></span>
+                <span class="absolute h-0.5 w-5 rounded bg-current transition duration-200"></span>
+                <span class="absolute h-0.5 w-5 translate-y-1.5 rounded bg-current transition duration-300"></span>
             </button>
         </div>
     </header>
@@ -37,8 +31,8 @@
 
         {{-- Sidebar Navigation (Desktop & Mobile) --}}
 
-        <nav aria-label="Navigasi utama"
-            class=" border-line bg-canvas/80 backdrop-blur-md h-screen  md:sticky fixed top-0 left-0 w-64 overflow-y-auto border-r border-b-0 z-999 overflow-hidden transition-[left] duration-300 ease-in-out ">
+        <aside aria-label="Navigasi utama"
+            class=" border-line bg-canvas/80 inset-y-0 h-dvh backdrop-blur-md  md:sticky fixed top-0 left-0 w-64 overflow-y-auto border-r border-b-0 z-999 overflow-hidden transition-[left] duration-300 ease-in-out ">
             <div class="p-5 flex shrink-0 flex-col gap-1 h-screen">
                 {{-- Brand Header --}}
                 <div class="flex items-center justify-between px-2 py-2 pb-6">
@@ -151,4 +145,4 @@
                     </a>
                 @endif
             </div>
-        </nav>
+        </aside>

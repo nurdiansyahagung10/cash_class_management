@@ -31,7 +31,6 @@
 
     {{-- Sidebar Navigation (Desktop & Mobile) --}}
 
-    {{-- FIX: h-screen -> h-dvh (ikuti tinggi viewport yang terlihat), overflow-hidden dihapus --}}
     <nav aria-label="Navigasi utama"
         class=" border-line bg-canvas/80 backdrop-blur-md h-dvh md:sticky fixed top-0 left-0 w-64 overflow-y-auto border-r border-b-0 z-999 transition-[left] duration-300 ease-in-out ">
         {{-- FIX: h-screen -> min-h-full (ikut tinggi <nav>, tombol Masuk tetap di dasar layar yang terlihat) --}}
@@ -148,4 +147,3 @@
             @endif
         </div>
     </nav>
-</div>

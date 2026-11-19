@@ -1,16 +1,19 @@
 <?php
 
 use App\Enums\LedgerEntryType;
+use App\Livewire\BulkPayment;
 use App\Models\BillingPeriod;
 use App\Models\Invoice;
 use App\Models\LedgerEntry;
 use App\Models\Payment;
 use App\Models\User;
 use App\Services\Ledger;
+use App\Services\QrisService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -154,4 +157,36 @@ test('the dashboard and the single pay page link to the combined payment', funct
 
     $this->actingAs($member)->get(route('dashboard'))->assertOk()->assertSee('Bayar 3 tagihan sekaligus');
     $this->actingAs($member)->get(route('payments.create', $invoices->first()))->assertOk()->assertSee('Bayar 3 tagihan sekaligus dengan satu bukti');
+});
+
+test('ticking bills updates the total and a downloadable dynamic QRIS without a page reload', function () {
+    [$member, $invoices] = memberWithWeeklyBills();
+    BillingPeriod::query()->update(['qris_url' => '00020101021126580016ID.CO.DANA.WWW5802ID6304ABCD']);
+    $qris = app(QrisService::class);
+
+    $component = Livewire::actingAs($member)
+        ->test(BulkPayment::class, ['invoice' => $invoices->first()])
+        ->assertSet('selected', [(string) $invoices->first()->id])
+        ->assertViewHas('total', 5000)
+        ->assertViewHas('qris', fn (array $image) => $image['dynamic'] && $image['src'] === $qris->pngDataUri($qris->toDynamic('00020101021126580016ID.CO.DANA.WWW5802ID6304ABCD', 5000)))
+        ->assertSee('Unduh gambar QRIS')
+        ->assertSee('download="qris-kas-kelas-5000.png"', false);
+
+    $component->set('selected', $invoices->take(2)->pluck('id')->map(fn ($id) => (string) $id)->all())
+        ->assertViewHas('total', 10000)
+        ->assertViewHas('qris', fn (array $image) => $image['src'] === $qris->pngDataUri($qris->toDynamic('00020101021126580016ID.CO.DANA.WWW5802ID6304ABCD', 10000)))
+        ->assertSee('Kirim bukti untuk 2 tagihan')
+        ->call('selectAll')
+        ->assertViewHas('total', 15000)
+        ->call('clearSelection')
+        ->assertViewHas('total', 0)
+        ->assertViewHas('qris', null);
+});
+
+test('the live bulk picker refuses other members and admins', function () {
+    [, $invoices] = memberWithWeeklyBills();
+
+    Livewire::actingAs(User::factory()->create())
+        ->test(BulkPayment::class, ['invoice' => $invoices->first()])
+        ->assertForbidden();
 });

@@ -9,11 +9,6 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Services\ManualPaymentService;
 use App\Services\QrisService;
-use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\ErrorCorrectionLevel;
-use Endroid\QrCode\QrCode;
-use Endroid\QrCode\RoundBlockSizeMode;
-use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -21,10 +16,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use QrisDinamis\Qris;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Zxing\QrReader;
 
 class ManualPaymentController extends Controller
 {
@@ -183,7 +176,7 @@ class ManualPaymentController extends Controller
 
         $minInstallment = min(1000, $remainingAmount);
         $validated = $request->validate([
-            'proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'proof' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
             'amount' => ['nullable', 'integer', "min:{$minInstallment}", "max:{$remainingAmount}"],
         ]);
 
@@ -232,24 +225,15 @@ class ManualPaymentController extends Controller
 
     /**
      * Pick several of one member's unpaid invoices and settle them with a single transfer and proof.
+     * The picking, total and dynamic QRIS live in the BulkPayment Livewire component (updates on every tick).
      */
-    public function bulk(Invoice $invoice, Request $request, QrisService $qrisService): View
+    public function bulk(Invoice $invoice, Request $request): View
     {
         $this->authorizeCombined($invoice, $request);
-
-        $invoices = $this->payableInvoices($invoice->user);
-        $ids = collect($request->query('ids', [$invoice->id]))->map(fn ($id) => (int) $id)->all();
-        $selected = $invoices->whereIn('id', $ids)->values();
-        $total = (int) $selected->sum(fn (Invoice $item) => $item->remainingAmount());
-        $qrisUrl = $selected->map(fn (Invoice $item) => $item->period->qris_url)->filter()->last();
 
         return view('payments.bulk', [
             'anchor' => $invoice,
             'member' => $invoice->user,
-            'invoices' => $invoices,
-            'selectedIds' => $selected->pluck('id')->all(),
-            'total' => $total,
-            'qrContent' => $total > 0 && $qrisUrl ? $this->resolveQrContent($qrisUrl, $total, $qrisService) : null,
             'isAssisting' => $this->isAssisting($invoice, $request),
         ]);
     }
@@ -264,7 +248,7 @@ class ManualPaymentController extends Controller
         $validated = $request->validate([
             'ids' => ['required', 'array', 'min:1', 'max:60'],
             'ids.*' => ['integer'],
-            'proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'proof' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
         ]);
 
         $payable = $this->payableInvoices($invoice->user)->keyBy('id');
@@ -321,14 +305,7 @@ class ManualPaymentController extends Controller
      */
     private function payableInvoices(User $member): Collection
     {
-        return Invoice::query()
-            ->where('user_id', $member->id)
-            ->whereIn('status', ['unpaid', 'partial'])
-            ->whereDoesntHave('payments', fn ($q) => $q->where('status', 'pending')->whereNotNull('proof_path'))
-            ->with(['period.category', 'payments'])
-            ->get()
-            ->sortBy(fn (Invoice $item) => $item->period->due_date->getTimestamp())
-            ->values();
+        return Invoice::payableFor($member);
     }
 
     private function authorizeCombined(Invoice $invoice, Request $request): void
@@ -361,29 +338,7 @@ class ManualPaymentController extends Controller
 
     private function resolveQrContent(?string $qrContent, int $amount, QrisService $qrisService): ?string
     {
-        if ($qrContent === null || $qrContent === '') {
-            return null;
-        }
-
-        $localPath = implode('/', array_slice(explode('/', $qrContent), 3));
-        if ($localPath !== '' && is_file($localPath)) {
-            $qr = Qris::convert((new QrReader($localPath))->text(), $amount);
-            $writer = new PngWriter;
-            $qrCode = new QrCode(
-                data: $qr,
-                encoding: new Encoding('UTF-8'),
-                errorCorrectionLevel: ErrorCorrectionLevel::Low,
-                size: 300,
-                margin: 10,
-                roundBlockSizeMode: RoundBlockSizeMode::Margin,
-            );
-
-            return $writer->write($qrCode)->getDataUri();
-        }
-
-        return $qrisService->isQrisPayload($qrContent)
-            ? $qrisService->toDynamic($qrContent, $amount)
-            : $qrContent;
+        return $qrisService->forAmount($qrContent, $amount);
     }
 
     public function proof(Payment $payment, Request $request): StreamedResponse|BinaryFileResponse

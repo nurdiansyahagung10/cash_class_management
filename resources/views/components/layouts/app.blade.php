@@ -4,7 +4,7 @@
     $links = [
         ['route' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'home', 'show' => true],
         [
-            'route' => 'reports.payments',
+            'route' => 'reports.payments', 'group' => 'Keuangan',
             'label' => 'Laporan pembayaran',
             'icon' => 'billing',
             'show' => $user->canManageMembers(),
@@ -15,28 +15,28 @@
             'icon' => 'review',
             'show' => ! $user->isAdmin(),
         ],
-        ['route' => 'expenses.index', 'label' => 'Pengeluaran kas', 'icon' => 'expense', 'show' => true],
-        ['route' => 'ledger', 'label' => 'Ledger publik', 'icon' => 'ledger', 'show' => true],
+        ['route' => 'expenses.index', 'group' => 'Keuangan', 'label' => 'Pengeluaran kas', 'icon' => 'expense', 'show' => true],
+        ['route' => 'ledger', 'group' => 'Keuangan', 'label' => 'Ledger publik', 'icon' => 'ledger', 'show' => true],
         [
-            'route' => 'members.index',
+            'route' => 'members.index', 'group' => 'Kelola',
             'label' => 'Kelola anggota',
             'icon' => 'members',
             'show' => $user->isAdmin(),
         ],
         [
-            'route' => 'periods.index',
+            'route' => 'periods.index', 'group' => 'Kelola',
             'label' => 'Tagihan kelas',
             'icon' => 'billing',
             'show' => $user->canManageMembers(),
         ],
         [
-            'route' => 'categories.index',
+            'route' => 'categories.index', 'group' => 'Kelola',
             'label' => 'Kategori tagihan',
             'icon' => 'category',
             'show' => $user->canManageMembers(),
         ],
         [
-            'route' => 'payments.review',
+            'route' => 'payments.review', 'group' => 'Kelola',
             'label' => 'Review pembayaran',
             'icon' => 'review',
             'show' => $user->canManageMembers(),
@@ -51,23 +51,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title }} · Kas Kelas 1A</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|source-serif-4:400,600" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|geist-mono:400,500" rel="stylesheet">
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/filepond@4.32.7/dist/filepond.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/filepond-plugin-image-preview@4.6.12/dist/filepond-plugin-image-preview.min.css">
 
+    @include('components.layouts.theme-script')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 </head>
 
-<body class="bg-canvas font-sans text-black antialiased selection:bg-brand-soft selection:text-brand">
+<body class="bg-canvas font-sans text-ink antialiased">
     @include('components.layouts.navbar')
     {{-- Main Content Column --}}
+    <div class="flex min-w-0 flex-1 flex-col">
+    @include('components.layouts.panel-topbar', ['title' => $title])
     <main id="konten-utama" tabindex="-1"
-        class="flex min-w-0 flex-1 flex-col gap-8 px-4 py-6 sm:px-8 sm:py-8 lg:px-14 lg:py-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+        class="mx-auto flex w-full min-w-0 max-w-[1400px] flex-1 flex-col gap-6 px-4 pb-10 pt-4 sm:gap-8 sm:px-6 lg:px-10 lg:pt-8 focus-visible:outline-none">
         @if (session('status'))
             <div role="status"
-                class="flex items-center gap-3 rounded-2xl border border-[#dcfce7] bg-[#f1fbf4] px-4 py-3.5 text-sm font-medium text-[#14532d] shadow-xs">
-                <svg class="size-5 shrink-0 text-[#14532d]" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                class="flex items-center gap-3 rounded-xl border border-line bg-surface-2 px-4 py-3 text-sm font-medium text-success">
+                <svg class="size-5 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -78,8 +83,8 @@
 
         @if (session('error'))
             <div role="alert"
-                class="flex items-center gap-3 rounded-2xl border border-[#fde4e0] bg-[#fff5f5] px-4 py-3.5 text-sm font-medium text-[#8f1d0e] shadow-xs">
-                <svg class="size-5 shrink-0 text-[#8f1d0e]" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                class="flex items-center gap-3 rounded-xl border border-line bg-surface-2 px-4 py-3 text-sm font-medium text-danger">
+                <svg class="size-5 shrink-0 text-danger" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
@@ -88,14 +93,19 @@
             </div>
         @endif
 
-        {{ $slot }}
+            {{ $slot }}
     </main>
     </div>
+    </div>
     @include('components.layouts.backdrop')
-</body>
 
-</html>
-<script nonce="{{ Vite::cspNonce() }}">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/filepond-plugin-file-validate-type@1.2.9/dist/filepond-plugin-file-validate-type.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/filepond-plugin-file-validate-size@2.2.8/dist/filepond-plugin-file-validate-size.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/filepond-plugin-image-exif-orientation@1.0.11/dist/filepond-plugin-image-exif-orientation.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/filepond-plugin-image-preview@4.6.12/dist/filepond-plugin-image-preview.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/filepond@4.32.7/dist/filepond.min.js" defer></script>
+    <script nonce="{{ Vite::cspNonce() }}">
     document.addEventListener('DOMContentLoaded', () => {
         const sidebar = document.querySelector('nav[aria-label="Navigasi utama"]');
         if (!sidebar) return;
@@ -168,5 +178,6 @@
         withoutTransition(() => setOpen(mobileMq.matches ? false : isOpen()));
     });
 </script>
+</body>
 
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
+</html>

@@ -3,6 +3,7 @@
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\ContentSecurityPolicy;
 use App\Http\Middleware\EnsurePasswordChanged;
+use App\Http\Middleware\PreventPrivateCaching;
 use App\Http\Middleware\StaffAdminMiddleware;
 use App\Http\Middleware\StaffMiddleware;
 use Illuminate\Foundation\Application;
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'staff_admin' => StaffAdminMiddleware::class,
         ]);
         $middleware->append(ContentSecurityPolicy::class);
+        $middleware->web(append: [PreventPrivateCaching::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

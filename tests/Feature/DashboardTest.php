@@ -1,13 +1,16 @@
 <?php
 
 use App\Enums\LedgerEntryType;
+use App\Livewire\CashCalendar;
 use App\Models\BillingPeriod;
+use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\PendingMember;
 use App\Models\User;
 use App\Services\Ledger;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -107,23 +110,49 @@ test('dashboard shows a monthly cash calendar with daily in and out', function (
         ->assertSee('Kalender kas')
         ->assertSee('+50k')
         ->assertSee('-15k')
-        ->assertViewHas('cashCalendar', fn ($calendar) => $calendar['totalIn'] === 50000
+        ->assertSeeLivewire(CashCalendar::class);
+
+    Livewire::test(CashCalendar::class)
+        ->assertViewHas('calendar', fn ($calendar) => $calendar['totalIn'] === 50000
             && $calendar['totalOut'] === 15000
             && count($calendar['weeks']) >= 4
             && collect($calendar['weeks'])->every(fn ($week) => count($week) === 7));
 });
 
-test('cash calendar navigates by month and ignores an invalid month', function () {
+test('dashboard cash flow chart sums the last six months and nets reversals', function () {
     $user = User::factory()->create();
+    $ledger = app(Ledger::class);
+    $ledger->append(LedgerEntryType::PaymentConfirmed, ['amount' => 50000]);
+    $ledger->append(LedgerEntryType::ExpenseApproved, ['amount' => 15000]);
+    $ledger->append(LedgerEntryType::Reversal, ['type' => LedgerEntryType::ExpenseApproved->value, 'amount' => 5000]);
+
+    $this->actingAs($user)->get('/')
+        ->assertOk()
+        ->assertSee('Arus kas')
+        ->assertViewHas('cashFlow', fn ($flow) => count($flow) === 6
+            && $flow[0]['month']->format('Y-m') === now()->subMonthsNoOverflow(5)->format('Y-m')
+            && $flow[5]['in'] === 55000
+            && $flow[5]['out'] === 15000
+            && collect($flow)->take(5)->every(fn ($month) => $month['in'] === 0 && $month['out'] === 0));
+});
+
+test('cash calendar navigates by month without a page reload and ignores an invalid month', function () {
     app(Ledger::class)->append(LedgerEntryType::PaymentConfirmed, ['amount' => 50000]);
 
-    $this->actingAs($user)->get('/?bulan=2020-02')
-        ->assertOk()
-        ->assertViewHas('cashCalendar', fn ($calendar) => $calendar['month']->format('Y-m') === '2020-02' && $calendar['totalIn'] === 0);
+    Livewire::withQueryParams(['bulan' => '2020-02'])
+        ->test(CashCalendar::class)
+        ->assertViewHas('calendar', fn ($calendar) => $calendar['month']->format('Y-m') === '2020-02' && $calendar['totalIn'] === 0)
+        ->call('nextMonth')
+        ->assertSet('month', '2020-03')
+        ->call('previousMonth')
+        ->call('previousMonth')
+        ->assertSet('month', '2020-01')
+        ->call('thisMonth')
+        ->assertViewHas('calendar', fn ($calendar) => $calendar['month']->format('Y-m') === now()->format('Y-m') && $calendar['totalIn'] === 50000);
 
-    $this->actingAs($user)->get('/?bulan=bukan-bulan')
-        ->assertOk()
-        ->assertViewHas('cashCalendar', fn ($calendar) => $calendar['month']->format('Y-m') === now()->format('Y-m'));
+    Livewire::withQueryParams(['bulan' => 'bukan-bulan'])
+        ->test(CashCalendar::class)
+        ->assertViewHas('calendar', fn ($calendar) => $calendar['month']->format('Y-m') === now()->format('Y-m'));
 });
 
 test('dashboard displays reversed status for reversed payments in history', function () {
@@ -150,11 +179,38 @@ test('guests see the public cash summary without member data', function () {
     Invoice::factory()->create(['user_id' => $user->id, 'billing_period_id' => $period->id, 'amount' => 15000]);
     app(Ledger::class)->append(LedgerEntryType::PaymentConfirmed, ['amount' => 20000], $user);
 
+    $admin = User::factory()->admin()->create();
+    Expense::create(['title' => 'Tisu kelas', 'amount' => 8000, 'spent_at' => now(), 'notes' => 'Dibeli oleh Budi Rahasia', 'created_by' => $admin->id]);
+    Payment::create(['invoice_id' => Invoice::first()->id, 'order_id' => 'KAS-X', 'amount' => 15000, 'status' => 'pending', 'proof_path' => 'payment-proofs/x.jpg']);
+    PendingMember::factory()->create(['name' => 'Calon Rahasia']);
+
     $this->get('/')
         ->assertOk()
         ->assertSee('Rp20.000')
         ->assertSee('Utuh')
         ->assertSee(route('login'))
+        ->assertSee('Per periode tagihan')
+        ->assertSee('Kas Desember')
+        ->assertSee('Arus kas')
+        ->assertSee('Pengeluaran terbaru')
+        ->assertSee('Tisu kelas')
+        ->assertViewHas('cashFlow', fn ($flow) => count($flow) === 6)
+        // Signed-in-only data never reaches guests.
         ->assertDontSee('Budi Rahasia')
-        ->assertDontSee('Kas Desember');
+        ->assertDontSee('Calon Rahasia')
+        ->assertDontSee('Bukti terbaru')
+        ->assertDontSee('Menunggu verifikasi anggota')
+        ->assertDontSee(route('payments.review'));
+});
+
+test('reports detect an invoice whose confirmed payments cover it even if its cached status is stale', function () {
+    $admin = User::factory()->admin()->create();
+    $member = User::factory()->create(['name' => 'Siti Lunas']);
+    $period = BillingPeriod::factory()->create();
+    $invoice = Invoice::factory()->create(['user_id' => $member->id, 'billing_period_id' => $period->id, 'amount' => 10000, 'status' => 'unpaid']);
+    Payment::factory()->create(['invoice_id' => $invoice->id, 'status' => 'paid', 'amount' => 10000]);
+
+    $this->actingAs($admin)->get('/reports/payments?tab=matrix')->assertOk()->assertSee('Lunas');
+
+    expect($invoice->fresh()->status)->toBe('paid');
 });

@@ -3,8 +3,8 @@
     $user = auth()->user();
     $links = [
         ['route' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'home', 'show' => true],
-        ['route' => 'expenses.index', 'label' => 'Pengeluaran kas', 'icon' => 'expense', 'show' => true],
-        ['route' => 'ledger', 'label' => 'Ledger publik', 'icon' => 'ledger', 'show' => true],
+        ['route' => 'expenses.index', 'group' => 'Keuangan', 'label' => 'Pengeluaran kas', 'icon' => 'expense', 'show' => true],
+        ['route' => 'ledger', 'group' => 'Keuangan', 'label' => 'Ledger publik', 'icon' => 'ledger', 'show' => true],
     ];
 @endphp
 
@@ -16,21 +16,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title }} · Kas Kelas 1A</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|source-serif-4:400,600" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|geist-mono:400,500" rel="stylesheet">
 
+    @include('components.layouts.theme-script')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-canvas font-sans text-black antialiased selection:bg-brand-soft selection:text-brand">
+<body class="bg-canvas font-sans text-ink antialiased">
     @include('components.layouts.navbar')
 
-    <div
-        class="flex min-w-0 flex-1 flex-col gap-8 px-4 py-6 sm:px-8 sm:py-8 lg:px-14 lg:py-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-
-        <main class="flex flex-col gap-6">
+    <div class="flex min-w-0 flex-1 flex-col">
+        @include('components.layouts.panel-topbar', ['title' => $title])
+        <main id="konten-utama" class="mx-auto flex w-full min-w-0 max-w-[1400px] flex-1 flex-col gap-6 px-4 pb-10 pt-4 sm:gap-8 sm:px-6 lg:px-10 lg:pt-8">
             {{ $slot }}
         </main>
+    </div>
     </div>
     @include('components.layouts.backdrop')
 </body>
@@ -110,4 +110,3 @@
     });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>

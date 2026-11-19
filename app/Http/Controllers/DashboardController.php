@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Models\BillingPeriod;
+use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\PendingMember;
@@ -11,7 +12,6 @@ use App\Models\User;
 use App\Services\Ledger;
 use App\Services\PublicCashSummary;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -21,8 +21,10 @@ class DashboardController extends Controller
         $user = $request->user();
 
         if ($user === null) {
-            return $this->publicDashboard($request, $ledger);
+            return $this->publicDashboard();
         }
+
+        Invoice::repairStatuses();
 
         $unpaidInvoices = $user->isAdmin()
             ? collect()
@@ -37,7 +39,7 @@ class DashboardController extends Controller
             'balance' => $ledger->balance(),
             'brokenSeq' => $ledger->firstBrokenSeq(),
             'unpaidInvoices' => $unpaidInvoices,
-            'cashCalendar' => $ledger->calendarData($this->requestedMonth($request)),
+            'cashFlow' => $ledger->monthlyFlow(now()->startOfMonth()),
         ];
 
         if ($user->role !== UserRole::Admin) {
@@ -61,6 +63,12 @@ class DashboardController extends Controller
             $stats += [
                 'pendingMembers' => PendingMember::where('expires_at', '>', now())->count(),
                 'activeMembers' => User::payableMembers()->count(),
+                'reviewQueue' => Payment::with(['invoice.user', 'invoice.period'])
+                    ->where('status', 'pending')
+                    ->whereNotNull('proof_path')
+                    ->latest('id')
+                    ->limit(5)
+                    ->get(),
             ];
         }
 
@@ -96,20 +104,13 @@ class DashboardController extends Controller
     /**
      * Class-wide cash summary for guests: aggregates only, no member names or personal invoices.
      */
-    private function publicDashboard(Request $request, Ledger $ledger): View
+    private function publicDashboard(): View
     {
         return view('public-dashboard', [
             ...app(PublicCashSummary::class)->toArray(),
-            'cashCalendar' => $ledger->calendarData($this->requestedMonth($request)),
+            'cashFlow' => app(Ledger::class)->monthlyFlow(now()->startOfMonth()),
+            // Same fields the public expenses page already shows: no notes, receipts or who recorded it.
+            'latestExpenses' => Expense::query()->latest('spent_at')->latest('id')->limit(5)->get(['id', 'title', 'amount', 'spent_at']),
         ]);
-    }
-
-    private function requestedMonth(Request $request): Carbon
-    {
-        $month = $request->query('bulan');
-
-        return is_string($month) && preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month)
-            ? Carbon::createFromFormat('Y-m-d', $month.'-01')->startOfDay()
-            : now()->startOfMonth();
     }
 }

@@ -3,17 +3,578 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
-@theme {
-    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-serif: 'Source Serif 4', Georgia, serif;
+@custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
 
-    --color-canvas: #f6f5f4;
-    --color-line: rgb(0 0 0 / 0.08);
-    --color-muted: #615d59;
-    --color-brand: #0075de;
+/*
+ * Design tokens: Linear-inspired layout and surfaces, blue accent, quiet status colors.
+ * Hierarchy comes from a surface ladder + hairlines, not shadows.
+ * Legacy names (canvas, line, muted, brand, navy) are kept so older markup follows along.
+ */
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'SF Pro Display', sans-serif;
+    --font-serif: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --color-canvas: #08090a;
+    --color-surface: #141518;
+    --color-surface-2: #1a1b1e;
+    --color-surface-3: #212226;
+    --color-canvas-2: #1a1b1e;
+    --color-line: #26272b;
+    --color-line-strong: #3a3c41;
+    --color-ink: #ededef;
+    --color-body: #c8cad0;
+    --color-muted: #8b8e96;
+    --color-faint: #5f6269;
+    --color-brand: #2f86eb;
+    --color-brand-dark: #4596f0;
+    --color-brand-soft: #0f2033;
+    --color-navy: #212226;
+    --color-amber: #c69026;
+    --color-link: #539bf5;
+
+    /* Status colors: used as text/dots on neutral chips, never as pastel fills. */
+    --color-success: #57ab5a;
+    --color-warning: #c69026;
+    --color-danger: #e5534b;
+    --color-info: #539bf5;
+
+    /* Chart series (validated for CVD + contrast per theme). */
+    --color-chart-in: #2f86eb;
+    --color-chart-out: #c2702e;
+
+    /* Barely-there depth; lifts are carried by surface steps and hairlines. */
+    --shadow-2xs: 0 1px 0 rgb(255 255 255 / 0.02) inset;
+    --shadow-xs: 0 1px 0 rgb(255 255 255 / 0.03) inset;
+    --shadow-sm: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 4px 12px rgb(0 0 0 / 0.3);
+    --shadow-md: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 8px 24px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 16px 40px rgb(0 0 0 / 0.55);
+    --color-danger-solid: #c93c37;
+}
+
+@layer base {
+    :root {
+        color-scheme: dark;
+    }
+
+    body {
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Smooth the flip between themes without animating page load. */
+    :root.theme-ready body,
+    :root.theme-ready .ui-card {
+        transition: background-color 200ms, border-color 200ms, color 200ms;
+    }
+
+    html {
+        font-feature-settings: 'cv01', 'ss03';
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        background-color: var(--color-canvas);
+        color: var(--color-ink);
+        letter-spacing: -0.005em;
+    }
+
+    h1, h2, h3 {
+        letter-spacing: -0.022em;
+    }
+
+    ::selection {
+        background-color: rgb(47 134 235 / 0.4);
+        color: #fff;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+        color: var(--color-faint);
+    }
+}
+
+/*
+ * Light theme: same structure, Linear's light product palette.
+ * Toggled by data-theme="light" on <html> (see the theme script in the layouts).
+ */
+:root[data-theme='light'] {
+    color-scheme: light;
+    --color-canvas: #f3f4f6;
+    --color-surface: #ffffff;
+    --color-surface-2: #f6f7f8;
+    --color-surface-3: #eeeff1;
+    --color-canvas-2: #f6f7f8;
+    --color-line: #e4e5e8;
+    --color-line-strong: #c6c8ce;
+    --color-ink: #1c1d20;
+    --color-body: #3d4047;
+    --color-muted: #6b6e76;
+    --color-faint: #9a9da4;
     --color-brand-dark: #005bb0;
     --color-brand-soft: #e6f3fe;
-    --color-navy: #02093a;
-    --color-amber: #ffb110;
+    --color-navy: #eeeff1;
+    --color-amber: #9a6700;
+    --color-link: #0062c2;
+    --color-success: #1a7f37;
+    --color-warning: #9a6700;
+    --color-danger: #cf222e;
+    --color-info: #0969da;
+    --color-chart-in: #0075de;
+    --color-chart-out: #c2702e;
+    --shadow-2xs: 0 1px 1px rgb(0 0 0 / 0.03);
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.04);
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px rgb(0 0 0 / 0.04);
+    --shadow-md: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 24px rgb(0 0 0 / 0.06);
+    --shadow-lg: 0 1px 2px rgb(0 0 0 / 0.05), 0 16px 40px rgb(0 0 0 / 0.1);
+    --color-brand: #0075de;
+    --color-danger-solid: #cf222e;
+}
+
+/* Printed reports stay black on white. */
+@media print {
+    :root {
+        color-scheme: light;
+        --color-canvas: #fff;
+        --color-surface: #fff;
+        --color-surface-2: #f5f5f5;
+        --color-surface-3: #f5f5f5;
+        --color-canvas-2: #f5f5f5;
+        --color-line: #e5e5e5;
+        --color-ink: #111;
+        --color-body: #333;
+        --color-muted: #555;
+        --color-success: #1a7f37;
+        --color-warning: #946200;
+        --color-danger: #c4352f;
+        --color-info: #4651b8;
+    }
+}
+
+/* ---- Primitives (used by the x-ui.* Blade components) ---- */
+@utility ui-card {
+    border-radius: var(--radius-2xl);
+    border: 1px solid var(--color-line);
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-xs);
+}
+
+@utility ui-eyebrow {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    color: var(--color-muted);
+}
+
+@utility ui-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    min-height: 2rem;
+    padding-inline: 0.75rem;
+    border-radius: var(--radius-lg); /* same as sidebar items (rounded-lg) */
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color 120ms, color 120ms, border-color 120ms, box-shadow 120ms;
+
+    &:focus-visible {
+        outline: 2px solid var(--color-brand);
+        outline-offset: 2px;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+@utility ui-btn-primary {
+    background-color: var(--color-brand);
+    color: #fff;
+    border: 1px solid transparent;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 1px 2px rgb(0 0 0 / 0.2);
+
+    &:hover:not(:disabled) {
+        background-color: var(--color-brand-dark);
+    }
+}
+
+@utility ui-btn-outline {
+    background-color: var(--color-surface-2);
+    color: var(--color-ink);
+    border: 1px solid var(--color-line);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+
+    &:hover:not(:disabled) {
+        background-color: var(--color-surface-3);
+        border-color: var(--color-line-strong);
+    }
+}
+
+@utility ui-btn-ghost {
+    color: var(--color-body);
+    border: 1px solid transparent;
+
+    &:hover:not(:disabled) {
+        background-color: color-mix(in oklab, var(--color-ink) 6%, transparent);
+        color: var(--color-ink);
+    }
+}
+
+@utility ui-btn-danger {
+    background-color: var(--color-surface-2);
+    color: var(--color-danger);
+    border: 1px solid var(--color-line);
+
+    &:hover:not(:disabled) {
+        background-color: color-mix(in oklab, var(--color-danger) 10%, var(--color-surface-2));
+        border-color: color-mix(in oklab, var(--color-danger) 35%, var(--color-line));
+    }
+}
+
+/* Linear-style tag: small, square-ish, neutral chip; the status color lives only in the dot. */
+@utility ui-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.25rem;
+    padding-inline: 0.5rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-line);
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 500;
+    color: var(--color-body);
+    white-space: nowrap;
+
+    &::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 9999px;
+        background-color: var(--tag-dot, var(--color-faint));
+        flex-shrink: 0;
+    }
+}
+
+@utility ui-tag-plain {
+    &::before {
+        display: none;
+    }
+}
+
+@utility ui-tag-success {
+    --tag-dot: var(--color-success);
+}
+
+@utility ui-tag-warning {
+    --tag-dot: var(--color-warning);
+}
+
+@utility ui-tag-danger {
+    --tag-dot: var(--color-danger);
+}
+
+@utility ui-tag-info {
+    --tag-dot: var(--color-brand);
+}
+
+@media (max-width: 639px) {
+    .ui-btn {
+        min-height: 2.5rem;
+    }
+}
+
+/* Alpine: keep x-cloak'd elements hidden until Alpine boots. */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Markdown answers from the finance assistant. */
+.ai-answer > * + * {
+    margin-top: 0.5rem;
+}
+.ai-answer ul {
+    list-style: disc;
+    padding-left: 1.1rem;
+}
+.ai-answer ol {
+    list-style: decimal;
+    padding-left: 1.1rem;
+}
+.ai-answer li + li {
+    margin-top: 0.15rem;
+}
+.ai-answer strong {
+    color: var(--color-ink);
+    font-weight: 600;
+}
+.ai-answer code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+/* ---- FilePond (image upload with preview), themed with the app tokens ---- */
+.filepond--root {
+    margin-bottom: 0;
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+}
+.filepond--panel-root {
+    background-color: var(--color-surface-2);
+    border: 1px dashed var(--color-line-strong);
+    border-radius: var(--radius-xl);
+}
+.filepond--drop-label {
+    color: var(--color-muted);
+    min-height: 5.5rem;
+}
+.filepond--drop-label label {
+    cursor: pointer;
+}
+.filepond--hint {
+    font-size: 11px;
+    color: var(--color-faint);
+}
+.filepond--label-action {
+    color: var(--color-brand);
+    text-decoration-color: color-mix(in oklab, var(--color-brand) 40%, transparent);
+}
+.filepond--root[data-hopper-state='drag-over'] .filepond--panel-root {
+    border-color: var(--color-brand);
+    background-color: color-mix(in oklab, var(--color-brand) 8%, var(--color-surface-2));
+}
+.filepond--item-panel {
+    background-color: var(--color-surface-3);
+    border-radius: var(--radius-lg);
+}
+.filepond--file {
+    color: var(--color-ink);
+}
+.filepond--image-preview {
+    background-color: var(--color-canvas);
+}
+.filepond--image-preview-overlay-success {
+    color: var(--color-brand);
+}
+[data-filepond-item-state*='invalid'] .filepond--item-panel,
+[data-filepond-item-state*='error'] .filepond--item-panel {
+    background-color: var(--color-danger-solid);
+}
+.filepond--credits {
+    display: none;
+}
+
+/* Horizontal scroller that hides its scrollbar but keeps it usable (tabs, chips). */
+@utility scroll-row {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* ---- Tom Select, disesuaikan dengan input shadcn ---- */
+/* Tom Select copies the <select>'s classes onto its wrapper: keep only sizing, drop the borrowed box styling. */
+.ts-wrapper {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+.ts-wrapper.single .ts-control,
+.ts-wrapper.single.input-active .ts-control {
+    display: flex;
+    align-items: center;
+    min-height: 2.25rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-line);
+    padding: 0.25rem 2rem 0.25rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-ink);
+    box-shadow: var(--shadow-2xs);
+    background-image: none;
+    background-color: var(--color-surface-2);
+    cursor: pointer;
+}
+.ts-wrapper.single .ts-control::after {
+    content: '';
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    width: 0.4rem;
+    height: 0.4rem;
+    margin-top: -0.3rem;
+    border: solid var(--color-muted);
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg);
+    transition: transform 150ms;
+}
+.ts-wrapper.single.dropdown-active .ts-control::after {
+    transform: rotate(-135deg);
+    margin-top: -0.05rem;
+}
+.ts-wrapper.focus .ts-control {
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px rgb(47 134 235 / 0.25);
+}
+.ts-wrapper.disabled .ts-control {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.ts-control > input {
+    font-size: 0.8125rem;
+    color: var(--color-ink);
+}
+.ts-wrapper.single .ts-control .item {
+    color: var(--color-ink);
+}
+.ts-dropdown {
+    margin-top: 0.25rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-line);
+    box-shadow: var(--shadow-lg);
+    font-size: 0.8125rem;
+    color: var(--color-ink);
+    background-color: var(--color-surface-3);
+    overflow: hidden;
+    z-index: 1100;
+}
+.ts-dropdown .dropdown-input-wrap {
+    padding: 0.375rem;
+    border-bottom: 1px solid var(--color-line);
+}
+.ts-dropdown .dropdown-input {
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    padding: 0.4rem 0.6rem;
+    background-color: var(--color-surface-2);
+    color: var(--color-ink);
+    box-shadow: none;
+}
+.ts-dropdown .ts-dropdown-content {
+    padding: 0.25rem;
+    max-height: 18rem;
+}
+.ts-dropdown .option {
+    border-radius: var(--radius-lg);
+    padding: 0.5rem 0.625rem;
+}
+.ts-dropdown .option.active {
+    background-color: rgb(255 255 255 / 0.06);
+    color: var(--color-ink);
+}
+.ts-dropdown .option.selected {
+    font-weight: 600;
+}
+.ts-dropdown .no-results {
+    padding: 0.625rem;
+    color: var(--color-muted);
+}
+@media (max-width: 639px) {
+    .ts-wrapper.single .ts-control {
+        min-height: 2.75rem;
+        font-size: 1rem;
+    }
+    .ts-dropdown {
+        font-size: 0.9375rem;
+    }
+    .ts-dropdown .option {
+        padding: 0.7rem 0.75rem;
+    }
+}
+
+/* ---- Loading feedback ---- */
+@keyframes ui-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@utility ui-spinner {
+    display: inline-block;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    border: 2px solid color-mix(in oklab, currentColor 25%, transparent);
+    border-top-color: currentColor;
+    animation: ui-spin 0.6s linear infinite;
+}
+
+/*
+ * Buttons that are processing: Livewire adds [data-loading] to the element that fired the request,
+ * app.js adds [aria-busy="true"] to the submit button of a regular form. A spinner replaces any icon.
+ */
+.ui-btn[data-loading],
+.ui-btn[aria-busy='true'] {
+    pointer-events: none;
+    opacity: 0.85;
+}
+.ui-btn[data-loading]::before,
+.ui-btn[aria-busy='true']::before {
+    content: '';
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 9999px;
+    border: 2px solid color-mix(in oklab, currentColor 25%, transparent);
+    border-top-color: currentColor;
+    animation: ui-spin 0.6s linear infinite;
+    flex-shrink: 0;
+}
+.ui-btn[data-loading] > svg,
+.ui-btn[aria-busy='true'] > svg {
+    display: none;
+}
+
+/* Other Livewire triggers (pager numbers, chips, rows) dim while their request runs. */
+[wire\:click][data-loading]:not(.ui-btn),
+[wire\:model\.live][data-loading] {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Thin top progress bar for page navigation, form posts and Livewire requests (driven by app.js). */
+#page-progress {
+    position: fixed;
+    inset: 0 auto auto 0;
+    z-index: 2000;
+    height: 2px;
+    width: 0;
+    background: var(--color-brand);
+    box-shadow: 0 0 8px color-mix(in oklab, var(--color-brand) 60%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: width 200ms ease-out, opacity 300ms ease;
+}
+#page-progress[data-active] {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ui-spinner,
+    .ui-btn[data-loading]::before,
+    .ui-btn[aria-busy='true']::before {
+        animation-duration: 1.5s;
+    }
+}
+
+/* Finance assistant: shimmering "thinking" label (Linear agent style). */
+@keyframes ai-shimmer {
+    to {
+        background-position: -200% 0;
+    }
+}
+.ai-thinking {
+    background: linear-gradient(90deg, var(--color-muted) 0%, var(--color-ink) 50%, var(--color-muted) 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: ai-shimmer 1.6s linear infinite;
 }

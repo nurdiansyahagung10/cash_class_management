@@ -54,7 +54,7 @@ class ExpenseController extends Controller
             'amount' => ['required', 'integer', 'min:500', 'max:100000000'],
             'spent_at' => ['required', 'date', 'before_or_equal:today'],
             'notes' => ['nullable', 'string', 'max:500'],
-            'receipt' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
+            'receipt' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
         ]);
 
         if ($request->hasFile('receipt')) {

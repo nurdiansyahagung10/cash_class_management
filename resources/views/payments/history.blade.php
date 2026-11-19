@@ -3,9 +3,9 @@
     use Illuminate\Support\Carbon;
 
     $stages = [
-        'incoming' => ['label' => 'Akan datang', 'hint' => 'Tagihan yang belum dibuka. Periodenya belum dimulai.', 'tone' => 'bg-[#e8f0fe] text-[#1a3d8f]'],
-        'running' => ['label' => 'Berjalan', 'hint' => 'Tagihan yang sedang berlangsung dan belum lunas.', 'tone' => 'bg-[#fff1d6] text-[#7a4a00]'],
-        'paid' => ['label' => 'Sudah dibayar', 'hint' => 'Tagihan yang sudah lunas.', 'tone' => 'bg-[#dcfce7] text-[#14532d]'],
+        'incoming' => ['label' => 'Akan datang', 'hint' => 'Tagihan yang belum dibuka. Periodenya belum dimulai.', 'tone' => 'bg-brand/15 text-info'],
+        'running' => ['label' => 'Berjalan', 'hint' => 'Tagihan yang sedang berlangsung dan belum lunas.', 'tone' => 'bg-surface-2 text-warning'],
+        'paid' => ['label' => 'Sudah dibayar', 'hint' => 'Tagihan yang sudah lunas.', 'tone' => 'bg-surface-2 text-success'],
     ];
 
     $rangeLabel = function ($period) {
@@ -25,20 +25,13 @@
 @endphp
 
 <x-layouts.app title="Riwayat pembayaran">
-    <header class="flex flex-col gap-2">
-        <div class="flex items-center gap-2 text-xs font-semibold text-muted">
-            <span>Kas Kelas 1A</span>
-            <span class="text-black/20">/</span>
-            <span class="text-black">Riwayat pembayaran</span>
-            <span class="text-black/20">·</span>
-            <span class="font-normal">{{ now()->translatedFormat('l, d F Y') }}</span>
-        </div>
-    </header>
+    <x-ui.page-header :eyebrow="'Pembayaran · ' . now()->translatedFormat('l, d F Y')" title="Riwayat pembayaran"
+        description="Semua pembayaran kas yang pernah kamu kirim beserta statusnya." />
 
-    <section aria-labelledby="judul-riwayat" class="flex flex-col rounded-2xl border border-line bg-white shadow-xs">
+    <section aria-labelledby="judul-riwayat" class="flex flex-col rounded-2xl border border-line bg-surface shadow-xs">
         <div class="flex flex-col gap-4 border-b border-line px-4 py-5 sm:px-6">
             <div class="flex flex-col gap-1.5">
-                <h1 id="judul-riwayat" class="text-base font-bold text-black sm:text-lg">Riwayat pembayaran</h1>
+                <h1 id="judul-riwayat" class="text-base font-semibold text-ink">Riwayat pembayaran</h1>
                 <p class="max-w-xl text-xs leading-relaxed text-muted">
                     Semua tagihanmu, dari yang akan datang, sedang berjalan, sampai yang sudah dibayar.
                 </p>
@@ -49,7 +42,7 @@
                     @class([
                         'inline-flex min-h-9 items-center gap-2 rounded-full border px-3.5 font-semibold transition-colors',
                         'border-brand bg-brand text-white' => !$stage,
-                        'border-line bg-white text-muted hover:text-black' => $stage,
+                        'border-line bg-surface text-muted hover:text-ink' => $stage,
                     ])>
                     Semua
                 </a>
@@ -59,7 +52,7 @@
                         @class([
                             'inline-flex min-h-9 items-center gap-2 rounded-full border px-3.5 font-semibold transition-colors',
                             'border-brand bg-brand text-white' => $stage === $key,
-                            'border-line bg-white text-muted hover:text-black' => $stage !== $key,
+                            'border-line bg-surface text-muted hover:text-ink' => $stage !== $key,
                         ])>
                         {{ $meta['label'] }}
                         <span class="tabular-nums opacity-80">{{ $groups[$key]->count() }}</span>
@@ -73,13 +66,13 @@
                 @php $meta = $stages[$key]; @endphp
                 <div class="flex flex-col">
                     <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 bg-canvas/40 px-4 py-3 sm:px-6">
-                        <h2 class="text-sm font-bold text-black">{{ $meta['label'] }}
+                        <h2 class="text-sm font-semibold text-ink">{{ $meta['label'] }}
                             <span class="ml-1 font-semibold tabular-nums text-muted">{{ $groups[$key]->count() }}</span>
                         </h2>
                         <p class="text-[11px] text-muted">{{ $meta['hint'] }}</p>
                     </div>
 
-                    <div class="divide-y divide-black/5">
+                    <div class="divide-y divide-ink/5">
                         @forelse ($groups[$key] as $invoice)
                             @php
                                 $period = $invoice->period;
@@ -87,17 +80,17 @@
                                 $paidAt = $invoice->payments->where('status', 'paid')->max('paid_at');
 
                                 [$badge, $badgeTone] = match (true) {
-                                    $key === 'paid' => ['Lunas', 'bg-[#dcfce7] text-[#14532d]'],
+                                    $key === 'paid' => ['Lunas', 'bg-surface-2 text-success'],
                                     $key === 'incoming' => ['Akan datang', $meta['tone']],
-                                    $pending => ['Menunggu verifikasi', 'bg-[#fff1d6] text-[#7a4a00]'],
-                                    $invoice->isOverdue() => ['Terlambat ' . $invoice->overdueDays() . ' hari', 'bg-[#fde4e0] text-[#8f1d0e]'],
-                                    $invoice->isPartial() => ['Dibayar sebagian', 'bg-[#fff1d6] text-[#7a4a00]'],
-                                    default => ['Belum dibayar', 'bg-[#fff1d6] text-[#7a4a00]'],
+                                    $pending => ['Menunggu verifikasi', 'bg-surface-2 text-warning'],
+                                    $invoice->isOverdue() => ['Terlambat ' . $invoice->overdueDays() . ' hari', 'bg-surface-2 text-danger'],
+                                    $invoice->isPartial() => ['Dibayar sebagian', 'bg-surface-2 text-warning'],
+                                    default => ['Belum dibayar', 'bg-surface-2 text-warning'],
                                 };
                             @endphp
                             <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-3 px-4 py-4 sm:px-6">
                                 <div class="flex min-w-0 flex-col gap-1">
-                                    <p class="text-sm font-semibold text-black wrap-break-word">{{ $period->title }}</p>
+                                    <p class="text-sm font-semibold text-ink wrap-break-word">{{ $period->title }}</p>
                                     <p class="text-xs text-muted">
                                         @if ($period->category)
                                             <span class="font-medium text-brand">{{ $period->category->name }}</span> ·
@@ -117,7 +110,7 @@
                                 </div>
 
                                 <div class="flex shrink-0 flex-col items-end gap-1.5">
-                                    <span class="text-sm font-bold tabular-nums text-black">Rp{{ number_format($invoice->amount, 0, ',', '.') }}</span>
+                                    <span class="text-sm font-semibold tabular-nums text-ink">Rp{{ number_format($invoice->amount, 0, ',', '.') }}</span>
                                     <span class="rounded-full px-2.5 py-0.5 text-[11px] font-semibold {{ $badgeTone }}">{{ $badge }}</span>
                                     @if ($key === 'running' && !$pending)
                                         <a href="{{ route('payments.create', $invoice) }}"

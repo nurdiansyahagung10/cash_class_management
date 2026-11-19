@@ -2,8 +2,70 @@
 
 namespace App\Services;
 
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Writer\PngWriter;
+use QrisDinamis\Qris;
+use Zxing\QrReader;
+
 class QrisService
 {
+    /**
+     * QRIS for a fixed amount from a period's stored QRIS (uploaded image path/URL or raw payload).
+     * Returns a PNG data URI (uploaded image, converted to dynamic), a dynamic payload, or the static source as-is.
+     */
+    public function forAmount(?string $source, int $amount): ?string
+    {
+        if ($source === null || $source === '') {
+            return null;
+        }
+
+        // Uploaded images are stored as an absolute URL (…/storage/qris/x.png); read the file from /public, not the CWD.
+        $relativePath = implode('/', array_slice(explode('/', $source), 3));
+        $localPath = collect([public_path($relativePath), $relativePath])->first(fn (string $path) => $relativePath !== '' && is_file($path));
+        if ($localPath !== null) {
+            return $this->pngDataUri(Qris::convert((new QrReader($localPath))->text(), $amount));
+        }
+
+        return $this->isQrisPayload($source) ? $this->toDynamic($source, $amount) : $source;
+    }
+
+    /**
+     * Image to show and download for a fixed amount; `dynamic` means the amount is locked inside the code.
+     *
+     * @return array{src: string, dynamic: bool}|null
+     */
+    public function imageFor(?string $source, int $amount): ?array
+    {
+        $content = $this->forAmount($source, $amount);
+
+        return match (true) {
+            $content === null => null,
+            $this->isQrisPayload($content) => ['src' => $this->pngDataUri($content), 'dynamic' => true],
+            str_starts_with($content, 'data:image/') => ['src' => $content, 'dynamic' => true],
+            default => ['src' => $content, 'dynamic' => false],
+        };
+    }
+
+    /**
+     * Renders a QR payload as a PNG data URI (served inline, so it can also be downloaded directly).
+     */
+    public function pngDataUri(string $payload): string
+    {
+        $qrCode = new QrCode(
+            data: $payload,
+            encoding: new Encoding('UTF-8'),
+            errorCorrectionLevel: ErrorCorrectionLevel::Low,
+            size: 300,
+            margin: 10,
+            roundBlockSizeMode: RoundBlockSizeMode::Margin,
+        );
+
+        return (new PngWriter)->write($qrCode)->getDataUri();
+    }
+
     /**
      * Check if a string is a raw QRIS EMVCo payload (starts with 000201).
      */
@@ -33,7 +95,7 @@ class QrisService
             $payload = $matches[0];
         } else {
             $payload = rtrim($payload, " \t\n\r\0\x0B");
-            if (!str_ends_with($payload, '6304')) {
+            if (! str_ends_with($payload, '6304')) {
                 $payload .= '6304';
             }
         }

@@ -35,6 +35,17 @@ return [
         ],
     ],
 
+    /*
+     * OpenAI-compatible chat endpoint for the class finance assistant (e.g. a 9router instance).
+     * FINANCE_AI_BASE_URL is the API root that serves /chat/completions, such as http://localhost:20128/v1.
+     */
+    'finance_assistant' => [
+        'base_url' => env('FINANCE_AI_BASE_URL'),
+        'api_key' => env('FINANCE_AI_API_KEY'),
+        'model' => env('FINANCE_AI_MODEL'),
+        'timeout' => (int) env('FINANCE_AI_TIMEOUT', 60),
+    ],
+
     'notion' => [
         'token' => env('NOTION_TOKEN'),
         'ledger_database_id' => env('NOTION_LEDGER_DATABASE_ID'),

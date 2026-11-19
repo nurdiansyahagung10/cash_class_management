@@ -139,6 +139,42 @@ class Ledger
     }
 
     /**
+     * Cash in/out per calendar month for the $months months ending at $lastMonth (oldest first).
+     * Uses the same in/out rules as calendarData(), so a month here equals that month's calendar totals.
+     *
+     * @return array<int, array{month: Carbon, in: int, out: int}>
+     */
+    public function monthlyFlow(Carbon $lastMonth, int $months = 6): array
+    {
+        $end = $lastMonth->copy()->endOfMonth();
+        $start = $lastMonth->copy()->startOfMonth()->subMonthsNoOverflow($months - 1);
+        $flow = [];
+
+        for ($m = $start->copy(); $m->lte($end); $m->addMonthNoOverflow()) {
+            $flow[$m->format('Y-m')] = ['month' => $m->copy(), 'in' => 0, 'out' => 0];
+        }
+
+        $entries = LedgerEntry::query()
+            ->whereIn('type', [
+                LedgerEntryType::PaymentConfirmed->value,
+                LedgerEntryType::ExpenseApproved->value,
+                LedgerEntryType::Reversal->value,
+            ])
+            ->whereBetween('created_at', [$start->format('Y-m-d H:i:s'), $end->format('Y-m-d H:i:s')])
+            ->lazyById(500, 'seq');
+
+        foreach ($entries as $entry) {
+            $payload = json_decode($entry->payload, true) ?? [];
+            $isIn = $entry->type === LedgerEntryType::PaymentConfirmed
+                || ($entry->type === LedgerEntryType::Reversal && ($payload['type'] ?? null) === LedgerEntryType::ExpenseApproved->value);
+
+            $flow[$entry->created_at->format('Y-m')][$isIn ? 'in' : 'out'] += (int) ($payload['amount'] ?? 0);
+        }
+
+        return array_values($flow);
+    }
+
+    /**
      * Recompute the whole chain. shortcut: callers recompute on each page view, cache the last result when the ledger grows.
      *
      * @return int|null seq of the first broken entry, or null when the chain is intact

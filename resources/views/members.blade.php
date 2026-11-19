@@ -2,43 +2,34 @@
     $me = auth()->user();
 @endphp
 <x-layouts.app title="Verifikasi anggota">
-    <header class="flex flex-col gap-2">
-        <div class="flex flex-col gap-2">
-            <div class="flex items-center gap-2 text-xs font-semibold text-muted">
-                <span class="hover:text-black transition-colors">Kas Kelas 1A</span>
-                <span class="text-black/20">/</span>
-                <span class="text-black">Anggota</span>
-                <span class="text-black/20">·</span>
-                <span class="font-normal">{{ now()->translatedFormat('l, d F Y') }}</span>
-            </div>
-        </div>
-    </header>
+    <x-ui.page-header :eyebrow="'Kelola · ' . now()->translatedFormat('l, d F Y')" title="Kelola anggota"
+        description="Verifikasi pendaftar baru, impor data anggota, dan atur status akun kelas." />
 
-    <section aria-label="Ringkasan" class="grid gap-4 sm:grid-cols-3">
-        <div class="flex flex-col gap-1 rounded-2xl border border-line bg-white p-5 shadow-xs">
+    <x-ui.stat-rail grid="md:grid-cols-3">
+        <div class="flex flex-col gap-1 rounded-2xl border border-line bg-surface p-5 shadow-xs">
             <span class="text-xs font-semibold uppercase tracking-wider text-muted">Menunggu verifikasi</span>
             <span
-                class="text-2xl sm:text-3xl font-bold tracking-tight text-black tabular-nums my-1">{{ $pending->count() }}</span>
+                class="text-2xl sm:text-3xl font-semibold tracking-tight text-ink tabular-nums my-1">{{ $pending->count() }}</span>
             <span class="text-xs text-muted">Pendaftar calon anggota</span>
         </div>
-        <div class="flex flex-col gap-1 rounded-2xl border border-line bg-white p-5 shadow-xs">
+        <div class="flex flex-col gap-1 rounded-2xl border border-line bg-surface p-5 shadow-xs">
             <span class="text-xs font-semibold uppercase tracking-wider text-muted">Anggota aktif</span>
             <span
-                class="text-2xl sm:text-3xl font-bold tracking-tight text-[#14532d] tabular-nums my-1">{{ $activeMembers }}</span>
+                class="text-2xl sm:text-3xl font-semibold tracking-tight text-success tabular-nums my-1">{{ $activeMembers }}</span>
             <span class="text-xs text-muted">Dapat ditagih kas</span>
         </div>
-        <div class="flex flex-col gap-1 rounded-2xl border border-line bg-white p-5 shadow-xs">
+        <div class="flex flex-col gap-1 rounded-2xl border border-line bg-surface p-5 shadow-xs">
             <span class="text-xs font-semibold uppercase tracking-wider text-muted">Anggota nonaktif</span>
             <span
-                class="text-2xl sm:text-3xl font-bold tracking-tight text-muted tabular-nums my-1">{{ $inactiveMembers }}</span>
+                class="text-2xl sm:text-3xl font-semibold tracking-tight text-muted tabular-nums my-1">{{ $inactiveMembers }}</span>
             <span class="text-xs text-muted">Akun dinonaktifkan</span>
         </div>
-    </section>
+    </x-ui.stat-rail>
 
     @if (session('import_errors'))
         <div
-            class="flex flex-col gap-2 rounded-2xl border border-amber/30 bg-[#fffbeb] p-5 text-xs text-[#7a4a00] shadow-xs">
-            <div class="flex items-center gap-2 font-bold text-sm text-[#7a4a00]">
+            class="flex flex-col gap-2 rounded-2xl border border-amber/30 bg-surface-2 p-5 text-xs text-warning shadow-xs">
+            <div class="flex items-center gap-2 font-semibold text-sm text-warning">
                 <svg class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
@@ -56,11 +47,11 @@
     <div class="flex flex-wrap items-start gap-6">
 
         <section aria-labelledby="judul-pending"
-            class="relative flex min-w-0 flex-[999_1_30rem] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-xs">
+            class="relative flex min-w-0 flex-[999_1_30rem] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-xs">
 
             <div class="flex items-center justify-between gap-3 border-b border-line px-6 py-5">
                 <div>
-                    <h2 id="judul-pending" class="text-lg font-bold text-black">
+                    <h2 id="judul-pending" class="text-lg font-semibold text-ink">
                         Calon anggota
                     </h2>
                     <p class="mt-1 text-xs text-muted">
@@ -68,14 +59,14 @@
                     </p>
                 </div>
 
-                <span class="rounded-full bg-black/5 px-3 py-1 text-xs font-semibold text-black">
+                <span class="rounded-full bg-ink/5 px-3 py-1 text-xs font-semibold text-ink">
                     {{ $pending->total() }} menunggu
                 </span>
             </div>
 
             {{-- Header --}}
             <div
-                class="grid grid-cols-[36px_minmax(0,1fr)_auto_auto] items-center gap-4 border-b border-line bg-[#fafafa] px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                class="grid grid-cols-[36px_minmax(0,1fr)_auto_auto] items-center gap-4 border-b border-line bg-surface-2 px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted">
                 <div>
                     @if ($me->isAdmin())
                         <input type="checkbox" data-pending-select-all
@@ -89,7 +80,7 @@
             </div>
 
             {{-- Data --}}
-            <div class="divide-y divide-black/5">
+            <div class="divide-y divide-ink/5">
                 @forelse ($pending as $candidate)
                     @php
                         $hoursLeft = (int) floor(now()->diffInHours($candidate->expires_at));
@@ -97,7 +88,7 @@
                     @endphp
 
                     <div
-                        class="grid grid-cols-[36px_minmax(0,1fr)_auto_auto] items-center gap-4 px-6 py-4 transition-colors hover:bg-black/[0.015]">
+                        class="grid grid-cols-[36px_minmax(0,1fr)_auto_auto] items-center gap-4 px-6 py-4 transition-colors hover:bg-surface/[0.015]">
 
                         {{-- Checkbox --}}
                         <div>
@@ -110,13 +101,13 @@
 
                         {{-- Informasi --}}
                         <div class="flex min-w-0 flex-col gap-1">
-                            <span class="truncate text-sm font-semibold text-black">
+                            <span class="truncate text-sm font-semibold text-ink">
                                 {{ $candidate->name }}
                             </span>
 
                             <span class="text-xs text-muted">
                                 No. absen
-                                <span class="font-mono text-black">{{ $candidate->student_no }}</span>
+                                <span class="font-mono text-ink">{{ $candidate->student_no }}</span>
                             </span>
 
                             <span class="truncate text-[11px] text-muted">
@@ -128,7 +119,7 @@
                         <div class="hidden sm:block">
                             <span
                                 class="whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold
-                        {{ $hoursLeft < 24 ? 'border border-[#fecaca] bg-[#fde4e0] text-[#8f1d0e]' : 'bg-black/5 text-[#3d3a37]' }}">
+                        {{ $hoursLeft < 24 ? 'border border-line bg-surface-2 text-danger' : 'bg-ink/5 text-body' }}">
                                 {{ intdiv($hoursLeft, 24) > 0 ? intdiv($hoursLeft, 24) . ' hari ' : '' }}{{ $hoursLeft % 24 }}
                                 jam
                             </span>
@@ -142,7 +133,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
-                                            class="rounded-lg border border-black/15 bg-white px-3 py-2 text-xs font-semibold text-black transition hover:bg-red-50 hover:text-red-700">
+                                            class="rounded-lg border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition hover:bg-red-50 hover:text-red-700">
                                             Tolak
                                         </button>
                                     </form>
@@ -164,13 +155,13 @@
                     </div>
                 @empty
                     <div class="px-6 py-14 text-center">
-                        <div class="mx-auto mb-3 flex size-11 items-center justify-center rounded-full bg-black/5">
+                        <div class="mx-auto mb-3 flex size-11 items-center justify-center rounded-full bg-ink/5">
                             <svg class="size-5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="1.7">
                                 <path d="M9 12l2 2 4-4M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
                             </svg>
                         </div>
-                        <p class="text-sm font-semibold text-black">Tidak ada calon anggota</p>
+                        <p class="text-sm font-semibold text-ink">Tidak ada calon anggota</p>
                         <p class="mt-1 text-xs text-muted">Semua pengajuan sudah diproses.</p>
                     </div>
                 @endforelse
@@ -181,20 +172,20 @@
                 <div class="text-xs text-muted">
                     Menampilkan
                     <span
-                        class="font-semibold text-black">{{ $pending->firstItem() ?? 0 }}–{{ $pending->lastItem() ?? 0 }}</span>
+                        class="font-semibold text-ink">{{ $pending->firstItem() ?? 0 }}–{{ $pending->lastItem() ?? 0 }}</span>
                     dari
-                    <span class="font-semibold text-black">{{ $pending->total() }}</span>
+                    <span class="font-semibold text-ink">{{ $pending->total() }}</span>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <span class="text-xs font-semibold tabular-nums text-black">
+                    <span class="text-xs font-semibold tabular-nums text-ink">
                         {{ $pending->currentPage() }} / {{ max(1, $pending->lastPage()) }}
                     </span>
 
                     <a href="{{ $pending->previousPageUrl() ?? '#' }}" @class([
                         'flex size-9 items-center justify-center rounded-lg border border-line transition',
                         'pointer-events-none opacity-30' => !$pending->previousPageUrl(),
-                        'hover:bg-black/5' => $pending->previousPageUrl(),
+                        'hover:bg-ink/5' => $pending->previousPageUrl(),
                     ])
                         aria-label="Halaman sebelumnya">
                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -205,7 +196,7 @@
                     <a href="{{ $pending->nextPageUrl() ?? '#' }}" @class([
                         'flex size-9 items-center justify-center rounded-lg border border-line transition',
                         'pointer-events-none opacity-30' => !$pending->nextPageUrl(),
-                        'hover:bg-black/5' => $pending->nextPageUrl(),
+                        'hover:bg-ink/5' => $pending->nextPageUrl(),
                     ])
                         aria-label="Halaman berikutnya">
                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -253,7 +244,7 @@
                         </button>
 
                         <button type="submit" form="bulk-pending-form" name="action" value="approve"
-                            class="rounded-xl bg-[#D0FA86] px-3 py-2 text-xs font-bold text-[#00362D] transition hover:bg-[#bde86c]">
+                            class="rounded-xl bg-brand px-3 py-2 text-xs font-semibold text-white transition hover:bg-brand-dark">
                             Approve
                         </button>
                     </div>
@@ -263,29 +254,29 @@
 
         <div class="flex min-w-72 flex-[1_1_20rem] flex-col gap-6">
             <section aria-labelledby="judul-tambah"
-                class="flex flex-col gap-5 rounded-2xl border border-line bg-white p-6 shadow-xs">
+                class="flex flex-col gap-5 rounded-2xl border border-line bg-surface p-6 shadow-xs">
                 <div class="flex flex-col gap-1">
-                    <h2 id="judul-tambah" class="text-lg font-bold text-black">Tambah calon anggota</h2>
+                    <h2 id="judul-tambah" class="text-lg font-semibold text-ink">Tambah calon anggota</h2>
                     <span class="text-xs text-muted">Masuk antrean verifikasi admin.</span>
                 </div>
 
                 <form method="POST" action="{{ route('members.store') }}" class="flex flex-col gap-4">
                     @csrf
                     @foreach ([['name', 'Nama lengkap', 'text', 'Nama sesuai absen'], ['student_no', 'No. absen / NIM', 'text', 'Harus unik'], ['password', 'Password awal (min. 8 karakter)', 'text', 'Diberikan ke anggota']] as [$field, $label, $type, $placeholder])
-                        <label class="flex flex-col gap-1.5 text-xs font-semibold text-black">
+                        <label class="flex flex-col gap-1.5 text-xs font-semibold text-ink">
                             <span>{{ $label }}</span>
                             <input type="{{ $type }}" name="{{ $field }}"
                                 value="{{ $field === 'password' ? '' : old($field) }}"
                                 placeholder="{{ $placeholder }}" required autocomplete="off"
-                                class="min-h-11 rounded-xl border border-black/15 bg-canvas/30 px-3.5 text-sm font-normal text-black placeholder:text-muted/60 transition-all focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20">
+                                class="min-h-9 rounded-xl border border-line bg-canvas/30 px-3 text-sm font-normal text-ink placeholder:text-muted/60 transition-all focus:border-line-strong focus:bg-surface focus:outline-none focus:ring-2 focus:ring-ink/5">
                             @error($field)
                                 <span role="alert"
-                                    class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>
+                                    class="text-xs font-medium text-danger">{{ $message }}</span>
                             @enderror
                         </label>
                     @endforeach
                     <button type="submit"
-                        class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Kirim
+                        class="ui-btn ui-btn-primary">Kirim
                         ke antrean</button>
                 </form>
 
@@ -295,19 +286,19 @@
             </section>
 
             <section aria-labelledby="judul-import"
-                class="flex flex-col gap-5 rounded-2xl border border-line bg-white p-6 shadow-xs">
+                class="flex flex-col gap-5 rounded-2xl border border-line bg-surface p-6 shadow-xs">
                 <div class="flex flex-col gap-1">
-                    <h2 id="judul-import" class="text-lg font-bold text-black">Impor dari Excel / Sheet</h2>
+                    <h2 id="judul-import" class="text-lg font-semibold text-ink">Impor dari Excel / Sheet</h2>
                     <span class="text-xs text-muted">Unggah daftar calon anggota sekaligus.</span>
                 </div>
 
                 <div class="flex items-center justify-between rounded-xl bg-canvas/60 border border-line p-3">
                     <div class="flex flex-col">
-                        <span class="text-xs font-semibold text-black">Format Kolom</span>
+                        <span class="text-xs font-semibold text-ink">Format Kolom</span>
                         <span class="text-[11px] text-muted">Nama, NIM, Password Awal</span>
                     </div>
                     <a href="{{ route('members.template') }}"
-                        class="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white px-2.5 py-1.5 text-xs font-semibold text-brand shadow-2xs hover:bg-canvas transition-colors">
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-ink/10 bg-surface px-2.5 py-1.5 text-xs font-semibold text-brand shadow-2xs hover:bg-canvas transition-colors">
                         <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -320,17 +311,17 @@
                 <form method="POST" action="{{ route('members.import') }}" enctype="multipart/form-data"
                     class="flex flex-col gap-4">
                     @csrf
-                    <label class="flex flex-col gap-1.5 text-xs font-semibold text-black">
+                    <label class="flex flex-col gap-1.5 text-xs font-semibold text-ink">
                         <span>Pilih file (.xlsx, .xls, .csv)</span>
                         <input type="file" name="file" accept=".xlsx,.xlsm,.xls,.csv" required
-                            class="block w-full text-xs text-muted file:mr-3 file:min-h-10 file:rounded-xl file:border file:border-line file:bg-canvas file:px-3 file:py-2 file:text-xs file:font-semibold file:text-black hover:file:bg-black/5 file:cursor-pointer cursor-pointer focus:outline-none">
+                            class="block w-full text-xs text-muted file:mr-3 file:min-h-10 file:rounded-xl file:border file:border-line file:bg-canvas file:px-3 file:py-2 file:text-xs file:font-semibold file:text-ink hover:file:bg-ink/5 file:cursor-pointer cursor-pointer focus:outline-none">
                         @error('file')
-                            <span role="alert" class="text-xs font-medium text-[#8f1d0e]">{{ $message }}</span>
+                            <span role="alert" class="text-xs font-medium text-danger">{{ $message }}</span>
                         @enderror
                     </label>
 
                     <button type="submit"
-                        class="inline-flex min-h-11 items-center justify-center rounded-xl bg-navy px-4 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy">
+                        class="ui-btn ui-btn-primary">
                         Unggah & Impor
                     </button>
                 </form>
@@ -344,13 +335,13 @@
 
     {{-- Daftar Semua Anggota --}}
     <section aria-labelledby="judul-semua-anggota"
-        class="flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-xs">
+        class="flex flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-xs">
 
         {{-- Header & Search --}}
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-5 sm:px-6">
 
             <div>
-                <h2 id="judul-semua-anggota" class="text-lg font-bold text-black">
+                <h2 id="judul-semua-anggota" class="text-lg font-semibold text-ink">
                     Daftar anggota kelas ({{ $users->total() }})
                 </h2>
 
@@ -364,16 +355,16 @@
 
                 <input type="search" name="q" value="{{ $search ?? '' }}"
                     placeholder="Cari nama atau No. absen..."
-                    class="min-h-10 min-w-0 flex-1 rounded-xl border border-black/15 bg-canvas/30 px-3.5 text-xs placeholder:text-muted/60 transition-all focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20 sm:w-56 sm:flex-none">
+                    class="min-h-10 min-w-0 flex-1 rounded-xl border border-line bg-canvas/30 px-3 text-xs placeholder:text-muted/60 transition-all focus:border-line-strong focus:bg-surface focus:outline-none focus:ring-2 focus:ring-ink/5 sm:w-56 sm:flex-none">
 
                 <button type="submit"
-                    class="inline-flex min-h-10 shrink-0 items-center justify-center rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                    class="ui-btn ui-btn-outline shrink-0">
                     Cari
                 </button>
 
                 @if (!empty($search))
                     <a href="{{ route('members.index') }}"
-                        class="inline-flex min-h-10 shrink-0 items-center rounded-xl px-3 text-xs font-semibold text-muted transition-colors hover:text-black">
+                        class="inline-flex min-h-10 shrink-0 items-center rounded-xl px-3 text-xs font-semibold text-muted transition-colors hover:text-ink">
                         Reset
                     </a>
                 @endif
@@ -381,16 +372,16 @@
         </div>
 
         {{-- Data Anggota --}}
-        <div class="divide-y divide-black/5">
+        <div class="divide-y divide-ink/5">
 
             @forelse ($users as $member)
                 <div
-                    class="flex flex-wrap items-center justify-between gap-4 px-4 py-4 transition-colors hover:bg-black/[0.015] sm:px-6">
+                    class="flex flex-wrap items-center justify-between gap-4 px-4 py-4 transition-colors hover:bg-surface/[0.015] sm:px-6">
 
                     {{-- Informasi Anggota --}}
                     <div class="flex min-w-0 items-center gap-4">
 
-                        <div class="inline-flex min-w-16 shrink-0 items-center justify-center rounded-lg bg-canvas px-2.5 py-1 font-mono text-xs font-bold tabular-nums text-muted"
+                        <div class="inline-flex min-w-16 shrink-0 items-center justify-center rounded-lg bg-canvas px-2.5 py-1 font-mono text-xs font-semibold tabular-nums text-muted"
                             aria-hidden="true">
                             {{ $member->student_no ?? '—' }}
                         </div>
@@ -398,7 +389,7 @@
                         <div class="flex min-w-0 flex-col">
                             <span @class([
                                 'break-words text-sm font-semibold',
-                                'text-black' => $member->is_active,
+                                'text-ink' => $member->is_active,
                                 'line-through text-muted' => !$member->is_active,
                             ])>
                                 {{ $member->name }}
@@ -415,11 +406,11 @@
 
                         @if ($member->is_active)
                             <span
-                                class="rounded-full border border-[#bbf7d0] bg-[#dcfce7] px-2.5 py-0.5 text-xs font-semibold text-[#14532d]">
+                                class="ui-tag ui-tag-success">
                                 Aktif
                             </span>
                         @else
-                            <span class="rounded-full bg-black/5 px-2.5 py-0.5 text-xs font-semibold text-muted">
+                            <span class="ui-tag ui-tag-plain">
                                 Nonaktif
                             </span>
                         @endif
@@ -432,7 +423,7 @@
                                     @csrf
 
                                     <button type="submit"
-                                        class="inline-flex min-h-10 items-center justify-center rounded-xl border border-line bg-white px-3 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                        class="ui-btn ui-btn-outline">
                                         {{ $member->role->name == 'Staff' ? 'Nonaktifkan Staff' : 'Aktifkan Staff' }}
                                     </button>
                                 </form>
@@ -442,8 +433,18 @@
                                     @csrf
 
                                     <button type="submit"
-                                        class="inline-flex min-h-10 items-center justify-center rounded-xl border border-line bg-white px-3 text-xs font-semibold text-black shadow-xs transition-colors hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                                        class="ui-btn ui-btn-outline">
                                         {{ $member->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                    </button>
+                                </form>
+
+                                {{-- Reset password: buat password sementara acak --}}
+                                <form method="POST" action="{{ route('members.reset-password', $member) }}">
+                                    @csrf
+
+                                    <button type="submit"
+                                        class="ui-btn ui-btn-outline">
+                                        Reset password
                                     </button>
                                 </form>
 
@@ -454,14 +455,14 @@
 
             @empty
                 <div class="px-6 py-14 text-center">
-                    <div class="mx-auto mb-3 flex size-11 items-center justify-center rounded-full bg-black/5">
+                    <div class="mx-auto mb-3 flex size-11 items-center justify-center rounded-full bg-ink/5">
                         <svg class="size-5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="1.7">
                             <path d="M9 12l2 2 4-4M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
                         </svg>
                     </div>
 
-                    <p class="text-sm font-semibold text-black">
+                    <p class="text-sm font-semibold text-ink">
                         {{ !empty($search) ? 'Anggota tidak ditemukan' : 'Belum ada anggota terdaftar' }}
                     </p>
 
@@ -480,11 +481,11 @@
 
             <div class="text-xs text-muted">
                 Menampilkan
-                <span class="font-semibold text-black">
+                <span class="font-semibold text-ink">
                     {{ $users->firstItem() ?? 0 }}–{{ $users->lastItem() ?? 0 }}
                 </span>
                 dari
-                <span class="font-semibold text-black">
+                <span class="font-semibold text-ink">
                     {{ $users->total() }}
                 </span>
                 anggota
@@ -492,14 +493,14 @@
 
             <div class="flex items-center gap-3">
 
-                <span class="text-xs font-semibold tabular-nums text-black">
+                <span class="text-xs font-semibold tabular-nums text-ink">
                     {{ $users->currentPage() }} / {{ max(1, $users->lastPage()) }}
                 </span>
 
                 <a href="{{ $users->previousPageUrl() ?? '#' }}" @class([
                     'flex size-9 items-center justify-center rounded-lg border border-line transition',
                     'pointer-events-none opacity-30' => !$users->previousPageUrl(),
-                    'hover:bg-black/5' => $users->previousPageUrl(),
+                    'hover:bg-ink/5' => $users->previousPageUrl(),
                 ])
                     aria-label="Halaman sebelumnya">
 
@@ -511,7 +512,7 @@
                 <a href="{{ $users->nextPageUrl() ?? '#' }}" @class([
                     'flex size-9 items-center justify-center rounded-lg border border-line transition',
                     'pointer-events-none opacity-30' => !$users->nextPageUrl(),
-                    'hover:bg-black/5' => $users->nextPageUrl(),
+                    'hover:bg-ink/5' => $users->nextPageUrl(),
                 ])
                     aria-label="Halaman berikutnya">
 

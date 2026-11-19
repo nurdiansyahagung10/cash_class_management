@@ -194,5 +194,5 @@ test('sidebar navigation is full height and sticks on desktop', function () {
 
     $html = $this->actingAs($user)->get(route('dashboard'))->assertOk()->getContent();
 
-    expect($html)->toMatch('/<nav aria-label="Navigasi utama"[^>]*class="[^"]*\bh-screen\b[^"]*\bmd:sticky\b/');
+    expect($html)->toMatch('/<nav id="sidebar-utama" aria-label="Navigasi utama"[^>]*class="[^"]*\bh-dvh\b[^"]*\blg:sticky\b/');
 });

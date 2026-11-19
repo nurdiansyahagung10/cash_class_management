@@ -22,8 +22,42 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PaymentReportController extends Controller
 {
-    public function index(Request $request, Ledger $ledger): View
+    /**
+     * Page sizes offered for the "Ringkasan per periode tagihan" list; the first is the default.
+     *
+     * @var list<int>
+     */
+    public const SUMMARY_PAGE_SIZES = [5, 10, 20];
+
+    /**
+     * Column counts offered for one window of the matrix.
+     *
+     * @var list<int>
+     */
+    public const MATRIX_WINDOW_SIZES = [4, 6, 8, 12];
+
+    /**
+     * Columns per matrix window when none (or an unknown size) is requested.
+     */
+    public const MATRIX_DEFAULT_WINDOW = 6;
+
+    /**
+     * Page shell; the filters, tabs and tables live in the PaymentReport Livewire component so they update without a reload.
+     */
+    public function index(): View
     {
+        return view('reports.payments-page');
+    }
+
+    /**
+     * Everything the report body renders, for the given filter/tab/page state (query names match the URL).
+     *
+     * @return array<string, mixed>
+     */
+    public function reportData(Request $request): array
+    {
+        Invoice::repairStatuses();
+
         $allInvoices = $this->filteredInvoices(
             $request,
             applyStatusFilter: false
@@ -88,15 +122,27 @@ class PaymentReportController extends Controller
                 ];
             });
 
+        $summaryPerPage = in_array($request->integer('rekap_per_page'), self::SUMMARY_PAGE_SIZES, true)
+            ? $request->integer('rekap_per_page')
+            : self::SUMMARY_PAGE_SIZES[0];
+        $summaryPage = LengthAwarePaginator::resolveCurrentPage('rekap_page');
+        $periodSummaries = (new LengthAwarePaginator(
+            $periodSummaries->forPage($summaryPage, $summaryPerPage)->values(),
+            $periodSummaries->count(),
+            $summaryPerPage,
+            $summaryPage,
+            ['path' => LengthAwarePaginator::resolveCurrentPath(), 'pageName' => 'rekap_page']
+        ))->withQueryString();
+
         $activeTab = (string) $request->query('tab', 'detail');
         $bkuData = $activeTab === 'bku' ? $this->buildBkuData($request) : null;
         $matrixData = $activeTab === 'matrix' ? $this->buildMatrixData($request) : null;
 
         // Data Kas Kelas
         $totalExpense = (int) Expense::sum('amount');
-        $realCashBalance = $ledger->balance();
+        $realCashBalance = app(Ledger::class)->balance();
 
-        return view('reports.payments', [
+        return [
             'activeTab' => $activeTab,
             'invoices' => $invoices,
             'periodSummaries' => $periodSummaries,
@@ -120,8 +166,10 @@ class PaymentReportController extends Controller
             'overdueRemaining' => (int) $overdueInvoices->sum(fn (Invoice $inv) => $inv->remainingAmount()),
             'bkuData' => $bkuData,
             'matrixData' => $matrixData,
+            'summaryPageSizes' => self::SUMMARY_PAGE_SIZES,
+            'matrixWindowSizes' => self::MATRIX_WINDOW_SIZES,
             ...$this->signoffData($request),
-        ]);
+        ];
     }
 
     public function export(Request $request): StreamedResponse
@@ -465,10 +513,14 @@ class PaymentReportController extends Controller
     }
 
     /**
-     * Membangun dataset Matriks Rekapitulasi Iuran Siswa (Buku Pembantu Iuran Kas)
+     * Membangun dataset Matriks Rekapitulasi Iuran Siswa (Buku Pembantu Iuran Kas).
+     * With a request: `m_category` limits periods (and every total) to one category, `m_cols` sets the
+     * columns per window and `period_page` picks the window (1 = newest).
      *
      * @return array{
      *     periods: Collection<int, BillingPeriod>,
+     *     hiddenPeriods: int,
+     *     periodWindow: array{page: int, pages: int, total: int, from: int, to: int, size: int, options: list<array{page: int, label: string}>}|null,
      *     rows: array<int, array{no: int, user: User, cells: array<int, array{status: string, paid: int, target: int, remaining: int, is_overdue: bool, invoice_id?: int}>, total_target: int, total_paid: int, total_remaining: int, status: string}>,
      *     periodTotals: array<int, int>,
      *     totalTarget: int,
@@ -476,12 +528,18 @@ class PaymentReportController extends Controller
      *     totalRemaining: int
      * }
      */
-    public function buildMatrixData(?Request $request = null, int $perPage = 25, int $periodLimit = 6): array
+    public function buildMatrixData(?Request $request = null, int $perPage = 25, int $periodLimit = self::MATRIX_DEFAULT_WINDOW): array
     {
+        Invoice::repairStatuses();
+
         $memberQuery = User::payableMembers()
             ->orderByRaw('CAST(student_no AS UNSIGNED) ASC, student_no ASC');
 
-        $allPeriods = BillingPeriod::with('category')->orderBy('id', 'asc')->get();
+        $categoryFilter = $request?->integer('m_category') ?: null;
+        $allPeriods = BillingPeriod::with('category')
+            ->when($categoryFilter, fn ($q) => $q->where('category_id', $categoryFilter))
+            ->orderBy('id', 'asc')
+            ->get();
         $periodsById = $allPeriods->keyBy('id');
 
         // paid_sum is aggregated in SQL, so payment rows are never hydrated.
@@ -494,10 +552,11 @@ class PaymentReportController extends Controller
         Invoice::query()
             ->withSum(['payments as paid_sum' => fn ($q) => $q->where('status', 'paid')], 'amount')
             ->whereHas('user', fn ($q) => $q->where('role', '!=', UserRole::Admin))
+            ->when($categoryFilter, fn ($q) => $q->whereIn('billing_period_id', $allPeriods->pluck('id')))
             ->lazyById(500)
             ->each(function (Invoice $inv) use (&$invoicesMap, &$periodTotals, &$studentTotals, &$overallTarget, &$overallPaid, $periodsById) {
                 $target = (int) $inv->amount;
-                $paid = $inv->status === 'paid' ? $target : min($target, (int) $inv->paid_sum);
+                $paid = min($target, (int) $inv->paid_sum);
                 $inv->setRelation('period', $periodsById[$inv->billing_period_id] ?? null);
 
                 $invoicesMap[$inv->user_id][$inv->billing_period_id] = ['invoice' => $inv, 'paid' => $paid];
@@ -510,6 +569,7 @@ class PaymentReportController extends Controller
 
         $paginator = null;
         $hiddenPeriods = 0;
+        $periodWindow = null;
         $periods = $allPeriods;
 
         if ($request) {
@@ -522,10 +582,33 @@ class PaymentReportController extends Controller
             $members = $paginator->getCollection();
             $firstNo = $paginator->firstItem() ?? 1;
 
-            if (! $request->boolean('all_periods') && $allPeriods->count() > $periodLimit) {
-                $periods = $allPeriods->slice(-$periodLimit)->values();
-                $hiddenPeriods = $allPeriods->count() - $periodLimit;
+            if (in_array($request->integer('m_cols'), self::MATRIX_WINDOW_SIZES, true)) {
+                $periodLimit = $request->integer('m_cols');
             }
+
+            // Kolom periode dibagi per jendela ($periodLimit kolom); halaman 1 = periode terbaru.
+            $periodPages = max(1, (int) ceil($allPeriods->count() / $periodLimit));
+            $periodPage = min($periodPages, max(1, $request->integer('period_page') ?: 1));
+            $end = $allPeriods->count() - ($periodPage - 1) * $periodLimit;
+            $periods = $allPeriods->slice(max(0, $end - $periodLimit), min($periodLimit, $end))->values();
+            $hiddenPeriods = $allPeriods->count() - $periods->count();
+            $periodWindow = [
+                'page' => $periodPage,
+                'pages' => $periodPages,
+                'total' => $allPeriods->count(),
+                'from' => max(1, $end - $periodLimit + 1),
+                'to' => $end,
+                'size' => $periodLimit,
+                'options' => collect($allPeriods->isEmpty() ? [] : range(1, $periodPages))->map(function (int $page) use ($allPeriods, $periodLimit): array {
+                    $to = $allPeriods->count() - ($page - 1) * $periodLimit;
+                    $from = max(1, $to - $periodLimit + 1);
+
+                    return [
+                        'page' => $page,
+                        'label' => "{$from}–{$to}: ".$allPeriods[$from - 1]->title.($from === $to ? '' : ' s/d '.$allPeriods[$to - 1]->title),
+                    ];
+                })->all(),
+            ];
         } else {
             $members = $memberQuery->get();
             $firstNo = 1;
@@ -545,12 +628,17 @@ class PaymentReportController extends Controller
                 }
 
                 $inv = $entry['invoice'];
+                $cellStatus = match (true) {
+                    $entry['paid'] >= (int) $inv->amount => 'paid',
+                    $entry['paid'] > 0 => 'partial',
+                    default => 'unpaid',
+                };
                 $cells[$period->id] = [
-                    'status' => $inv->status,
+                    'status' => $cellStatus,
                     'paid' => $entry['paid'],
                     'target' => (int) $inv->amount,
                     'remaining' => max(0, (int) $inv->amount - $entry['paid']),
-                    'is_overdue' => $inv->status !== 'paid' && (bool) $inv->period?->isPastDue(),
+                    'is_overdue' => $cellStatus !== 'paid' && (bool) $inv->period?->isPastDue(),
                     'invoice_id' => $inv->id,
                 ];
             }
@@ -578,6 +666,7 @@ class PaymentReportController extends Controller
         return [
             'periods' => $periods,
             'hiddenPeriods' => $hiddenPeriods,
+            'periodWindow' => $periodWindow,
             'paginator' => $paginator,
             'rows' => $matrixRows,
             'periodTotals' => $periodTotals,

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\LedgerEntryType;
+use App\Livewire\PaymentReport;
 use App\Models\BillingPeriod;
 use App\Models\Category;
 use App\Models\Expense;
@@ -13,6 +14,7 @@ use App\Services\ManualPaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -535,15 +537,14 @@ test('admin is strictly excluded from billing, payment processing, and cash repo
         ->assertForbidden();
 
     // 4. In reports, admin is excluded from detail breakdown, matrix, and export
-    $reportRes = $this->actingAs($admin)->get(route('reports.payments'));
-    $reportRes->assertOk();
-    $reportInvoices = $reportRes->viewData('invoices');
+    $this->actingAs($admin)->get(route('reports.payments'))->assertOk();
+    $report = Livewire::actingAs($admin)->test(PaymentReport::class);
+    $reportInvoices = $report->viewData('invoices');
     expect($reportInvoices->pluck('user_id'))->not->toContain($admin->id);
 
     // Matrix view: admin has no row in student matrix
-    $matrixRes = $this->actingAs($admin)->get(route('reports.payments', ['tab' => 'matrix']));
-    $matrixRes->assertOk();
-    $matrixData = $matrixRes->viewData('matrixData');
+    $this->actingAs($admin)->get(route('reports.payments', ['tab' => 'matrix']))->assertOk();
+    $matrixData = $report->call('showTab', 'matrix')->viewData('matrixData');
     $matrixUserIds = collect($matrixData['rows'])->pluck('user.id');
     expect($matrixUserIds)->not->toContain($admin->id)
         ->and($matrixUserIds)->toContain($student->id);
@@ -682,4 +683,102 @@ test('report pdf renders for every tab and matrix/bku tabs paginate', function (
         ->assertSee('1–25')
         ->assertSee('dari')
         ->assertSee('anggota');
+});
+
+test('matrix shows periods in windows and the period summary is paginated', function () {
+    $admin = User::factory()->admin()->create();
+    User::factory()->create();
+    BillingPeriod::factory()->count(8)->create();
+
+    $this->actingAs($admin)->get('/reports/payments?tab=matrix')
+        ->assertOk()
+        ->assertSee('3–8')
+        ->assertSee('period_page=2', false);
+
+    $this->actingAs($admin)->get('/reports/payments?tab=matrix&period_page=2')
+        ->assertOk()
+        ->assertSee('1–2');
+
+    $this->actingAs($admin)->get('/reports/payments')
+        ->assertOk()
+        ->assertSee('1–5')
+        ->assertSee('rekap_page=2', false);
+});
+
+test('matrix filters period columns and totals by category and window size', function () {
+    $admin = User::factory()->admin()->create();
+    $member = User::factory()->create();
+    $kas = Category::create(['name' => 'Kas Rutin']);
+    $makrab = Category::create(['name' => 'Dana Makrab']);
+    $kasPeriods = BillingPeriod::factory()->count(5)->create(['category_id' => $kas->id]);
+    $makrabPeriod = BillingPeriod::factory()->create(['category_id' => $makrab->id, 'title' => 'Iuran Makrab', 'amount' => 50000]);
+
+    $kasPeriods->each(fn (BillingPeriod $period) => Invoice::factory()->create(['user_id' => $member->id, 'billing_period_id' => $period->id]));
+    Invoice::factory()->create(['user_id' => $member->id, 'billing_period_id' => $makrabPeriod->id, 'amount' => 50000]);
+
+    $this->actingAs($admin)->get(route('reports.payments', ['tab' => 'matrix', 'm_category' => $kas->id, 'm_cols' => 4]))
+        ->assertOk()
+        ->assertDontSee('Iuran Makrab')
+        ->assertSee('2–5');
+
+    Livewire::actingAs($admin)
+        ->withQueryParams(['tab' => 'matrix', 'm_category' => (string) $kas->id, 'm_cols' => '4'])
+        ->test(PaymentReport::class)
+        ->assertViewHas('matrixData', fn (array $data) => $data['periods']->count() === 4
+            && $data['periods']->every(fn (BillingPeriod $period) => $period->category_id === $kas->id)
+            && $data['totalRemaining'] === 50000
+            && count($data['periodWindow']['options']) === 2)
+        // Changing the filters in place drops back to every category and the default window.
+        ->set('matrixCategory', '')
+        ->set('matrixColumns', '99')
+        ->assertViewHas('matrixData', fn (array $data) => $data['periodWindow']['size'] === 6
+            && $data['totalRemaining'] === 100000);
+});
+
+test('period summary page size follows the allowed choices only', function () {
+    $admin = User::factory()->admin()->create();
+    BillingPeriod::factory()->count(12)->create();
+
+    $this->actingAs($admin)->get(route('reports.payments', ['rekap_per_page' => 10]))
+        ->assertOk()
+        ->assertSee('1–10');
+
+    Livewire::actingAs($admin)
+        ->test(PaymentReport::class)
+        ->set('summaryPerPage', '10')
+        ->assertViewHas('periodSummaries', fn ($summaries) => $summaries->perPage() === 10 && $summaries->count() === 10)
+        ->set('summaryPerPage', '500')
+        ->assertViewHas('periodSummaries', fn ($summaries) => $summaries->perPage() === 5);
+});
+
+test('report filters, tabs and paging update in place for staff and are refused for members', function () {
+    $admin = User::factory()->admin()->create();
+    $kas = Category::create(['name' => 'Kas Rutin']);
+    $event = Category::create(['name' => 'Dana Acara']);
+    $kasPeriod = BillingPeriod::factory()->create(['category_id' => $kas->id, 'title' => 'Kas Pekan Satu']);
+    $eventPeriod = BillingPeriod::factory()->create(['category_id' => $event->id, 'title' => 'Iuran Pentas']);
+    User::factory()->count(12)->create()->each(function (User $member) use ($kasPeriod, $eventPeriod) {
+        Invoice::factory()->create(['user_id' => $member->id, 'billing_period_id' => $kasPeriod->id]);
+        Invoice::factory()->create(['user_id' => $member->id, 'billing_period_id' => $eventPeriod->id]);
+    });
+
+    Livewire::actingAs($admin)
+        ->test(PaymentReport::class)
+        ->assertViewHas('invoices', fn ($invoices) => $invoices->total() === 24)
+        ->call('gotoPage', 2, 'invoice_page')
+        ->assertViewHas('invoices', fn ($invoices) => $invoices->currentPage() === 2)
+        // A new filter narrows the list, refreshes the totals and returns to the first page.
+        ->set('categoryId', (string) $event->id)
+        ->assertViewHas('invoices', fn ($invoices) => $invoices->total() === 12 && $invoices->currentPage() === 1)
+        ->assertViewHas('totalExpected', 12 * 10000)
+        ->call('filterStatus', 'paid')
+        ->assertViewHas('invoices', fn ($invoices) => $invoices->total() === 0)
+        ->assertSee(route('reports.payments.pdf', ['category_id' => $event->id, 'status' => 'paid', 'tab' => 'detail']))
+        ->call('showTab', 'matrix')
+        ->assertSet('tab', 'matrix')
+        ->assertViewHas('matrixData', fn (?array $data) => $data !== null);
+
+    Livewire::actingAs(User::factory()->create())
+        ->test(PaymentReport::class)
+        ->assertForbidden();
 });

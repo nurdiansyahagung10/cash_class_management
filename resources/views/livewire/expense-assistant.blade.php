@@ -27,7 +27,7 @@
 
     {{-- Launcher --}}
     <button type="button" x-show="! open" x-transition.opacity x-on:click="open = true; $nextTick(() => $refs.input?.focus())"
-        class="fixed bottom-5 right-5 z-30 inline-flex h-10 items-center gap-2 rounded-full border border-line bg-surface-2 pl-3 pr-2 text-[13px] font-medium text-ink shadow-lg transition-colors hover:border-line-strong hover:bg-surface-3">
+        class="fixed bottom-5 right-5 z-30 inline-flex h-10 items-center gap-2 rounded-full border border-line bg-surface-2 pl-3 pr-2 text-[13px] font-medium text-ink shadow-md transition-colors hover:border-line-strong hover:bg-surface-3">
         <span class="flex size-5 items-center justify-center rounded-full bg-brand text-white" aria-hidden="true">
             <svg class="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5 9.5 6.5 14.5 8 9.5 9.5 8 14.5 6.5 9.5 1.5 8 6.5 6.5Z" /></svg>
         </span>

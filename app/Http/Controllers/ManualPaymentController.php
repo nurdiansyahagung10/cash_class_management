@@ -37,7 +37,7 @@ class ManualPaymentController extends Controller
             return redirect()->route('dashboard')->with('status', self::COMBINED_LOCK_MESSAGE);
         }
 
-        $invoice->load(['user', 'period.category', 'payments' => fn ($q) => $q->latest('id')]);
+        $invoice->load(['user', 'period.category', 'payments' => fn($q) => $q->latest('id')]);
         $remainingAmount = $invoice->remainingAmount();
         $paidAmount = $invoice->paidAmount();
         $paidPayments = $invoice->payments->where('status', 'paid')->values();
@@ -51,9 +51,9 @@ class ManualPaymentController extends Controller
 
         $uri = $this->resolveQrContent($invoice->period->qris_url, $targetAmount, $qrisService);
 
-        if (! $pendingPayment) {
+        if (!$pendingPayment) {
             $existingCount = $invoice->payments()->count();
-            $orderId = $existingCount === 0 ? 'KAS-'.$invoice->id : 'KAS-'.$invoice->id.'-'.($existingCount + 1);
+            $orderId = $existingCount === 0 ? 'KAS-' . $invoice->id : 'KAS-' . $invoice->id . '-' . ($existingCount + 1);
 
             $payment = $invoice->payments()->create([
                 'order_id' => $orderId,
@@ -71,7 +71,7 @@ class ManualPaymentController extends Controller
             if ($payment->qr_content !== $uri && $uri !== null) {
                 $updates['qr_content'] = $uri;
             }
-            if (! $payment->category_id && $invoice->period->category_id) {
+            if (!$payment->category_id && $invoice->period->category_id) {
                 $updates['category_id'] = $invoice->period->category_id;
             }
             if ($updates !== []) {
@@ -79,7 +79,7 @@ class ManualPaymentController extends Controller
             }
         }
 
-        $isAssisting = $isStaff && ! $isOwner;
+        $isAssisting = $isStaff && !$isOwner;
 
         $combinableCount = $this->payableInvoices($invoice->user)->count();
 
@@ -107,7 +107,7 @@ class ManualPaymentController extends Controller
 
         if ($invoice->isOverdue() && $requestedAmount < $remainingAmount) {
             return back()->withErrors([
-                'amount' => 'Masa tenggat sudah lewat. Fitur menyicil ditutup, wajib melunasi sisa tagihan penuh sebesar Rp'.number_format($remainingAmount, 0, ',', '.').'.',
+                'amount' => 'Masa tenggat sudah lewat. Fitur menyicil ditutup, wajib melunasi sisa tagihan penuh sebesar Rp' . number_format($remainingAmount, 0, ',', '.') . '.',
             ])->withInput();
         }
 
@@ -120,9 +120,9 @@ class ManualPaymentController extends Controller
         $uri = $this->resolveQrContent($invoice->period->qris_url, $targetAmount, $qrisService);
 
         $payment = $invoice->payments()->where('status', 'pending')->latest('id')->first();
-        if (! $payment) {
+        if (!$payment) {
             $existingCount = $invoice->payments()->count();
-            $orderId = $existingCount === 0 ? 'KAS-'.$invoice->id : 'KAS-'.$invoice->id.'-'.($existingCount + 1);
+            $orderId = $existingCount === 0 ? 'KAS-' . $invoice->id : 'KAS-' . $invoice->id . '-' . ($existingCount + 1);
             $invoice->payments()->create([
                 'order_id' => $orderId,
                 'amount' => $targetAmount,
@@ -137,10 +137,10 @@ class ManualPaymentController extends Controller
         }
 
         $label = $targetAmount < $remainingAmount
-            ? 'Nominal cicilan diatur ke Rp'.number_format($targetAmount, 0, ',', '.').'.'
-            : 'Nominal diatur ke pelunasan penuh Rp'.number_format($targetAmount, 0, ',', '.').'.';
+            ? 'Nominal cicilan diatur ke Rp' . number_format($targetAmount, 0, ',', '.') . '.'
+            : 'Nominal diatur ke pelunasan penuh Rp' . number_format($targetAmount, 0, ',', '.') . '.';
 
-        if ($isStaff && ! $isOwner) {
+        if ($isStaff && !$isOwner) {
             $label = "[Mode Bendahara] {$label} untuk siswa {$invoice->user->name}.";
         }
 
@@ -169,7 +169,7 @@ class ManualPaymentController extends Controller
             $requestedAmount = (int) $request->input('amount');
             if ($invoice->isOverdue() && $requestedAmount < $remainingAmount) {
                 return back()->withErrors([
-                    'amount' => 'Masa tenggat sudah lewat. Fitur menyicil ditutup, wajib melunasi sisa tagihan penuh sebesar Rp'.number_format($remainingAmount, 0, ',', '.').'.',
+                    'amount' => 'Masa tenggat sudah lewat. Fitur menyicil ditutup, wajib melunasi sisa tagihan penuh sebesar Rp' . number_format($remainingAmount, 0, ',', '.') . '.',
                 ])->withInput();
             }
         }
@@ -190,14 +190,14 @@ class ManualPaymentController extends Controller
         }
 
         $gatewayData = $payment?->gateway_response ?? [];
-        if ($isStaff && ! $isOwner) {
+        if ($isStaff && !$isOwner) {
             $gatewayData['paid_by_staff_id'] = $request->user()->id;
             $gatewayData['paid_by_staff_name'] = $request->user()->name;
         }
 
-        if (! $payment) {
+        if (!$payment) {
             $existingCount = $invoice->payments()->count();
-            $orderId = $existingCount === 0 ? 'KAS-'.$invoice->id : 'KAS-'.$invoice->id.'-'.($existingCount + 1);
+            $orderId = $existingCount === 0 ? 'KAS-' . $invoice->id : 'KAS-' . $invoice->id . '-' . ($existingCount + 1);
             $payment = $invoice->payments()->create([
                 'order_id' => $orderId,
                 'amount' => $targetAmount,
@@ -216,7 +216,7 @@ class ManualPaymentController extends Controller
             ]);
         }
 
-        $msg = ($isStaff && ! $isOwner)
+        $msg = ($isStaff && !$isOwner)
             ? "Bukti pembayaran atas nama {$invoice->user->name} berhasil dikirim oleh bendahara ({$request->user()->name}). Menunggu verifikasi admin."
             : 'Bukti pembayaran dikirim. Menunggu verifikasi admin.';
 
@@ -252,9 +252,9 @@ class ManualPaymentController extends Controller
         ]);
 
         $payable = $this->payableInvoices($invoice->user)->keyBy('id');
-        $ids = collect($validated['ids'])->map(fn ($id) => (int) $id)->unique()->values();
+        $ids = collect($validated['ids'])->map(fn($id) => (int) $id)->unique()->values();
 
-        if ($ids->contains(fn (int $id) => ! $payable->has($id))) {
+        if ($ids->contains(fn(int $id) => !$payable->has($id))) {
             return back()->withErrors(['ids' => 'Sebagian tagihan sudah lunas atau sedang menunggu verifikasi. Muat ulang halaman lalu pilih lagi.']);
         }
 
@@ -290,12 +290,12 @@ class ManualPaymentController extends Controller
                 $existingCount = $item->payments()->count();
                 $item->payments()->create([
                     ...$attributes,
-                    'order_id' => $existingCount === 0 ? 'KAS-'.$item->id : 'KAS-'.$item->id.'-'.($existingCount + 1),
+                    'order_id' => $existingCount === 0 ? 'KAS-' . $item->id : 'KAS-' . $item->id . '-' . ($existingCount + 1),
                 ]);
             }
         });
 
-        return redirect()->route('dashboard')->with('status', "Bukti pembayaran sekaligus untuk {$ids->count()} tagihan (Rp".number_format($total, 0, ',', '.').') dikirim. Menunggu verifikasi admin.');
+        return redirect()->route('dashboard')->with('status', "Bukti pembayaran sekaligus untuk {$ids->count()} tagihan (Rp" . number_format($total, 0, ',', '.') . ') dikirim. Menunggu verifikasi admin.');
     }
 
     /**
@@ -360,23 +360,23 @@ class ManualPaymentController extends Controller
         $categoryId = $request->integer('category_id') ?: null;
         $search = trim((string) $request->query('q'));
 
-        $filtered = fn (string $status) => Payment::query()
+        $filtered = fn(string $status) => Payment::query()
             ->where('status', $status)
-            ->when($status === 'pending', fn ($q) => $q->whereNotNull('proof_path')->where(
-                fn ($w) => $w->whereNull('batch_key')->orWhereIn('id', Payment::query()->selectRaw('MIN(id)')->where('status', 'pending')->whereNotNull('batch_key')->groupBy('batch_key'))
+            ->when($status === 'pending', fn($q) => $q->whereNotNull('proof_path')->where(
+                fn($w) => $w->whereNull('batch_key')->orWhereIn('id', Payment::query()->selectRaw('MIN(id)')->where('status', 'pending')->whereNotNull('batch_key')->groupBy('batch_key'))
             ))
-            ->when($periodId, fn ($q) => $q->whereHas('invoice', fn ($i) => $i->where('billing_period_id', $periodId)))
-            ->when($categoryId, fn ($q) => $q->where(
-                fn ($w) => $w->where('category_id', $categoryId)
-                    ->orWhereHas('invoice.period', fn ($p) => $p->where('category_id', $categoryId))
+            ->when($periodId, fn($q) => $q->whereHas('invoice', fn($i) => $i->where('billing_period_id', $periodId)))
+            ->when($categoryId, fn($q) => $q->where(
+                fn($w) => $w->where('category_id', $categoryId)
+                    ->orWhereHas('invoice.period', fn($p) => $p->where('category_id', $categoryId))
             ))
-            ->when($search !== '', fn ($q) => $q->whereHas('invoice.user', fn ($u) => $u->where(
-                fn ($w) => $w->where('name', 'like', "%{$search}%")->orWhere('student_no', 'like', "%{$search}%")
+            ->when($search !== '', fn($q) => $q->whereHas('invoice.user', fn($u) => $u->where(
+                fn($w) => $w->where('name', 'like', "%{$search}%")->orWhere('student_no', 'like', "%{$search}%")
             )));
 
         $payments = $filtered($tab === 'approved' ? 'paid' : 'pending')
             ->with(['invoice.user', 'invoice.period.category', 'category', 'reviewer'])
-            ->when($tab === 'approved', fn ($q) => $q->orderByDesc('reviewed_at')->orderByDesc('id'), fn ($q) => $q->latest())
+            ->when($tab === 'approved', fn($q) => $q->orderByDesc('reviewed_at')->orderByDesc('id'), fn($q) => $q->latest())
             ->paginate(8)
             ->withQueryString();
 
@@ -399,7 +399,7 @@ class ManualPaymentController extends Controller
     public function approve(Payment $payment, Request $request, ManualPaymentService $service): RedirectResponse
     {
 
-        abort_if($payment->needsAdminReview() && ! $request->user()->isAdmin(), 403, 'Pembayaran staf hanya dapat diverifikasi oleh admin.');
+        abort_if($payment->needsAdminReview() && !$request->user()->isAdmin(), 403, 'Pembayaran staf hanya dapat diverifikasi oleh admin.');
 
         $batch = $this->batchOf($payment);
         DB::transaction(function () use ($batch, $service, $request) {
@@ -416,7 +416,7 @@ class ManualPaymentController extends Controller
     public function reject(Payment $payment, Request $request): RedirectResponse
     {
 
-        abort_if($payment->needsAdminReview() && ! $request->user()->isAdmin(), 403, 'Pembayaran staf hanya dapat diproses oleh admin.');
+        abort_if($payment->needsAdminReview() && !$request->user()->isAdmin(), 403, 'Pembayaran staf hanya dapat diproses oleh admin.');
 
         if ($payment->isPaid()) {
             return back()->with('error', 'Pembayaran yang sudah lunas tidak dapat ditolak.');
@@ -446,7 +446,7 @@ class ManualPaymentController extends Controller
         }
 
         return back()->with('status', $batch->count() > 1
-            ? 'Bukti pembayaran sekaligus ditolak untuk '.$batch->count().' tagihan. Anggota dapat mengunggah bukti baru.'
+            ? 'Bukti pembayaran sekaligus ditolak untuk ' . $batch->count() . ' tagihan. Anggota dapat mengunggah bukti baru.'
             : 'Bukti pembayaran ditolak. Anggota dapat mengunggah bukti baru.');
     }
 }

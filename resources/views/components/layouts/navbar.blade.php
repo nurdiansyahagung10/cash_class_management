@@ -41,7 +41,7 @@
         <div class="flex min-h-full flex-col px-2 py-2.5">
             {{-- Workspace row --}}
             <div class="flex items-center justify-between gap-1 pb-3">
-                <a href="{{ route('dashboard') }}" class="flex min-h-8 min-w-0 items-center gap-2 rounded-lg px-2 transition-colors hover:bg-ink/[0.06]">
+                <a href="{{ route('dashboard') }}" class="flex min-h-8 min-w-0 items-center gap-2 rounded-lg px-2">
                     <span class="flex size-5 shrink-0 items-center justify-center rounded-[5px] bg-brand text-[10px] font-semibold text-white" aria-hidden="true">K</span>
                     <span class="truncate text-[13px] font-semibold text-ink">Kas Kelas 1A</span>
                 </a>

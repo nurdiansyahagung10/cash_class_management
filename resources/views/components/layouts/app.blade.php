@@ -67,13 +67,20 @@
 <body class="bg-canvas font-sans text-ink antialiased">
     @include('components.layouts.navbar')
     {{-- Main Content Column --}}
-    <div class="flex min-w-0 flex-1 flex-col">
+    <div class="flex min-w-0 flex-1 flex-col lg:h-dvh">
     @include('components.layouts.panel-topbar', ['title' => $title])
+    {{--
+        Content panel (desktop): fixed to the viewport height, only the inner element scrolls.
+        The rounded frame clips (overflow-hidden + contain:paint) so the scroller and its scrollbar
+        can never paint past the corners, which Chrome otherwise does for scrolling layers.
+    --}}
+    <div class="flex min-h-0 min-w-0 flex-1 flex-col bg-panel lg:mb-2 lg:mr-2 lg:overflow-hidden lg:rounded-xl lg:border lg:border-line lg:shadow-xs lg:[contain:paint]">
+    <div data-content-scroll class="flex min-h-0 flex-1 flex-col lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-width:thin] lg:[scrollbar-color:var(--color-line-strong)_transparent]">
     <main id="konten-utama" tabindex="-1"
         class="mx-auto flex w-full min-w-0 max-w-[1400px] flex-1 flex-col gap-6 px-4 pb-10 pt-4 sm:gap-8 sm:px-6 lg:px-10 lg:pt-8 focus-visible:outline-none">
         @if (session('status'))
             <div role="status"
-                class="flex items-center gap-3 rounded-xl border border-line bg-surface-2 px-4 py-3 text-sm font-medium text-success">
+                class="flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 text-sm font-medium text-success shadow-xs">
                 <svg class="size-5 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -85,7 +92,7 @@
 
         @if (session('error'))
             <div role="alert"
-                class="flex items-center gap-3 rounded-xl border border-line bg-surface-2 px-4 py-3 text-sm font-medium text-danger">
+                class="flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 text-sm font-medium text-danger shadow-xs">
                 <svg class="size-5 shrink-0 text-danger" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -97,6 +104,8 @@
 
             {{ $slot }}
     </main>
+    </div>
+    </div>
     </div>
     </div>
     @include('components.layouts.backdrop')
@@ -178,6 +187,41 @@
 
         // State awal tanpa animasi
         withoutTransition(() => setOpen(mobileMq.matches ? false : isOpen()));
+
+        // Filter menu sidebar; Ctrl/⌘ K fokus ke kolom cari, Enter buka hasil pertama
+        const filter = sidebar.querySelector('[data-nav-filter]');
+        if (filter) {
+            const links = [...sidebar.querySelectorAll('[data-nav-link]')];
+            const visibleLinks = () => links.filter(link => !link.hidden);
+
+            filter.addEventListener('input', () => {
+                const query = filter.value.trim().toLowerCase();
+                links.forEach(link => {
+                    link.hidden = query !== '' && !link.querySelector('[data-nav-label]').textContent.toLowerCase().includes(query);
+                });
+                sidebar.querySelectorAll('[data-nav-group]').forEach(group => {
+                    group.hidden = !group.querySelector('[data-nav-link]:not([hidden])');
+                    if (query !== '') group.open = true;
+                });
+            });
+
+            filter.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') visibleLinks()[0]?.click();
+                if (e.key === 'Escape') {
+                    filter.value = '';
+                    filter.dispatchEvent(new Event('input'));
+                    filter.blur();
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                    e.preventDefault();
+                    if (mobileMq.matches && !isOpen()) setOpen(true);
+                    filter.focus();
+                }
+            });
+        }
     });
 </script>
 </body>

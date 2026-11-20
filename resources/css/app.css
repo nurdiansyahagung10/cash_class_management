@@ -6,7 +6,8 @@
 @custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
 
 /*
- * Design tokens: Linear-inspired layout and surfaces, blue accent, quiet status colors.
+ * Design tokens (dark set; light overrides below): near-black, slightly cool palette (cards barely lift off the panel),
+ * vivid blue accent, tinted status chips.
  * Hierarchy comes from a surface ladder + hairlines, not shadows.
  * Legacy names (canvas, line, muted, brand, navy) are kept so older markup follows along.
  */
@@ -15,41 +16,73 @@
     --font-serif: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-    --color-canvas: #08090a;
-    --color-surface: #141518;
-    --color-surface-2: #1a1b1e;
-    --color-surface-3: #212226;
-    --color-canvas-2: #1a1b1e;
-    --color-line: #26272b;
-    --color-line-strong: #3a3c41;
-    --color-ink: #ededef;
-    --color-body: #c8cad0;
-    --color-muted: #8b8e96;
-    --color-faint: #5f6269;
-    --color-brand: #2f86eb;
-    --color-brand-dark: #4596f0;
-    --color-brand-soft: #0f2033;
-    --color-navy: #212226;
+    --color-canvas: #0c0c0e;
+    --color-surface: #121214;
+    --color-surface-2: #161618;
+    --color-surface-3: #1d1d20;
+    --color-canvas-2: #18181b;
+    --color-line: #222226;
+    --color-line-strong: #34343a;
+    --color-ink: #f4f4f5;
+    --color-body: #c6c6cb;
+    --color-muted: #8b8b93;
+    --color-faint: #5d5d65;
+    --color-brand: #1f7bf2;
+    --color-brand-dark: #3d8ff5;
+    --color-brand-soft: #0e1e35;
+    --color-navy: #1d1d20;
     --color-amber: #c69026;
-    --color-link: #539bf5;
+    --color-link: #5aa2f7;
 
     /* Status colors: used as text/dots on neutral chips, never as pastel fills. */
-    --color-success: #57ab5a;
+    --color-success: #3fbf6f;
     --color-warning: #c69026;
-    --color-danger: #e5534b;
-    --color-info: #539bf5;
+    --color-danger: #f0645a;
+    --color-info: #4a9bf5;
 
     /* Chart series (validated for CVD + contrast per theme). */
-    --color-chart-in: #2f86eb;
+    --color-chart-in: #1f7bf2;
     --color-chart-out: #c2702e;
 
     /* Barely-there depth; lifts are carried by surface steps and hairlines. */
+    /* Soft, layered shadows: a faint top highlight plus a wide low-opacity blur, never a dark smudge. */
     --shadow-2xs: 0 1px 0 rgb(255 255 255 / 0.02) inset;
     --shadow-xs: 0 1px 0 rgb(255 255 255 / 0.03) inset;
-    --shadow-sm: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 4px 12px rgb(0 0 0 / 0.3);
-    --shadow-md: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 8px 24px rgb(0 0 0 / 0.4);
-    --shadow-lg: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 16px 40px rgb(0 0 0 / 0.55);
+    --shadow-sm: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 2px 8px rgb(0 0 0 / 0.14);
+    --shadow-md: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 4px 16px rgb(0 0 0 / 0.18);
+    --shadow-lg: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 8px 28px rgb(0 0 0 / 0.22);
+    --shadow-xl: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 36px rgb(0 0 0 / 0.26);
+    --shadow-2xl: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 18px 48px rgb(0 0 0 / 0.3);
     --color-danger-solid: #c93c37;
+
+    /* Content panel, primary action and tinted status chips. */
+    --color-panel: #0f0f11;
+    --color-primary: #ededef;
+    --color-primary-hover: #ffffff;
+    --color-on-primary: #0c0c0e;
+    --color-success-soft: #0f2819;
+    --color-warning-soft: #2a2010;
+    --color-danger-soft: #2c1412;
+    --color-info-soft: #0e1e35;
+    --color-success-ink: #4cc97a;
+    --color-warning-ink: #e6b04a;
+    --color-danger-ink: #f27a70;
+    --color-info-ink: #5aa2f7;
+}
+
+/*
+ * Solid icon-tile colors (the colored squares on cards and the topbar). Plain :root vars, not @theme,
+ * because they are picked at runtime through inline `--tile` styles that Tailwind can't see.
+ */
+:root {
+    --color-tile-orange: #f59e2b;
+    --color-tile-coral: #f2704a;
+    --color-tile-pink: #e5679a;
+    --color-tile-purple: #8b6cf0;
+    --color-tile-blue: #2a9df4;
+    --color-tile-indigo: #5b6ee8;
+    --color-tile-green: #22a06b;
+    --color-tile-gray: #8b8e96;
 }
 
 @layer base {
@@ -99,35 +132,49 @@
  */
 :root[data-theme='light'] {
     color-scheme: light;
-    --color-canvas: #f3f4f6;
+    --color-canvas: #f7f7f8;
     --color-surface: #ffffff;
-    --color-surface-2: #f6f7f8;
-    --color-surface-3: #eeeff1;
-    --color-canvas-2: #f6f7f8;
-    --color-line: #e4e5e8;
-    --color-line-strong: #c6c8ce;
-    --color-ink: #1c1d20;
-    --color-body: #3d4047;
-    --color-muted: #6b6e76;
-    --color-faint: #9a9da4;
+    --color-surface-2: #f8f8f9;
+    --color-surface-3: #f1f1f3;
+    --color-canvas-2: #f4f4f5;
+    --color-panel: #fcfcfc;
+    --color-line: #e8e8eb;
+    --color-line-strong: #d4d4d8;
+    --color-ink: #18181b;
+    --color-body: #3f3f46;
+    --color-muted: #71717a;
+    --color-faint: #a1a1aa;
+    --color-primary: #18181b;
+    --color-primary-hover: #3f3f46;
+    --color-on-primary: #ffffff;
     --color-brand-dark: #005bb0;
-    --color-brand-soft: #e6f3fe;
-    --color-navy: #eeeff1;
-    --color-amber: #9a6700;
-    --color-link: #0062c2;
-    --color-success: #1a7f37;
-    --color-warning: #9a6700;
-    --color-danger: #cf222e;
-    --color-info: #0969da;
-    --color-chart-in: #0075de;
+    --color-brand-soft: #e6f1fe;
+    --color-navy: #f1f1f3;
+    --color-amber: #a16207;
+    --color-link: #0a6ad6;
+    --color-success: #15803d;
+    --color-warning: #a16207;
+    --color-danger: #dc2626;
+    --color-info: #0a76eb;
+    --color-success-soft: #dcf5e7;
+    --color-warning-soft: #fff1c2;
+    --color-danger-soft: #ffe4dc;
+    --color-info-soft: #e0efff;
+    --color-success-ink: #157347;
+    --color-warning-ink: #8a5a00;
+    --color-danger-ink: #c2410c;
+    --color-info-ink: #0a63c9;
+    --color-chart-in: #0a76eb;
     --color-chart-out: #c2702e;
-    --shadow-2xs: 0 1px 1px rgb(0 0 0 / 0.03);
-    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.04);
-    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px rgb(0 0 0 / 0.04);
-    --shadow-md: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 24px rgb(0 0 0 / 0.06);
-    --shadow-lg: 0 1px 2px rgb(0 0 0 / 0.05), 0 16px 40px rgb(0 0 0 / 0.1);
-    --color-brand: #0075de;
-    --color-danger-solid: #cf222e;
+    --shadow-2xs: 0 1px 1px rgb(24 24 27 / 0.02);
+    --shadow-xs: 0 1px 2px rgb(24 24 27 / 0.03);
+    --shadow-sm: 0 1px 2px rgb(24 24 27 / 0.03), 0 2px 8px rgb(24 24 27 / 0.03);
+    --shadow-md: 0 1px 2px rgb(24 24 27 / 0.03), 0 4px 16px rgb(24 24 27 / 0.05);
+    --shadow-lg: 0 1px 3px rgb(24 24 27 / 0.03), 0 8px 28px rgb(24 24 27 / 0.06);
+    --shadow-xl: 0 2px 4px rgb(24 24 27 / 0.03), 0 12px 36px rgb(24 24 27 / 0.07);
+    --shadow-2xl: 0 2px 6px rgb(24 24 27 / 0.03), 0 18px 48px rgb(24 24 27 / 0.09);
+    --color-brand: #0a76eb;
+    --color-danger-solid: #dc2626;
 }
 
 /* Printed reports stay black on white. */
@@ -152,7 +199,7 @@
 
 /* ---- Primitives (used by the x-ui.* Blade components) ---- */
 @utility ui-card {
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-xl);
     border: 1px solid var(--color-line);
     background-color: var(--color-surface);
     box-shadow: var(--shadow-xs);
@@ -162,8 +209,69 @@
     font-size: 12px;
     line-height: 16px;
     font-weight: 500;
-    letter-spacing: 0.03em;
     color: var(--color-muted);
+}
+
+/* Small tinted label above a card or heading ("● Ringkasan"); tone via --chip-bg / --chip-ink. */
+@utility ui-label-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3125rem;
+    height: 1.25rem;
+    padding-inline: 0.375rem;
+    border-radius: 0.3125rem;
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 500;
+    color: var(--chip-ink, var(--color-success-ink));
+    background-color: var(--chip-bg, var(--color-success-soft));
+    white-space: nowrap;
+
+    &::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 9999px;
+        background-color: currentColor;
+        flex-shrink: 0;
+    }
+}
+
+/* Solid rounded square holding a white icon; color comes from --tile. */
+@utility ui-tile {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.4375rem;
+    color: #fff;
+    background-color: var(--tile, var(--color-tile-blue));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 1px 2px rgb(0 0 0 / 0.08);
+
+    & > svg {
+        width: 1rem;
+        height: 1rem;
+    }
+}
+
+/* Uppercase micro label in a hairline box (card footers). */
+@utility ui-micro {
+    display: inline-flex;
+    align-items: center;
+    height: 1.125rem;
+    padding-inline: 0.3125rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--color-line);
+    background-color: var(--color-surface);
+    font-size: 10px;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-body);
+    white-space: nowrap;
 }
 
 @utility ui-btn {
@@ -192,21 +300,21 @@
 }
 
 @utility ui-btn-primary {
-    background-color: var(--color-brand);
-    color: #fff;
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
     border: 1px solid transparent;
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 1px 2px rgb(0 0 0 / 0.2);
 
     &:hover:not(:disabled) {
-        background-color: var(--color-brand-dark);
+        background-color: var(--color-primary-hover);
     }
 }
 
 @utility ui-btn-outline {
-    background-color: var(--color-surface-2);
+    background-color: var(--color-surface);
     color: var(--color-ink);
     border: 1px solid var(--color-line);
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+    box-shadow: var(--shadow-xs);
 
     &:hover:not(:disabled) {
         background-color: var(--color-surface-3);
@@ -235,51 +343,51 @@
     }
 }
 
-/* Linear-style tag: small, square-ish, neutral chip; the status color lives only in the dot. */
+/* Status tag: tiny uppercase label on a tinted fill. Neutral tags get a hairline box instead. */
 @utility ui-tag {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
-    height: 1.25rem;
-    padding-inline: 0.5rem;
-    border-radius: 9999px;
-    border: 1px solid var(--color-line);
-    font-size: 11px;
+    gap: 0.3125rem;
+    height: 1.125rem;
+    padding-inline: 0.375rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--tag-border, var(--color-line));
+    font-size: 10px;
     line-height: 1;
-    font-weight: 500;
-    color: var(--color-body);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--tag-ink, var(--color-body));
+    background-color: var(--tag-bg, var(--color-surface));
     white-space: nowrap;
-
-    &::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 9999px;
-        background-color: var(--tag-dot, var(--color-faint));
-        flex-shrink: 0;
-    }
 }
 
 @utility ui-tag-plain {
-    &::before {
-        display: none;
-    }
+    --tag-border: var(--color-line);
 }
 
 @utility ui-tag-success {
-    --tag-dot: var(--color-success);
+    --tag-bg: var(--color-success-soft);
+    --tag-ink: var(--color-success-ink);
+    --tag-border: transparent;
 }
 
 @utility ui-tag-warning {
-    --tag-dot: var(--color-warning);
+    --tag-bg: var(--color-warning-soft);
+    --tag-ink: var(--color-warning-ink);
+    --tag-border: transparent;
 }
 
 @utility ui-tag-danger {
-    --tag-dot: var(--color-danger);
+    --tag-bg: var(--color-danger-soft);
+    --tag-ink: var(--color-danger-ink);
+    --tag-border: transparent;
 }
 
 @utility ui-tag-info {
-    --tag-dot: var(--color-brand);
+    --tag-bg: var(--color-info-soft);
+    --tag-ink: var(--color-info-ink);
+    --tag-border: transparent;
 }
 
 @media (max-width: 639px) {

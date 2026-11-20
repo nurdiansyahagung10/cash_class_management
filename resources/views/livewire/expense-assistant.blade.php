@@ -1,6 +1,6 @@
 {{--
-    Finance assistant, styled after Linear's agent panel: flat thread (avatar · name · time, then text),
-    quiet "thinking" row, card composer with an inline round send button.
+    Finance assistant: flat thread (avatar · name · time, then text) with the app tokens (purple icon tile, tinted tag),
+    quiet "thinking" row, card composer with an inline primary send button.
     Alpine keeps the panel state and echoes the question instantly; Livewire does the round trip.
 --}}
 <div x-data="{
@@ -27,12 +27,12 @@
 
     {{-- Launcher --}}
     <button type="button" x-show="! open" x-transition.opacity x-on:click="open = true; $nextTick(() => $refs.input?.focus())"
-        class="fixed bottom-5 right-5 z-30 inline-flex h-10 items-center gap-2 rounded-full border border-line bg-surface-2 pl-3 pr-2 text-[13px] font-medium text-ink shadow-md transition-colors hover:border-line-strong hover:bg-surface-3">
-        <span class="flex size-5 items-center justify-center rounded-full bg-brand text-white" aria-hidden="true">
+        class="fixed bottom-5 right-5 z-30 inline-flex h-10 items-center gap-2 rounded-full border border-line bg-surface pl-2 pr-2 text-[13px] font-medium text-ink shadow-md transition-colors hover:border-line-strong hover:bg-surface-2">
+        <span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary" aria-hidden="true">
             <svg class="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5 9.5 6.5 14.5 8 9.5 9.5 8 14.5 6.5 9.5 1.5 8 6.5 6.5Z" /></svg>
         </span>
         Tanya asisten
-        <kbd class="hidden rounded border border-line bg-surface px-1.5 font-mono text-[10px] text-muted sm:inline">Ctrl J</kbd>
+        <kbd class="hidden h-5 items-center rounded-full border border-line bg-surface-2 px-2 font-sans text-[10px] font-medium text-muted sm:inline-flex">Ctrl J</kbd>
     </button>
 
     {{-- Panel --}}
@@ -44,11 +44,11 @@
 
         {{-- Header --}}
         <header class="flex h-14 shrink-0 items-center gap-2 border-b border-line px-4 pt-[env(safe-area-inset-top)] sm:h-11 sm:px-3 sm:pt-0">
-            <span class="flex size-5 items-center justify-center rounded-full bg-brand text-white" aria-hidden="true">
+            <span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary" aria-hidden="true">
                 <svg class="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5 9.5 6.5 14.5 8 9.5 9.5 8 14.5 6.5 9.5 1.5 8 6.5 6.5Z" /></svg>
             </span>
             <h2 id="asisten-judul" class="text-[13px] font-medium text-ink">Asisten kas</h2>
-            <span class="ui-tag ui-tag-plain h-[18px] px-1.5 text-[10px] text-muted">Beta</span>
+            <span class="ui-tag ui-tag-info">Beta</span>
             <div class="ml-auto flex items-center gap-0.5">
                 @if ($messages !== [])
                     <button type="button" wire:click="clear" title="Obrolan baru" aria-label="Obrolan baru"
@@ -97,10 +97,10 @@
                 <article wire:key="pesan-{{ $index }}" class="flex flex-col gap-1">
                     <header class="flex items-center gap-2 text-xs">
                         @if ($chat['role'] === 'user')
-                            <span class="flex size-5 items-center justify-center rounded-full bg-surface-3 text-[9px] font-semibold text-body ring-1 ring-line" aria-hidden="true">{{ $userInitials }}</span>
+                            <span class="flex size-5 items-center justify-center rounded-full bg-surface text-[9px] font-semibold text-body ring-1 ring-line" aria-hidden="true">{{ $userInitials }}</span>
                             <span class="font-medium text-ink">{{ $userName }}</span>
                         @else
-                            <span class="flex size-5 items-center justify-center rounded-full bg-brand text-white" aria-hidden="true">
+                            <span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary" aria-hidden="true">
                                 <svg class="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5 9.5 6.5 14.5 8 9.5 9.5 8 14.5 6.5 9.5 1.5 8 6.5 6.5Z" /></svg>
                             </span>
                             <span class="font-medium text-ink">Asisten</span>
@@ -124,14 +124,14 @@
                 <div class="flex flex-col gap-5">
                     <article class="flex flex-col gap-1">
                         <header class="flex items-center gap-2 text-xs">
-                            <span class="flex size-5 items-center justify-center rounded-full bg-surface-3 text-[9px] font-semibold text-body ring-1 ring-line" aria-hidden="true">{{ $userInitials }}</span>
+                            <span class="flex size-5 items-center justify-center rounded-full bg-surface text-[9px] font-semibold text-body ring-1 ring-line" aria-hidden="true">{{ $userInitials }}</span>
                             <span class="font-medium text-ink">{{ $userName }}</span>
                             <span class="text-faint">· baru saja</span>
                         </header>
                         <p class="whitespace-pre-line pl-7 text-ink" x-text="pending"></p>
                     </article>
                     <div class="flex items-center gap-2 text-xs text-muted">
-                        <span class="flex size-5 items-center justify-center rounded-full bg-brand/15 text-brand" aria-hidden="true">
+                        <span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary" aria-hidden="true">
                             <span class="ui-spinner size-3"></span>
                         </span>
                         <span class="ai-thinking">Sedang berpikir…</span>
@@ -143,7 +143,7 @@
         {{-- Composer --}}
         <div class="shrink-0 p-3 pt-0 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pb-3">
             <form x-on:submit.prevent="submit()"
-                class="flex flex-col gap-1 rounded-xl border border-line bg-surface-2 px-3 pb-2 pt-2.5 transition-colors focus-within:border-line-strong">
+                class="flex flex-col gap-1 rounded-xl border border-line bg-surface-2 px-3 pb-2 pt-2.5 shadow-2xs transition-colors focus-within:border-line-strong">
                 <label for="asisten-pertanyaan" class="sr-only">Pertanyaan untuk asisten</label>
                 <textarea id="asisten-pertanyaan" x-ref="input" wire:model="question" rows="1" maxlength="500"
                     x-on:input="grow($el)" x-on:keydown.enter="if (! $event.shiftKey) { $event.preventDefault(); submit(); }"
@@ -153,7 +153,7 @@
                 <div class="flex items-center gap-2">
                     <span class="text-[11px] text-faint"><kbd class="font-sans">Enter</kbd> kirim · <kbd class="font-sans">Shift+Enter</kbd> baris baru</span>
                     <button type="submit" aria-label="Kirim pertanyaan" x-bind:disabled="!! pending || ! $wire.question.trim()"
-                        class="ml-auto inline-flex size-7 items-center justify-center rounded-full bg-brand text-white transition-opacity disabled:bg-ink/10 disabled:text-faint">
+                        class="ml-auto inline-flex size-7 items-center justify-center rounded-md bg-primary text-on-primary shadow-xs transition-colors hover:bg-primary-hover disabled:bg-ink/10 disabled:text-faint disabled:shadow-none">
                         <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19.5v-15m0 0-6.75 6.75M12 4.5l6.75 6.75" /></svg>
                     </button>
                 </div>

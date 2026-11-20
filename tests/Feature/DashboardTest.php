@@ -214,3 +214,16 @@ test('reports detect an invoice whose confirmed payments cover it even if its ca
 
     expect($invoice->fresh()->status)->toBe('paid');
 });
+
+test('sidebar shows pending review counts to staff but not to members', function () {
+    Payment::factory()->count(3)->create(['status' => 'pending', 'proof_path' => 'payment-proofs/proof.png']);
+    Payment::factory()->create(['status' => 'pending', 'proof_path' => null]);
+
+    $this->actingAs(User::factory()->staff()->create())->get('/')
+        ->assertOk()
+        ->assertSeeHtml('3<span class="sr-only"> menunggu</span>');
+
+    $this->actingAs(User::factory()->create())->get('/')
+        ->assertOk()
+        ->assertDontSeeHtml('<span class="sr-only"> menunggu</span>');
+});

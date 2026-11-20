@@ -70,7 +70,7 @@
             <x-ui.stat :label="$stat['label']" :value="$stat['value']" :hint="$stat['hint']" :tone="$stat['tone'] ?? 'default'">
                 <x-slot:icon><x-ui.icon :name="$stat['icon']" /></x-slot:icon>
                 @isset($stat['progress'])
-                    <div class="h-1.5 w-full overflow-hidden rounded-full bg-canvas-2" role="progressbar" aria-valuenow="{{ $stat['progress'] }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ $stat['label'] }}">
+                    <div class="h-1.5 w-full overflow-hidden rounded-full bg-line" role="progressbar" aria-valuenow="{{ $stat['progress'] }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ $stat['label'] }}">
                         <div class="h-full rounded-full bg-brand" style="width: {{ $stat['progress'] }}%"></div>
                     </div>
                 @endisset
@@ -85,11 +85,7 @@
             {{-- Integritas ledger --}}
             <section aria-label="Status integritas ledger" class="ui-card flex flex-col gap-4 p-4 sm:p-5">
                 <div class="flex items-start gap-3">
-                    <span @class([
-                        'flex size-9 shrink-0 items-center justify-center rounded-lg border',
-                        'border-line bg-canvas-2 text-ink' => $brokenSeq === null,
-                        'border-line bg-surface-2 text-danger' => $brokenSeq !== null,
-                    ])><x-ui.icon name="shield" /></span>
+                    <span class="ui-tile" style="--tile: var(--color-tile-{{ $brokenSeq === null ? 'green' : 'coral' }})" aria-hidden="true"><x-ui.icon name="shield" /></span>
                     <div class="flex min-w-0 flex-col gap-1">
                         <div class="flex flex-wrap items-center gap-2">
                             <h2 class="text-sm font-semibold text-ink">Integritas ledger: {{ $brokenSeq === null ? 'Utuh' : 'Terputus' }}</h2>
@@ -116,7 +112,7 @@
                         @foreach ($actions as $action)
                             <li>
                                 <a href="{{ $action['href'] }}" class="group flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-ink transition-colors hover:bg-canvas-2">
-                                    <span class="text-muted"><x-ui.icon :name="$action['icon']" /></span>
+                                    <span class="ui-tile size-6! rounded-md!" style="--tile: var(--color-tile-{{ ['clock' => 'coral', 'users' => 'blue', 'calendar' => 'pink', 'chart' => 'purple', 'receipt' => 'orange'][$action['icon']] ?? 'gray' }})" aria-hidden="true"><x-ui.icon :name="$action['icon']" /></span>
                                     <span class="min-w-0 flex-1 truncate">{{ $action['label'] }}</span>
                                     @if ($action['count'] !== null)
                                         <x-ui.badge :tone="$action['count'] > 0 && $action['icon'] !== 'calendar' ? 'ink' : 'neutral'" class="font-mono tabular-nums">{{ $action['count'] }}</x-ui.badge>
@@ -155,7 +151,7 @@
                                     <span class="shrink-0 font-mono text-xs tabular-nums text-muted">{{ $period->paid_count }}/{{ $period->invoices_count }} lunas</span>
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-canvas-2" role="progressbar" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100" aria-label="Lunas {{ $pct }}%">
+                                    <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100" aria-label="Lunas {{ $pct }}%">
                                         <div class="h-full rounded-full {{ $pct === 100 ? 'bg-success' : 'bg-brand' }}" style="width: {{ $pct }}%"></div>
                                     </div>
                                     <span class="w-9 text-right font-mono text-[11px] tabular-nums text-ink">{{ $pct }}%</span>

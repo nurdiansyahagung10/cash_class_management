@@ -1,83 +1,79 @@
-        <section aria-labelledby="heading-bku"
-            class="flex flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-xs">
-            <div class="flex flex-col gap-4 border-b border-line bg-canvas/30 px-4 py-5 sm:px-6">
-                <div class="flex flex-col gap-1.5">
-                    <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-                        <h2 id="heading-bku" class="text-base font-semibold text-ink">Buku Kas Umum (BKU) Kas Kelas 1A</h2>
-                        <span
-                            class="inline-flex items-center rounded-full border border-ink/10 bg-surface px-3 py-1 text-xs font-semibold text-muted">Standar Akuntansi Kas</span>
-                        <span
-                            class="ui-tag ui-tag-plain tabular-nums font-mono">
-                            {{ $bkuData['paginator']->total() }} transaksi
-                        </span>
-                    </div>
-                    <p class="max-w-xl text-xs leading-relaxed text-muted">Jurnal kronologis penerimaan iuran,
-                        pengeluaran, dan saldo berjalan. Halaman terakhir adalah transaksi terbaru.</p>
+        @php
+            $rupiah = fn (int $value) => 'Rp' . number_format($value, 0, ',', '.');
+        @endphp
+        <section aria-labelledby="heading-bku" class="ui-card flex flex-col overflow-hidden">
+            <div class="flex flex-col gap-4 border-b border-line px-4 py-4 sm:px-6">
+                <div class="flex min-w-0 flex-col gap-1">
+                    <h2 id="heading-bku" class="text-base font-semibold text-ink">Buku kas umum</h2>
+                    <p class="max-w-xl text-xs leading-relaxed text-muted">
+                        Standar Akuntansi Kas · <span class="tabular-nums">{{ $bkuData['paginator']->total() }}</span> transaksi.
+                        Jurnal penerimaan iuran, pengeluaran, dan saldo berjalan; halaman terakhir berisi transaksi terbaru.
+                    </p>
                 </div>
 
-                <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                    <div class="rounded-xl border border-line bg-surface px-4 py-3">
-                        <p class="text-[10px] font-semibold uppercase tracking-wider text-muted">Total Penerimaan</p>
-                        <p class="text-base font-semibold tabular-nums text-success">Rp{{ number_format($bkuData['totalDebit'], 0, ',', '.') }}</p>
+                {{-- Totals: one quiet row, color only on the sign --}}
+                <dl class="grid grid-cols-1 divide-y divide-line rounded-lg border border-line sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                    <div class="flex items-baseline justify-between gap-3 px-3.5 py-2.5 sm:flex-col sm:items-start sm:gap-0.5">
+                        <dt class="text-xs text-muted">Total penerimaan</dt>
+                        <dd class="text-sm font-semibold tabular-nums text-ink"><span class="text-success">+</span> {{ $rupiah($bkuData['totalDebit']) }}</dd>
                     </div>
-                    <div class="rounded-xl border border-line bg-surface px-4 py-3">
-                        <p class="text-[10px] font-semibold uppercase tracking-wider text-muted">Total Pengeluaran</p>
-                        <p class="text-base font-semibold tabular-nums text-danger">Rp{{ number_format($bkuData['totalCredit'], 0, ',', '.') }}</p>
+                    <div class="flex items-baseline justify-between gap-3 px-3.5 py-2.5 sm:flex-col sm:items-start sm:gap-0.5">
+                        <dt class="text-xs text-muted">Total pengeluaran</dt>
+                        <dd class="text-sm font-semibold tabular-nums text-ink"><span class="text-danger">−</span> {{ $rupiah($bkuData['totalCredit']) }}</dd>
                     </div>
-                    <div class="rounded-xl border border-brand/20 bg-brand-soft px-4 py-3">
-                        <p class="text-[10px] font-semibold uppercase tracking-wider text-brand">Saldo Kas</p>
-                        <p class="text-base font-semibold tabular-nums text-brand">Rp{{ number_format($bkuData['endingBalance'], 0, ',', '.') }}</p>
+                    <div class="flex items-baseline justify-between gap-3 bg-surface-2 px-3.5 py-2.5 sm:flex-col sm:items-start sm:gap-0.5">
+                        <dt class="text-xs text-muted">Saldo kas</dt>
+                        <dd class="text-sm font-semibold tabular-nums text-ink">{{ $rupiah($bkuData['endingBalance']) }}</dd>
                     </div>
-                </div>
+                </dl>
             </div>
 
-            {{-- Mobile: kartu transaksi --}}
-            <div class="divide-y divide-ink/5 md:hidden">
+            {{-- Mobile: one compact row per transaction --}}
+            <ul class="divide-y divide-line md:hidden">
                 @forelse ($bkuData['entries'] as $entry)
-                    <div class="flex flex-col gap-2 px-4 py-4">
-                        <div class="flex items-center justify-between gap-3 text-[11px] text-muted">
-                            <span class="font-mono">#{{ $entry['no'] }} · {{ $entry['date'] }}</span>
-                            <span class="rounded bg-ink/5 px-2 py-0.5 font-mono font-semibold">{{ \Illuminate\Support\Str::limit($entry['ref'], 22) }}</span>
-                        </div>
-                        <p class="text-sm font-medium leading-snug text-ink wrap-break-word">{{ $entry['description'] }}</p>
-                        <div class="flex items-end justify-between gap-3">
+                    <li class="flex flex-col gap-1.5 px-4 py-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <p class="min-w-0 text-[13px] font-medium leading-snug text-ink wrap-break-word">{{ $entry['description'] }}</p>
                             <span @class([
-                                'text-sm font-semibold tabular-nums',
+                                'shrink-0 text-[13px] font-medium tabular-nums',
                                 'text-success' => $entry['debit'] > 0,
                                 'text-danger' => $entry['credit'] > 0,
-                            ])>{{ $entry['debit'] > 0 ? '+ Rp' . number_format($entry['debit'], 0, ',', '.') : '− Rp' . number_format($entry['credit'], 0, ',', '.') }}</span>
-                            <span class="text-right text-[11px] text-muted">Saldo <span class="font-semibold tabular-nums text-ink">Rp{{ number_format($entry['balance'], 0, ',', '.') }}</span></span>
+                            ])>{{ $entry['debit'] > 0 ? '+' . $rupiah($entry['debit']) : '−' . $rupiah($entry['credit']) }}</span>
                         </div>
-                    </div>
+                        <div class="flex items-center justify-between gap-3 text-[11px] text-muted">
+                            <span class="min-w-0 truncate"><span class="font-mono">{{ $entry['date'] }}</span> · <span class="font-mono">{{ \Illuminate\Support\Str::limit($entry['ref'], 22) }}</span></span>
+                            <span class="shrink-0">Saldo <span class="tabular-nums text-body">{{ $rupiah($entry['balance']) }}</span></span>
+                        </div>
+                    </li>
                 @empty
-                    <p class="px-6 py-12 text-center text-xs text-muted">Belum ada transaksi kas kelas yang tercatat.</p>
+                    <li class="px-6 py-12 text-center text-xs text-muted">Belum ada transaksi kas kelas yang tercatat.</li>
                 @endforelse
-            </div>
+            </ul>
 
-            {{-- Desktop: tabel --}}
-            <div class="hidden max-h-[70vh] overflow-auto md:block">
-                <table class="w-full text-left text-xs">
-                    <thead class="sticky top-0 z-10 border-b border-line bg-canvas text-muted">
-                        <tr>
-                            <th scope="col" class="w-12 px-4 py-3.5 text-center text-[11px] font-semibold uppercase tracking-wider">No</th>
-                            <th scope="col" class="min-w-24 px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider">Tanggal</th>
-                            <th scope="col" class="min-w-28 px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider">No. Bukti</th>
-                            <th scope="col" class="min-w-64 px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider">Uraian Transaksi</th>
-                            <th scope="col" class="min-w-32 px-4 py-3.5 text-right text-[11px] font-semibold uppercase tracking-wider text-success">Penerimaan</th>
-                            <th scope="col" class="min-w-32 px-4 py-3.5 text-right text-[11px] font-semibold uppercase tracking-wider text-danger">Pengeluaran</th>
-                            <th scope="col" class="min-w-32 px-4 py-3.5 text-right text-[11px] font-semibold uppercase tracking-wider text-ink">Saldo Kas</th>
+            {{-- Desktop: journal table --}}
+            <div class="hidden max-h-[70vh] overflow-auto [scrollbar-width:thin] md:block">
+                <table class="w-full border-separate border-spacing-0 text-left text-xs">
+                    <thead class="text-muted">
+                        <tr class="[&>th]:sticky [&>th]:top-0 [&>th]:z-10 [&>th]:border-b [&>th]:border-line [&>th]:bg-surface-2 [&>th]:px-3 [&>th]:py-2.5 [&>th]:text-[10px] [&>th]:font-semibold [&>th]:uppercase [&>th]:tracking-wider">
+                            <th scope="col" class="w-10 pl-5! text-center">No</th>
+                            <th scope="col" class="min-w-24">Tanggal</th>
+                            <th scope="col" class="min-w-28">No. bukti</th>
+                            <th scope="col" class="min-w-64">Uraian</th>
+                            <th scope="col" class="min-w-28 text-right">Penerimaan</th>
+                            <th scope="col" class="min-w-28 text-right">Pengeluaran</th>
+                            <th scope="col" class="min-w-28 pr-5! text-right">Saldo</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-ink/5">
+                    <tbody>
                         @forelse ($bkuData['entries'] as $entry)
-                            <tr class="transition-colors hover:bg-ink/1.5">
-                                <td class="px-4 py-3 text-center font-mono text-muted">{{ $entry['no'] }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 font-mono text-muted">{{ $entry['date'] }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 font-mono text-xs font-semibold text-muted"><span class="rounded bg-ink/5 px-2 py-0.5">{{ \Illuminate\Support\Str::limit($entry['ref'], 22) }}</span></td>
-                                <td class="px-4 py-3 font-medium text-ink">{{ $entry['description'] }}</td>
-                                <td class="px-4 py-3 text-right font-mono font-semibold tabular-nums {{ $entry['debit'] > 0 ? 'text-success' : 'text-muted/40' }}">{{ $entry['debit'] > 0 ? 'Rp' . number_format($entry['debit'], 0, ',', '.') : '—' }}</td>
-                                <td class="px-4 py-3 text-right font-mono font-semibold tabular-nums {{ $entry['credit'] > 0 ? 'text-danger' : 'text-muted/40' }}">{{ $entry['credit'] > 0 ? 'Rp' . number_format($entry['credit'], 0, ',', '.') : '—' }}</td>
-                                <td class="px-4 py-3 text-right font-mono font-semibold tabular-nums text-ink">Rp{{ number_format($entry['balance'], 0, ',', '.') }}</td>
+                            <tr class="transition-colors hover:bg-surface-2 [&>td]:border-b [&>td]:border-line [&>td]:px-3 [&>td]:py-2.5">
+                                <td class="pl-5! text-center font-mono text-[11px] text-faint">{{ $entry['no'] }}</td>
+                                <td class="whitespace-nowrap font-mono text-[11px] text-muted">{{ $entry['date'] }}</td>
+                                <td class="whitespace-nowrap font-mono text-[11px] text-muted">{{ \Illuminate\Support\Str::limit($entry['ref'], 22) }}</td>
+                                <td class="text-[13px] text-ink">{{ $entry['description'] }}</td>
+                                <td class="text-right tabular-nums {{ $entry['debit'] > 0 ? 'text-success' : 'text-faint' }}">{{ $entry['debit'] > 0 ? $rupiah($entry['debit']) : '—' }}</td>
+                                <td class="text-right tabular-nums {{ $entry['credit'] > 0 ? 'text-danger' : 'text-faint' }}">{{ $entry['credit'] > 0 ? $rupiah($entry['credit']) : '—' }}</td>
+                                <td class="pr-5! text-right font-medium tabular-nums text-ink">{{ $rupiah($entry['balance']) }}</td>
                             </tr>
                         @empty
                             <tr>

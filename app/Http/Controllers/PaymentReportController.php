@@ -136,7 +136,9 @@ class PaymentReportController extends Controller
 
         $activeTab = (string) $request->query('tab', 'detail');
         $bkuData = $activeTab === 'bku' ? $this->buildBkuData($request) : null;
-        $matrixData = $activeTab === 'matrix' ? $this->buildMatrixData($request) : null;
+        $matrixView = $request->query('m_view') === 'grid' ? 'grid' : 'period';
+        $matrixData = $activeTab === 'matrix' && $matrixView === 'grid' ? $this->buildMatrixData($request) : null;
+        $periodBoard = $activeTab === 'matrix' && $matrixView === 'period' ? $this->buildPeriodBoardData($request) : null;
 
         // Data Kas Kelas
         $totalExpense = (int) Expense::sum('amount');
@@ -166,6 +168,8 @@ class PaymentReportController extends Controller
             'overdueRemaining' => (int) $overdueInvoices->sum(fn (Invoice $inv) => $inv->remainingAmount()),
             'bkuData' => $bkuData,
             'matrixData' => $matrixData,
+            'matrixLayout' => $matrixView,
+            'periodBoard' => $periodBoard,
             'summaryPageSizes' => self::SUMMARY_PAGE_SIZES,
             'matrixWindowSizes' => self::MATRIX_WINDOW_SIZES,
             ...$this->signoffData($request),
@@ -673,6 +677,98 @@ class PaymentReportController extends Controller
             'totalTarget' => $overallTarget,
             'totalPaid' => $overallPaid,
             'totalRemaining' => max(0, $overallTarget - $overallPaid),
+        ];
+    }
+
+    /**
+     * Per-period view of the student dues: one chip per period (newest first) and the selected period's
+     * members grouped into unpaid, partial and paid. Honors the matrix filters `m_category` and `mq`;
+     * `m_period` picks the period (defaults to the newest).
+     *
+     * @return array{
+     *     periods: Collection<int, BillingPeriod>,
+     *     selected: ?BillingPeriod,
+     *     groups: array{unpaid: list<array<string, mixed>>, partial: list<array<string, mixed>>, paid: list<array<string, mixed>>},
+     *     billed: int,
+     *     paidCount: int,
+     *     partialCount: int,
+     *     target: int,
+     *     collected: int,
+     *     remaining: int
+     * }
+     */
+    public function buildPeriodBoardData(Request $request): array
+    {
+        Invoice::repairStatuses();
+
+        $categoryFilter = $request->integer('m_category') ?: null;
+        $search = trim((string) $request->query('mq', ''));
+        $payableMember = fn ($query) => $query->payableMembers();
+
+        $periods = BillingPeriod::query()
+            ->when($categoryFilter, fn ($q) => $q->where('category_id', $categoryFilter))
+            ->withCount([
+                'invoices as billed_count' => fn ($q) => $q->whereHas('user', $payableMember),
+                'invoices as paid_count' => fn ($q) => $q->where('status', 'paid')->whereHas('user', $payableMember),
+            ])
+            ->orderByDesc('id')
+            ->get();
+
+        $selected = $periods->firstWhere('id', $request->integer('m_period')) ?? $periods->first();
+
+        $rows = collect();
+
+        if ($selected) {
+            $isPastDue = $selected->isPastDue();
+
+            $rows = Invoice::query()
+                ->where('billing_period_id', $selected->id)
+                ->whereHas('user', fn ($q) => $q->payableMembers()->when($search !== '', fn ($q) => $q->where(
+                    fn ($w) => $w->where('name', 'like', "%{$search}%")->orWhere('student_no', 'like', "%{$search}%")
+                )))
+                ->with('user')
+                ->withSum(['payments as paid_sum' => fn ($q) => $q->where('status', 'paid')], 'amount')
+                ->get()
+                ->map(function (Invoice $invoice) use ($isPastDue): array {
+                    $target = (int) $invoice->amount;
+                    $paid = min($target, (int) $invoice->paid_sum);
+                    $status = match (true) {
+                        $paid >= $target => 'paid',
+                        $paid > 0 => 'partial',
+                        default => 'unpaid',
+                    };
+
+                    return [
+                        'invoice_id' => $invoice->id,
+                        'user' => $invoice->user,
+                        'target' => $target,
+                        'paid' => $paid,
+                        'remaining' => max(0, $target - $paid),
+                        'status' => $status,
+                        'is_overdue' => $status !== 'paid' && $isPastDue,
+                    ];
+                })
+                ->sortBy(fn (array $row) => sprintf('%012d|%s', (int) $row['user']->student_no, $row['user']->student_no))
+                ->values();
+        }
+
+        $target = (int) $rows->sum('target');
+        $collected = (int) $rows->sum('paid');
+
+        return [
+            'periods' => $periods,
+            'selected' => $selected,
+            'groups' => [
+                'unpaid' => $rows->where('status', 'unpaid')->values()->all(),
+                'partial' => $rows->where('status', 'partial')->values()->all(),
+                'paid' => $rows->where('status', 'paid')->values()->all(),
+            ],
+            'billed' => $rows->count(),
+            'paidCount' => $rows->where('status', 'paid')->count(),
+            'partialCount' => $rows->where('status', 'partial')->count(),
+            'target' => $target,
+            'collected' => $collected,
+            'remaining' => max(0, $target - $collected),
         ];
     }
 

@@ -27,7 +27,7 @@
                     <h2 class="text-sm font-semibold text-ink">
                         Bantu Pembayaran Kas Siswa (Mode Bendahara Kelas)
                     </h2>
-                    <span class="ui-tag ui-tag-plain text-white">
+                    <span class="ui-tag ui-tag-plain">
                         Bendahara: {{ auth()->user()->name }}
                     </span>
                 </div>

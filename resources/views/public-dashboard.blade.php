@@ -33,7 +33,7 @@
             <x-ui.stat :label="$stat['label']" :value="$stat['value']" :hint="$stat['hint']">
                 <x-slot:icon><x-ui.icon :name="$stat['icon']" /></x-slot:icon>
                 @isset($stat['progress'])
-                    <div class="h-1.5 w-full overflow-hidden rounded-full bg-canvas-2" role="progressbar" aria-valuenow="{{ $stat['progress'] }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ $stat['label'] }}">
+                    <div class="h-1.5 w-full overflow-hidden rounded-full bg-line" role="progressbar" aria-valuenow="{{ $stat['progress'] }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ $stat['label'] }}">
                         <div class="h-full rounded-full bg-brand" style="width: {{ min(100, $stat['progress']) }}%"></div>
                     </div>
                 @endisset
@@ -131,7 +131,7 @@
                             </x-ui.badge>
                         </div>
                         <div class="flex items-center gap-3">
-                            <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-canvas-2" role="progressbar" aria-valuenow="{{ $period['rate'] }}" aria-valuemin="0" aria-valuemax="100" aria-label="Terkumpul {{ $period['title'] }}">
+                            <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuenow="{{ $period['rate'] }}" aria-valuemin="0" aria-valuemax="100" aria-label="Terkumpul {{ $period['title'] }}">
                                 <div class="h-full rounded-full {{ $done ? 'bg-success' : 'bg-brand' }}" style="width: {{ min(100, $period['rate']) }}%"></div>
                             </div>
                             <span class="w-9 text-right font-mono text-[11px] tabular-nums text-ink">{{ $period['rate'] }}%</span>

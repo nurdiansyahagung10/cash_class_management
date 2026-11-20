@@ -3,11 +3,11 @@
         $tabQuery = array_diff_key($query, array_flip(['tab', 'period_page']));
         $tabs = [
             'detail' => ['Rincian tagihan', 'Rincian Tagihan & Cicilan', 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01'],
-            'matrix' => ['Matriks iuran', 'Matriks Iuran Siswa (Buku Pembantu)', 'M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
+            'matrix' => ['Iuran siswa', 'Iuran Siswa per Periode & Matriks', 'M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
             'bku' => ['Buku kas umum', 'Buku Kas Umum (BKU Kelas)', 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'],
         ];
         $stats = [
-            ['Saldo kas di tangan', 'Rp' . number_format($realCashBalance, 0, ',', '.'), 'Kas masuk bersih setelah pengeluaran', 'default', null],
+            ['Saldo kas di tangan', 'Rp' . number_format($realCashBalance, 0, ',', '.'), 'Setelah dikurangi pengeluaran', 'default', null],
             ['Total iuran masuk', 'Rp' . number_format($totalCollected, 0, ',', '.'), 'Target Rp' . number_format($totalExpected, 0, ',', '.'), 'default', $collectionRate],
             ['Pengeluaran kas', 'Rp' . number_format($totalExpense, 0, ',', '.'), 'Belanja kelas terverifikasi', 'default', null],
             ['Sisa piutang', 'Rp' . number_format($totalRemaining, 0, ',', '.'), $unpaidCount . ' belum bayar · ' . $partialCount . ' menyicil', 'default', null],
@@ -45,20 +45,31 @@
     </div>
 
     {{-- Ringkasan finansial --}}
-    <x-ui.stat-rail label="Ringkasan laporan pembayaran" grid="md:grid-cols-3 xl:grid-cols-5">
+    {{-- One summary panel; hairlines come from the 1px grid gap over a line-colored background. --}}
+    <section aria-label="Ringkasan laporan pembayaran"
+        class="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line shadow-xs md:grid-cols-3 xl:grid-cols-5">
         @foreach ($stats as $index => [$label, $value, $detail, $tone, $progress])
-            <x-ui.stat :label="$label" :value="$value" :hint="$detail" :tone="$tone">
+            <div @class([
+                'flex min-w-0 flex-col gap-1 bg-surface px-4 py-3.5',
+                'col-span-2 md:col-span-1' => $index === 0,
+            ])>
+                <p class="text-xs text-muted">{{ $label }}</p>
+                <p @class([
+                    'truncate text-lg font-semibold tracking-[-0.02em] tabular-nums sm:text-xl',
+                    'text-danger' => $tone === 'danger',
+                    'text-ink' => $tone !== 'danger',
+                ])>{{ $value }}</p>
                 @if ($progress !== null)
-                    <div class="flex items-center gap-2">
-                        <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-canvas-2" role="progressbar" aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100" aria-label="Terkumpul {{ $progress }}%">
-                            <div class="h-full rounded-full bg-brand" style="width: {{ min(100, $progress) }}%"></div>
-                        </div>
-                        <span class="font-mono text-[11px] tabular-nums text-ink">{{ $progress }}%</span>
+                    <div class="mt-0.5 h-1 w-full overflow-hidden rounded-full bg-line" role="progressbar" aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100" aria-label="Terkumpul {{ $progress }}%">
+                        <div class="h-full rounded-full bg-brand" style="width: {{ min(100, $progress) }}%"></div>
                     </div>
                 @endif
-            </x-ui.stat>
+                <p class="text-[11px] leading-snug text-muted">
+                    {{ $detail }}@if ($progress !== null) · <span class="tabular-nums text-body">{{ $progress }}%</span>@endif
+                </p>
+            </div>
         @endforeach
-    </x-ui.stat-rail>
+    </section>
 
     {{-- KONTEN UTAMA BERDASARKAN TAB --}}
     <div wire:loading.delay.class="opacity-60" class="flex flex-col gap-6 transition-opacity sm:gap-8">
@@ -67,7 +78,7 @@
         {{-- ========================================================================= --}}
         {{-- TAB 1: MATRIKS IURAN SISWA (BUKU PEMBANTU IURAN KAS KELAS)               --}}
         {{-- ========================================================================= --}}
-        @include('reports._matrix')
+        @include($matrixLayout === 'grid' ? 'reports._matrix' : 'reports._period_board')
         @include('reports._signoff')
     @elseif ($activeTab === 'bku')
         {{-- ========================================================================= --}}
@@ -121,7 +132,7 @@
                             </div>
 
                             <div class="flex items-center gap-3">
-                                <div class="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-canvas-2" role="progressbar"
+                                <div class="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-line" role="progressbar"
                                     aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100" aria-label="Terkumpul {{ $pct }}%">
                                     <div class="h-full rounded-full {{ $allPaid ? 'bg-success' : 'bg-brand' }}" style="width: {{ $pct }}%"></div>
                                 </div>

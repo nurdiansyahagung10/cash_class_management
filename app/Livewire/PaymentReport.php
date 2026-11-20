@@ -47,6 +47,14 @@ class PaymentReport extends Component
     #[Url(as: 'period_page', except: '')]
     public string $periodWindow = '';
 
+    /** Matrix tab layout: '' = per-period board (default), 'grid' = classic student x period matrix. */
+    #[Url(as: 'm_view', except: '')]
+    public string $matrixView = '';
+
+    /** Period shown on the per-period board ('' = newest). */
+    #[Url(as: 'm_period', except: '')]
+    public string $matrixPeriod = '';
+
     /**
      * Livewire update requests skip the route middleware, so the staff/admin gate is repeated here.
      */
@@ -81,9 +89,19 @@ class PaymentReport extends Component
         $this->periodWindow = $page > 1 ? (string) $page : '';
     }
 
+    public function showMatrixView(string $view): void
+    {
+        $this->matrixView = $view === 'grid' ? 'grid' : '';
+    }
+
+    public function showMatrixPeriod(int $periodId): void
+    {
+        $this->matrixPeriod = $periodId > 0 ? (string) $periodId : '';
+    }
+
     public function resetMatrixFilters(): void
     {
-        $this->reset('matrixSearch', 'matrixCategory', 'matrixColumns', 'periodWindow');
+        $this->reset('matrixSearch', 'matrixCategory', 'matrixColumns', 'periodWindow', 'matrixPeriod');
         $this->resetPage('matrix_page');
     }
 
@@ -105,6 +123,10 @@ class PaymentReport extends Component
             $this->resetPage('matrix_page');
             $this->periodWindow = '';
         }
+
+        if ($property === 'matrixCategory') {
+            $this->matrixPeriod = '';
+        }
     }
 
     /**
@@ -125,6 +147,8 @@ class PaymentReport extends Component
             'm_category' => $this->matrixCategory,
             'm_cols' => $this->matrixColumns,
             'period_page' => $this->periodWindow,
+            'm_view' => $this->matrixView,
+            'm_period' => $this->matrixPeriod,
         ], fn (string $value) => $value !== '');
     }
 

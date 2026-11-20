@@ -27,11 +27,16 @@
 <body class="bg-canvas font-sans text-ink antialiased">
     @include('components.layouts.navbar')
 
-    <div class="flex min-w-0 flex-1 flex-col">
+    <div class="flex min-w-0 flex-1 flex-col lg:h-dvh">
         @include('components.layouts.panel-topbar', ['title' => $title])
-        <main id="konten-utama" class="mx-auto flex w-full min-w-0 max-w-[1400px] flex-1 flex-col gap-6 px-4 pb-10 pt-4 sm:gap-8 sm:px-6 lg:px-10 lg:pt-8">
-            {{ $slot }}
-        </main>
+        {{-- Same viewport-height panel as the app layout: the frame clips, only the inner element scrolls. --}}
+        <div class="flex min-h-0 min-w-0 flex-1 flex-col bg-panel lg:mb-2 lg:mr-2 lg:overflow-hidden lg:rounded-xl lg:border lg:border-line lg:shadow-xs lg:[contain:paint]">
+            <div data-content-scroll class="flex min-h-0 flex-1 flex-col lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-width:thin] lg:[scrollbar-color:var(--color-line-strong)_transparent]">
+                <main id="konten-utama" class="mx-auto flex w-full min-w-0 max-w-[1400px] flex-1 flex-col gap-6 px-4 pb-10 pt-4 sm:gap-8 sm:px-6 lg:px-10 lg:pt-8">
+                    {{ $slot }}
+                </main>
+            </div>
+        </div>
     </div>
     </div>
     @include('components.layouts.backdrop')

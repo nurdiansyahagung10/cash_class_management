@@ -404,9 +404,9 @@ test('indonesian school class cash report features BKU, student matrix, official
 
     // 1. Check Matrix Tab
     $this->actingAs($admin)
-        ->get(route('reports.payments', ['tab' => 'matrix']))
+        ->get(route('reports.payments', ['tab' => 'matrix', 'm_view' => 'grid']))
         ->assertOk()
-        ->assertSee('Matriks Rekapitulasi Iuran Kas Siswa')
+        ->assertSee('Matriks iuran siswa')
         ->assertSee('Buku Pembantu Kas')
         ->assertSee('Ahmad Dahlan')
         ->assertSee('Dewi Sartika')
@@ -421,7 +421,7 @@ test('indonesian school class cash report features BKU, student matrix, official
     $this->actingAs($admin)
         ->get(route('reports.payments', ['tab' => 'bku']))
         ->assertOk()
-        ->assertSee('Buku Kas Umum (BKU) Kas Kelas 1A')
+        ->assertSee('Buku kas umum')
         ->assertSee('Standar Akuntansi Kas')
         ->assertSee('Penerimaan iuran kas: Ahmad Dahlan')
         ->assertSee('Penerimaan iuran kas: Dewi Sartika')
@@ -544,7 +544,7 @@ test('admin is strictly excluded from billing, payment processing, and cash repo
 
     // Matrix view: admin has no row in student matrix
     $this->actingAs($admin)->get(route('reports.payments', ['tab' => 'matrix']))->assertOk();
-    $matrixData = $report->call('showTab', 'matrix')->viewData('matrixData');
+    $matrixData = $report->call('showTab', 'matrix')->call('showMatrixView', 'grid')->viewData('matrixData');
     $matrixUserIds = collect($matrixData['rows'])->pluck('user.id');
     expect($matrixUserIds)->not->toContain($admin->id)
         ->and($matrixUserIds)->toContain($student->id);
@@ -678,7 +678,7 @@ test('report pdf renders for every tab and matrix/bku tabs paginate', function (
     }
 
     $this->actingAs($admin)
-        ->get(route('reports.payments', ['tab' => 'matrix']))
+        ->get(route('reports.payments', ['tab' => 'matrix', 'm_view' => 'grid']))
         ->assertOk()
         ->assertSee('1–25')
         ->assertSee('dari')
@@ -690,12 +690,12 @@ test('matrix shows periods in windows and the period summary is paginated', func
     User::factory()->create();
     BillingPeriod::factory()->count(8)->create();
 
-    $this->actingAs($admin)->get('/reports/payments?tab=matrix')
+    $this->actingAs($admin)->get('/reports/payments?tab=matrix&m_view=grid')
         ->assertOk()
         ->assertSee('3–8')
         ->assertSee('period_page=2', false);
 
-    $this->actingAs($admin)->get('/reports/payments?tab=matrix&period_page=2')
+    $this->actingAs($admin)->get('/reports/payments?tab=matrix&m_view=grid&period_page=2')
         ->assertOk()
         ->assertSee('1–2');
 
@@ -716,13 +716,13 @@ test('matrix filters period columns and totals by category and window size', fun
     $kasPeriods->each(fn (BillingPeriod $period) => Invoice::factory()->create(['user_id' => $member->id, 'billing_period_id' => $period->id]));
     Invoice::factory()->create(['user_id' => $member->id, 'billing_period_id' => $makrabPeriod->id, 'amount' => 50000]);
 
-    $this->actingAs($admin)->get(route('reports.payments', ['tab' => 'matrix', 'm_category' => $kas->id, 'm_cols' => 4]))
+    $this->actingAs($admin)->get(route('reports.payments', ['tab' => 'matrix', 'm_view' => 'grid', 'm_category' => $kas->id, 'm_cols' => 4]))
         ->assertOk()
         ->assertDontSee('Iuran Makrab')
         ->assertSee('2–5');
 
     Livewire::actingAs($admin)
-        ->withQueryParams(['tab' => 'matrix', 'm_category' => (string) $kas->id, 'm_cols' => '4'])
+        ->withQueryParams(['tab' => 'matrix', 'm_view' => 'grid', 'm_category' => (string) $kas->id, 'm_cols' => '4'])
         ->test(PaymentReport::class)
         ->assertViewHas('matrixData', fn (array $data) => $data['periods']->count() === 4
             && $data['periods']->every(fn (BillingPeriod $period) => $period->category_id === $kas->id)
@@ -776,9 +776,48 @@ test('report filters, tabs and paging update in place for staff and are refused 
         ->assertSee(route('reports.payments.pdf', ['category_id' => $event->id, 'status' => 'paid', 'tab' => 'detail']))
         ->call('showTab', 'matrix')
         ->assertSet('tab', 'matrix')
+        ->assertViewHas('periodBoard', fn (?array $data) => $data !== null)
+        ->call('showMatrixView', 'grid')
         ->assertViewHas('matrixData', fn (?array $data) => $data !== null);
 
     Livewire::actingAs(User::factory()->create())
         ->test(PaymentReport::class)
         ->assertForbidden();
+});
+
+test('student dues tab groups the chosen period by payment state and only staff get the help-pay link', function () {
+    $admin = User::factory()->admin()->create();
+    $staff = User::factory()->staff()->create();
+    $older = BillingPeriod::factory()->create(['title' => 'Kas Pekan Lama']);
+    $newest = BillingPeriod::factory()->create(['title' => 'Kas Pekan Baru', 'amount' => 10000]);
+    $unpaidMember = User::factory()->create(['name' => 'Rina Belum']);
+    $partialMember = User::factory()->create(['name' => 'Sari Cicil']);
+    $paidMember = User::factory()->create(['name' => 'Tono Lunas']);
+
+    $unpaidInvoice = Invoice::factory()->create(['user_id' => $unpaidMember->id, 'billing_period_id' => $newest->id, 'amount' => 10000]);
+    $partialInvoice = Invoice::factory()->create(['user_id' => $partialMember->id, 'billing_period_id' => $newest->id, 'amount' => 10000]);
+    $paidInvoice = Invoice::factory()->create(['user_id' => $paidMember->id, 'billing_period_id' => $newest->id, 'amount' => 10000]);
+    Payment::factory()->create(['invoice_id' => $partialInvoice->id, 'status' => 'paid', 'amount' => 4000]);
+    Payment::factory()->create(['invoice_id' => $paidInvoice->id, 'status' => 'paid', 'amount' => 10000]);
+    Invoice::factory()->create(['user_id' => $unpaidMember->id, 'billing_period_id' => $older->id]);
+
+    Livewire::actingAs($admin)
+        ->withQueryParams(['tab' => 'matrix'])
+        ->test(PaymentReport::class)
+        ->assertViewHas('periodBoard', fn (array $board) => $board['selected']->is($newest)
+            && collect($board['groups']['unpaid'])->pluck('user.id')->all() === [$unpaidMember->id]
+            && collect($board['groups']['partial'])->pluck('remaining')->all() === [6000]
+            && collect($board['groups']['paid'])->pluck('user.id')->all() === [$paidMember->id]
+            && $board['collected'] === 14000)
+        ->assertDontSee(route('payments.create', $unpaidInvoice))
+        ->call('showMatrixPeriod', $older->id)
+        ->assertSet('matrixPeriod', (string) $older->id)
+        ->assertViewHas('periodBoard', fn (array $board) => $board['selected']->is($older) && $board['billed'] === 1);
+
+    $this->actingAs($staff)->get(route('reports.payments', ['tab' => 'matrix']))
+        ->assertOk()
+        ->assertSee('Rina Belum')
+        ->assertSee(route('payments.create', $unpaidInvoice))
+        ->assertSee(route('payments.create', $partialInvoice))
+        ->assertDontSee(route('payments.create', $paidInvoice));
 });

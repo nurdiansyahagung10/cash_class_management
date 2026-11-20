@@ -19,7 +19,7 @@
     <x-theme-toggle label class="fixed right-3 top-3 z-10" />
     <main class="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-4 py-12">
         <div class="flex items-center gap-3">
-            <div class="flex size-10 items-center justify-center rounded-xl bg-brand text-sm font-semibold text-white shadow-xs"
+            <div class="flex size-10 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-on-primary shadow-xs"
                 aria-hidden="true">
                 K
             </div>
@@ -31,7 +31,7 @@
 
         <header class="flex flex-col gap-2">
             <h1 class="text-3xl font-semibold tracking-tight text-ink">{{ $title }}</h1>
-            <p class="font-serif text-base leading-relaxed text-muted">{{ $lead }}</p>
+            <p class="text-sm leading-relaxed text-muted">{{ $lead }}</p>
         </header>
 
         @if (session('status'))
@@ -46,7 +46,7 @@
             </div>
         @endif
 
-        <div class="rounded-2xl border border-line bg-surface p-6 shadow-xs sm:p-7">
+        <div class="rounded-xl border border-line bg-surface p-6 shadow-sm sm:p-7">
             {{ $slot }}
         </div>
     </main>
